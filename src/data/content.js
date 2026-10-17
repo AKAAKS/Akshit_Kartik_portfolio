@@ -92,8 +92,7 @@ export const projects = {
       summary:
         'A Windows background daemon that uses an LLM to watch the machine and suggest or apply optimizations. A telemetry kernel collects and normalizes process, service, and resource data into model context; the agent returns concrete, reviewable actions. 153 tests passing.',
       tags: ['Windows daemon', 'LLM', 'Telemetry', 'Python'],
-      // add `site:` with the os-agent-landing deploy URL once it's live.
-      // NOTE: this repo must be made public for the link to resolve.
+      // add `site:` with the os-agent-landing deploy URL once it's live
       links: { repo: 'https://github.com/AKAAKS/OS_agent' },
     },
     {
