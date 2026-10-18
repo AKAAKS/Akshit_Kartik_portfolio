@@ -83,8 +83,10 @@ export const projects = {
       summary:
         'A voice and text assistant built on Claude’s tool-use loop. It turns a plain request into the right tool calls across Home Assistant (lights, climate, scenes), Spotify, the TV, and the PC. The streaming voice supports barge-in, so you can cut in mid-sentence, and you can dial its tone up or down.',
       tags: ['Claude tool-use', 'Voice / TTS', 'Home Assistant', 'Python'],
-      // add `site:` with the jarvis-landing deploy URL once it's live
-      links: { repo: 'https://github.com/AKAAKS/personal-assistant' },
+      links: {
+        site: 'https://jarvis-landing-sooty.vercel.app/',
+        repo: 'https://github.com/AKAAKS/personal-assistant',
+      },
     },
     {
       code: 'PRJ-03',
@@ -92,8 +94,10 @@ export const projects = {
       summary:
         'A Windows background daemon that uses an LLM to watch the machine and suggest or apply optimizations. A telemetry kernel collects and normalizes process, service, and resource data into model context; the agent returns concrete, reviewable actions. 163 tests passing.',
       tags: ['Windows daemon', 'LLM', 'Telemetry', 'Python'],
-      // add `site:` with the os-agent-landing deploy URL once it's live
-      links: { repo: 'https://github.com/AKAAKS/OS_agent' },
+      links: {
+        site: 'https://os-agent-landing.vercel.app/',
+        repo: 'https://github.com/AKAAKS/OS_agent',
+      },
     },
     {
       code: 'PRJ-04',
