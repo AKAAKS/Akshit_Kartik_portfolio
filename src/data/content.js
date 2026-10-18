@@ -16,7 +16,7 @@ export const profile = {
   // Where the "Download Resume" button points (file lives in public/)
   resumeUrl: '/resume.pdf',
   // Codename shown in the status bar (keep it short/uppercase)
-  codename: 'ROOT',
+  codename: 'Akshit Kartik',
 }
 
 export const about = {
@@ -90,7 +90,7 @@ export const projects = {
       code: 'PRJ-03',
       name: 'OS Agent',
       summary:
-        'A Windows background daemon that uses an LLM to watch the machine and suggest or apply optimizations. A telemetry kernel collects and normalizes process, service, and resource data into model context; the agent returns concrete, reviewable actions. 153 tests passing.',
+        'A Windows background daemon that uses an LLM to watch the machine and suggest or apply optimizations. A telemetry kernel collects and normalizes process, service, and resource data into model context; the agent returns concrete, reviewable actions. 163 tests passing.',
       tags: ['Windows daemon', 'LLM', 'Telemetry', 'Python'],
       // add `site:` with the os-agent-landing deploy URL once it's live
       links: { repo: 'https://github.com/AKAAKS/OS_agent' },
