@@ -1,4 +1,4 @@
-# STARK // Portfolio
+# Akshit Kartik · Developer Portfolio
 
 A personal developer portfolio themed as **Tony Stark's / J.A.R.V.I.S. computer** — a moderate holographic HUD built with **React + Vite**.
 
