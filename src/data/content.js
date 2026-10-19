@@ -16,7 +16,7 @@ export const profile = {
   // Where the "Download Resume" button points (file lives in public/)
   resumeUrl: '/resume.pdf',
   // Codename shown in the status bar (keep it short/uppercase)
-  codename: 'Akshit Kartik',
+  codename: 'AKAAKS',
 }
 
 export const about = {
@@ -40,7 +40,9 @@ export const skills = [
     items: [
       { name: 'Python', level: 95 },
       { name: 'JavaScript / TypeScript', level: 88 },
+      { name: 'Java', level: 80 },
       { name: 'C / C++', level: 70 },
+      { name: 'Bash Scripting', level: 65 }
     ],
   },
   {
@@ -48,15 +50,19 @@ export const skills = [
     items: [
       { name: 'LLM agents & tool-use', level: 92 },
       { name: 'PyTorch / scikit-learn', level: 80 },
-      { name: 'Applied signal processing', level: 75 },
+      { name: 'TensorFlow / Keras', level: 78 },
+      { name: 'Open CV', level: 75 },
+      { name: 'LangGraph', level: 70 }      
     ],
   },
   {
     group: 'Platforms',
     items: [
+      { name: 'Git / GitHub', level: 90 },
       { name: 'React / Vite', level: 85 },
-      { name: 'Windows internals', level: 78 },
-      { name: 'Docker / Home Assistant', level: 80 },
+      { name: 'ChromaDB', level: 80 },
+      { name: 'Docker / Home Assistant', level: 75 },
+      { name: 'REST API', level: 70 }
     ],
   },
 ]
