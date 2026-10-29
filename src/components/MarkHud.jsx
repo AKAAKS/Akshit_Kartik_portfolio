@@ -268,7 +268,10 @@ export default function MarkHud() {
       if (clamped === idx) return
       idx = clamped
       setActive(idx)
-      el.scrollTo({ top: idx * window.innerHeight, behavior: reduce ? 'auto' : 'smooth' })
+      // Scroll to the section's real offset (robust to mobile vh/dvh differences).
+      const secs = el.querySelectorAll('.mk-sec')
+      const top = secs[idx] ? secs[idx].offsetTop : idx * window.innerHeight
+      el.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' })
       cooling = true
       clearTimeout(cd)
       cd = setTimeout(() => { cooling = false }, COOLDOWN)
