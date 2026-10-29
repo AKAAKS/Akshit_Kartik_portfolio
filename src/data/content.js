@@ -17,6 +17,8 @@ export const profile = {
   resumeUrl: '/resume.pdf',
   // Codename shown in the status bar (keep it short/uppercase)
   codename: 'AKAAKS',
+  // Boot lines that type in before the name resolves (guided-tour intro)
+  boot: ['J.A.R.V.I.S. online', 'loading operator profile', 'rendering interface'],
 }
 
 export const about = {
@@ -89,6 +91,7 @@ export const projects = {
       summary:
         'A voice and text assistant built on Claude’s tool-use loop. It turns a plain request into the right tool calls across Home Assistant (lights, climate, scenes), Spotify, the TV, and the PC. The streaming voice supports barge-in, so you can cut in mid-sentence, and you can dial its tone up or down.',
       tags: ['Claude tool-use', 'Voice / TTS', 'Home Assistant', 'Python'],
+      metric: { value: 576, suffix: '', label: 'tests green' },
       links: {
         site: 'https://jarvis-landing-sooty.vercel.app/',
         repo: 'https://github.com/AKAAKS/personal-assistant',
@@ -100,6 +103,7 @@ export const projects = {
       summary:
         'A Windows background daemon that uses an LLM to watch the machine and suggest or apply optimizations. A telemetry kernel collects and normalizes process, service, and resource data into model context; the agent returns concrete, reviewable actions. 163 tests passing.',
       tags: ['Windows daemon', 'LLM', 'Telemetry', 'Python'],
+      metric: { value: 163, suffix: '', label: 'tests passing' },
       links: {
         site: 'https://os-agent-landing.vercel.app/',
         repo: 'https://github.com/AKAAKS/OS_agent',
@@ -111,11 +115,54 @@ export const projects = {
       summary:
         'Senior-year capstone with a team of six. An AI-assisted web app that helps engineering and procurement teams find viable substitutes for obsolete or discontinued parts: search a part, get candidate replacements to evaluate. Built in Next.js and deployed on Vercel.',
       tags: ['Next.js', 'AI search', 'Team capstone', 'Vercel'],
+      metric: { value: 100, suffix: '%', label: 'test-catalog match' },
       // Live demo omitted on purpose: its sign-in page exposes test credentials.
       links: { repo: 'https://github.com/AadhityaT/capstone-ai-website-app' },
     },
   ],
 }
+
+/* The three-domains exhibit ("one engineer, three modes").
+ * Each: { code, label, tag, blurb, points[], signal } */
+export const domains = [
+  {
+    code: '01',
+    label: 'AI',
+    tag: 'Agents & applied ML',
+    blurb:
+      'LLM tool-use agents, routing, and applied ML. I build the decision loop and the guardrails around it, down to the models underneath.',
+    points: ['Claude / OpenAI tool-use loops', 'Tiered routing + cost control', 'PyTorch / scikit-learn'],
+    signal: 'JARVIS · OS Agent · Cardio BP',
+  },
+  {
+    code: '02',
+    label: 'Automation',
+    tag: 'Systems that run themselves',
+    blurb:
+      'Daemons and pipelines that watch, decide, and act, with fail-closed safety gates so they can be trusted with real authority over a machine.',
+    points: ['OODA / background daemons', 'Fail-closed approval gates', 'Windows internals · Docker'],
+    signal: 'OS Agent · JARVIS · data pipelines',
+  },
+  {
+    code: '03',
+    label: 'Interfaces',
+    tag: 'The surface people touch',
+    blurb:
+      'The UI on top of the models: React front-ends, HUDs, and annotation tools built for the people who actually have to use them.',
+    points: ['React / Vite', 'Design systems + motion', 'Annotation / labeling GUIs'],
+    signal: 'This portfolio · landing pages · AquaTag GUI',
+  },
+]
+
+/* Proof-point numbers for the count-up stat band. All real; see Project_Summaries/.
+ * `decimals` is optional (for the F1 score). */
+export const proof = [
+  { value: 163, suffix: '', label: 'Tests · OS Agent' },
+  { value: 576, suffix: '', label: 'Tests · JARVIS' },
+  { value: 100, suffix: '%', label: 'Catalog match · PROPS' },
+  { value: 0.78, suffix: '', decimals: 2, label: 'F1 · fraud model' },
+  { value: 2, suffix: '', label: 'Papers · 2026' },
+]
 
 // Research & publications. Add an optional `blurb` for a one-line description.
 export const research = {
@@ -155,12 +202,67 @@ export const contact = {
   ],
 }
 
-// Nav links in the status bar (label → section id)
+// Nav links / quick-jump targets in the helmet HUD (label → section id)
 export const nav = [
   { label: 'HOME', id: 'home' },
-  { label: 'ABOUT', id: 'about' },
-  { label: 'SKILLS', id: 'skills' },
+  { label: 'PROFILE', id: 'about' },
+  { label: 'LOADOUT', id: 'loadout' },
   { label: 'PROJECTS', id: 'projects' },
   { label: 'RESEARCH', id: 'research' },
   { label: 'CONTACT', id: 'contact' },
+]
+
+/* HUD target metadata per section. `callsign` is what the helmet frame shows as it
+ * acquires each target; `code` is the targeting index. Order = scroll order. */
+export const targets = [
+  { id: 'home', code: '00', callsign: 'SUBJECT' },
+  { id: 'about', code: '01', callsign: 'PROFILE' },
+  { id: 'loadout', code: '02', callsign: 'LOADOUT' },
+  { id: 'projects', code: '03', callsign: 'MISSION LOG' },
+  { id: 'research', code: '04', callsign: 'RECORDS' },
+  { id: 'contact', code: '05', callsign: 'COMMS' },
+]
+
+/* LOADOUT: pairs each capability (domain) with a few real skill meters pulled from
+ * `skills` above (by name). Editorial grouping for display only — all levels are real. */
+export const loadout = [
+  {
+    code: '01',
+    label: 'AI',
+    tag: 'Agents & applied ML',
+    blurb: domains[0].blurb,
+    meters: [
+      { name: 'LLM agents & tool-use', level: 92 },
+      { name: 'PyTorch / scikit-learn', level: 80 },
+      { name: 'Python', level: 95 },
+      { name: 'LangGraph', level: 70 },
+    ],
+    signal: domains[0].signal,
+  },
+  {
+    code: '02',
+    label: 'Automation',
+    tag: 'Systems that run themselves',
+    blurb: domains[1].blurb,
+    meters: [
+      { name: 'Docker / Home Assistant', level: 75 },
+      { name: 'Bash Scripting', level: 65 },
+      { name: 'REST API', level: 70 },
+      { name: 'Git / GitHub', level: 90 },
+    ],
+    signal: domains[1].signal,
+  },
+  {
+    code: '03',
+    label: 'Interfaces',
+    tag: 'The surface people touch',
+    blurb: domains[2].blurb,
+    meters: [
+      { name: 'React / Vite', level: 85 },
+      { name: 'JavaScript / TypeScript', level: 88 },
+      { name: 'ChromaDB', level: 80 },
+      { name: 'Open CV', level: 75 },
+    ],
+    signal: domains[2].signal,
+  },
 ]
