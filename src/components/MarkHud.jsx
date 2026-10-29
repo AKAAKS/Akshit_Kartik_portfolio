@@ -283,7 +283,7 @@ export default function MarkHud() {
     }
     window.addEventListener('keydown', onKey)
 
-    let onWheel, onTS, onTE, touchY = 0
+    let onWheel, onTS, onTE, touchY = 0, touchBody = null
     if (!reduce) {
       onWheel = (e) => {
         e.preventDefault()
@@ -296,12 +296,23 @@ export default function MarkHud() {
         if (acc > WHEEL_THRESHOLD) go(idx + 1)
         else if (acc < -WHEEL_THRESHOLD) go(idx - 1)
       }
-      onTS = (e) => { touchY = e.touches[0].clientY }
+      onTS = (e) => {
+        touchY = e.touches[0].clientY
+        touchBody = e.target.closest ? e.target.closest('.mk-win-body') : null
+      }
       onTE = (e) => {
         if (cooling) return
         const dy = touchY - e.changedTouches[0].clientY
-        if (dy > TOUCH_THRESHOLD) go(idx + 1)
-        else if (dy < -TOUCH_THRESHOLD) go(idx - 1)
+        if (Math.abs(dy) < TOUCH_THRESHOLD) return
+        // If the swipe is inside a scrollable panel, let it pan until it hits the edge.
+        const b = touchBody
+        if (b && b.scrollHeight > b.clientHeight + 2) {
+          const atTop = b.scrollTop <= 2
+          const atBottom = b.scrollTop + b.clientHeight >= b.scrollHeight - 2
+          if (dy > 0 && !atBottom) return
+          if (dy < 0 && !atTop) return
+        }
+        go(idx + (dy > 0 ? 1 : -1))
       }
       el.addEventListener('wheel', onWheel, { passive: false })
       el.addEventListener('touchstart', onTS, { passive: true })
@@ -326,6 +337,27 @@ export default function MarkHud() {
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [])
+
+  // Cursor crosshair + background parallax (desktop, motion on).
+  useEffect(() => {
+    if (reduce) return
+    const el = scrollerRef.current
+    if (!el) return
+    let raf = 0, mx = 0, my = 0
+    const onMove = (e) => {
+      mx = e.clientX; my = e.clientY
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        el.style.setProperty('--mx', `${mx}px`)
+        el.style.setProperty('--my', `${my}px`)
+        el.style.setProperty('--px', ((mx / window.innerWidth) * 2 - 1).toFixed(3))
+        el.style.setProperty('--py', ((my / window.innerHeight) * 2 - 1).toFixed(3))
+      })
+    }
+    window.addEventListener('mousemove', onMove)
+    return () => { window.removeEventListener('mousemove', onMove); if (raf) cancelAnimationFrame(raf) }
+  }, [reduce])
 
   const renderBody = (b) => {
     switch (b.kind) {
@@ -434,10 +466,32 @@ export default function MarkHud() {
       <div className="mk-bg"><div className="mk-bg-grid" /><div className="mk-bg-sphere" /></div>
       <div className="mk-scan" />
       <div className="mk-ambient" aria-hidden="true">
-        <div className="mk-chip" style={{ top: '18%', left: '7%' }}>EDU · PENN STATE<span className="ln" style={{ width: 70 }} /></div>
-        <div className="mk-chip" style={{ top: '63%', left: '11%' }}>LANG · PY/JS/C++<span className="ln" style={{ width: 54 }} /></div>
-        <div className="mk-chip" style={{ top: '27%', left: '83%' }}>PUBS · 02<span className="ln" style={{ width: 40 }} /></div>
-        <div className="mk-chip" style={{ top: '71%', left: '80%' }}>STATUS · OPEN<span className="ln" style={{ width: 60 }} /></div>
+        <div className="mk-chip" style={{ top: '17%', left: '7%' }}>EDU · PENN STATE<span className="ln" style={{ width: 70 }} /></div>
+        <div className="mk-chip" style={{ top: '44%', left: '9%' }}>LANG · PY/JS/C++<span className="ln" style={{ width: 54 }} /></div>
+        <div className="mk-chip" style={{ top: '70%', left: '11%' }}>STACK · REACT/VITE<span className="ln" style={{ width: 48 }} /></div>
+        <div className="mk-chip" style={{ top: '24%', left: '84%' }}>PUBS · 02<span className="ln" style={{ width: 40 }} /></div>
+        <div className="mk-chip" style={{ top: '48%', left: '86%' }}>STATUS · OPEN<span className="ln" style={{ width: 60 }} /></div>
+        <div className="mk-chip" style={{ top: '73%', left: '82%' }}>LOC · US · REMOTE<span className="ln" style={{ width: 52 }} /></div>
+      </div>
+
+      {/* cursor crosshair (scan field) */}
+      <div className="mk-cursor" aria-hidden="true">
+        <span className="ch-v" /><span className="ch-h" /><span className="ch-ring" />
+      </div>
+
+      {/* side telemetry rails */}
+      <div className="mk-rail left" aria-hidden="true">
+        <div className="rail-ticks" />
+        <span className="rail-cap top">TGT</span>
+        <div className="rail-marker" style={{ top: `${(active / (total - 1)) * 100}%` }} />
+        <span className="rail-cap bot">{String(active + 1).padStart(2, '0')}</span>
+      </div>
+      <div className="mk-rail right" aria-hidden="true">
+        <div className="rail-ticks" />
+        <div className="rail-scan" />
+        <span className="rail-val a">θ 041.2</span>
+        <span className="rail-val b">ρ 0.88</span>
+        <span className="rail-val c">SYS OK</span>
       </div>
 
       {/* helmet frame */}
@@ -446,7 +500,7 @@ export default function MarkHud() {
         <span className="mk-cnr bl" /><span className="mk-cnr br" />
         <div className="mk-top">
           <span className="brand">{profile.codename}</span>
-          <span>MARK HUD</span>
+          <span className="sub-label">MARK HUD</span>
           <nav className="mk-nav">
             {NAV.map((n) => (
               <button
