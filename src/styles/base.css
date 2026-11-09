@@ -20,7 +20,10 @@ body {
 }
 
 /* Anchors land below the sticky module nav instead of under it. */
-html { scroll-padding-top: 58px; }
+html {
+  scroll-padding-top: 58px;
+  scroll-behavior: smooth;
+}
 
 /* ---- headings. Inter, one weight, tight tracking. ---- */
 h1, h2, h3, h4 {
@@ -33,11 +36,6 @@ h1, h2, h3, h4 {
 
 p { margin: 0; }
 
-/* Running prose is capped at a readable measure wherever it appears. */
-.prose { max-width: var(--measure); }
-
-ul.plain { list-style: none; margin: 0; padding: 0; }
-
 /* ---- links ---- */
 a { color: var(--accent); }
 a:hover { color: var(--ink); }
@@ -46,13 +44,6 @@ a:hover { color: var(--ink); }
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-/* ---- shared text atoms ---- */
-.mono {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  color: var(--ink-dim);
 }
 
 .skip {

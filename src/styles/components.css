@@ -211,6 +211,160 @@
   :root { --gut: 16px; }
 }
 
+/* ------------------------------------------------------- module lead + actions */
+.module-lead {
+  color: var(--ink-dim);
+  font-size: var(--t3);
+  margin-top: 8px;
+  max-width: var(--measure);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+/* ------------------------------------------------------------- intro (Node 1) */
+.intro-name { font-size: var(--t5); line-height: 1.05; }
+
+.intro-role {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--accent);
+  margin-top: 10px;
+}
+
+.intro-tagline {
+  font-family: var(--f-head);
+  font-weight: 400;
+  font-size: var(--t4);
+  line-height: 1.45;
+  margin-top: 14px;
+  max-width: 46ch;
+}
+
+/* ------------------------------------------------------------ entry internals */
+.entry-metric {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+
+.entry-note {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+  margin-top: 10px;
+}
+
+.points {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  max-width: var(--measure);
+}
+.points li {
+  position: relative;
+  padding-left: 15px;
+  font-size: var(--t3);
+  margin-top: 5px;
+}
+/* a drawn tick, not a bullet glyph */
+.points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.66em;
+  width: 7px;
+  height: 1px;
+  background: var(--rule-hard);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.tags span {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
+  padding: 3px 7px;
+}
+
+.entry-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* -------------------------------------------------------------- skills (D1-D3) */
+.skill-items { margin: 0; padding: 0; list-style: none; }
+.skill-items li {
+  display: grid;
+  grid-template-columns: minmax(0, 15em) 1fr;
+  gap: 2px 18px;
+  padding: 7px 0;
+  border-top: 1px solid var(--rule);
+}
+.skill-items li:first-child { border-top: 0; padding-top: 0; }
+.skill-items .n {
+  font-family: var(--f-head);
+  font-weight: 500;
+  font-size: var(--t2);
+}
+.skill-items .w {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+}
+
+/* ------------------------------------------------------------ contact (Airlock) */
+.contact-email {
+  font-family: var(--f-head);
+  font-weight: 500;
+  font-size: var(--t4);
+  color: var(--accent);
+  text-decoration: none;
+  word-break: break-word;
+}
+.contact-email:hover { border-bottom: 1px solid var(--accent); }
+
+@media (max-width: 560px) {
+  .skill-items li { grid-template-columns: 1fr; }
+}
+
+/* ----------------------------------------- truss: drag affordance (mouse only) */
+@media (hover: hover) and (pointer: fine) {
+  .track { cursor: grab; }
+  .track.dragging { cursor: grabbing; }
+}
+
+/* ------------------------------------------------- truss: linear fallback
+ * A horizontal scroller is a poor fit for anyone who has asked for less
+ * motion, so the truss becomes an ordinary vertical list. Pure CSS: the
+ * component does not branch. */
+@media (prefers-reduced-motion: reduce) {
+  .track { overflow-x: visible; cursor: auto; }
+  .truss { min-width: 0; }
+  .truss-beam { display: none; }
+  .truss-attachments { display: block; padding-top: 0; }
+  .attach { padding: 0; }
+  .attach-box {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 0;
+    padding: 9px 0;
+  }
+  .attach[data-key='true'] .attach-box { border-top-color: var(--mark); }
+  .track-hint { display: none; }
+}
+
 /* ----------------------------------------------------------------------- print
  * Replaces the separate printable route: the themed page *is* the print page.
  * The truss linearises into a list, since a horizontal scroller cannot paginate.

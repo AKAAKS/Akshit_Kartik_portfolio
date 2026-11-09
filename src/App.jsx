@@ -1,7 +1,24 @@
-/* Phase 1 skeleton. The plan view and module shells are real; the module
- * bodies fill in once the section components land (Phase 3). */
+import { modules } from './data/content.js'
+import PlanNav from './components/PlanNav.jsx'
+import Intro from './components/Intro.jsx'
+import Truss from './components/Truss.jsx'
+import Publications from './components/Publications.jsx'
+import Experience from './components/Experience.jsx'
+import Projects from './components/Projects.jsx'
+import Skills from './components/Skills.jsx'
+import Contact from './components/Contact.jsx'
 
-import { modules as MODULES } from './data/content.js'
+/* The station, in order. `modules` in content.js is the single list that both
+ * the page and the plan view read, so moving a module moves both. */
+const SECTIONS = {
+  intro: Intro,
+  timeline: Truss,
+  publications: Publications,
+  experience: Experience,
+  projects: Projects,
+  skills: Skills,
+  contact: Contact,
+}
 
 export default function App() {
   return (
@@ -9,27 +26,12 @@ export default function App() {
       <a className="skip" href="#intro">Skip to content</a>
 
       <div className="page">
-        <nav className="plan" aria-label="Station modules">
-          {MODULES.map((m) => (
-            <a key={m.id} className="plan-mod" href={`#${m.id}`}>
-              <span className="desig">{m.desig}</span>
-              <span className="name">{m.name}</span>
-            </a>
-          ))}
-        </nav>
-
+        <PlanNav />
         <main>
-          {MODULES.map((m) => (
-            <section key={m.id} id={m.id} className="module" aria-labelledby={`${m.id}-h`}>
-              <div className="module-head">
-                <span className="stamp">{`${m.desig} · ${m.hatch}`}</span>
-                <h2 id={`${m.id}-h`} className="module-title">{m.name}</h2>
-              </div>
-              <div className="module-body">
-                <p className="mono">Phase 1 skeleton — body pending.</p>
-              </div>
-            </section>
-          ))}
+          {modules.map((mod) => {
+            const Section = SECTIONS[mod.id]
+            return Section ? <Section key={mod.id} mod={mod} /> : null
+          })}
         </main>
       </div>
     </>
