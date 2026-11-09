@@ -221,6 +221,7 @@ export default function Centrifuge({ mod }) {
             <div className="rim rim-outer" />
             <div className="rim rim-inner" />
             <div className="rim rim-hub" />
+            <div className="rim rim-bolts" />
 
             {/* The handrails, above and below the gondolas. These are the
               * drag handle: a wide invisible grip band sits on each one, and
@@ -286,6 +287,11 @@ export default function Centrifuge({ mod }) {
           <span className="ring-index" aria-hidden="true" />
         </div>
       </div>
+
+      <p className="ring-callout" aria-hidden="true">
+        <span className="cc-text">CAM · SPIN 2.1 RPM</span>
+        <span className="cc-leader" />
+      </p>
 
       <div className="ring-controls">
         <button

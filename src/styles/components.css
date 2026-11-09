@@ -47,33 +47,66 @@ main { position: relative; z-index: 1; }
   max-width: var(--page);
   margin: 0 auto;
   background-color: var(--paper);
-  background-image: linear-gradient(
-    to right,
-    rgba(15, 17, 19, 0.075) 0%,
-    rgba(15, 17, 19, 0.022) 4%,
-    rgba(15, 17, 19, 0) 16%,
-    rgba(15, 17, 19, 0) 84%,
-    rgba(15, 17, 19, 0.022) 96%,
-    rgba(15, 17, 19, 0.075) 100%
-  );
+  /* Layered, front to back: EVA handrail ticks running the hull's length,
+   * MLI blanket quilting confined to the strips near each edge where the
+   * hull foreshortens, and the cross-axis shading underneath it all. Each
+   * repeating gradient is tiled into a strip by background-size, which is
+   * what keeps the quilting at the edges instead of across the text. */
+  background-image:
+    repeating-linear-gradient(to bottom, var(--rule-hard) 0 8px, transparent 8px 30px),
+    repeating-linear-gradient(to bottom, var(--rule-hard) 0 8px, transparent 8px 30px),
+    repeating-linear-gradient(45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
+    linear-gradient(
+      to right,
+      rgba(15, 17, 19, 0.075) 0%,
+      rgba(15, 17, 19, 0.022) 4%,
+      rgba(15, 17, 19, 0) 16%,
+      rgba(15, 17, 19, 0) 84%,
+      rgba(15, 17, 19, 0.022) 96%,
+      rgba(15, 17, 19, 0.075) 100%
+    );
+  background-size:
+    1px 100%, 1px 100%,
+    68px 100%, 68px 100%,
+    68px 100%, 68px 100%,
+    100% 100%;
+  /* all of this sits inside --hull, so content never covers it and it
+   * never flickers in and out as racks scroll past */
+  background-position:
+    5% 0, 95% 0,
+    left top, left top,
+    right top, right top,
+    0 0;
+  background-repeat: no-repeat;
   border-left: 1px solid var(--rule-hard);
   border-right: 1px solid var(--rule-hard);
 }
 
 /* panel seams. They line up across module and hatch bands alike, which is
  * what makes the tube read as continuous rather than segmented. */
+/* Panel seams, with a fastener every 46px. The element is 3px wide so the
+ * fasteners read as hardware sitting on the seam rather than as a dashed
+ * line; the seam itself is the 1px line down its middle. */
 .tube::before,
 .tube::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 1px;
-  background: var(--rule);
+  width: 3px;
   pointer-events: none;
+  background-image:
+    linear-gradient(var(--rule), var(--rule)),
+    repeating-linear-gradient(to bottom, var(--ink-dim) 0 2px, transparent 2px 46px);
+  background-size: 1px 100%, 3px 100%;
+  background-position: 1px 0, 0 0;
+  background-repeat: no-repeat;
 }
-.tube::before { left: 8%; }
-.tube::after { right: 8%; }
+.tube::before { left: 2.4%; }
+.tube::after { right: 2.4%; }
 
 /* ---- ribs: a ring around a tube seen side-on is an ellipse ---- */
 .rib { display: block; width: 100%; }
@@ -290,7 +323,7 @@ main { position: relative; z-index: 1; }
  * which both modules and hatch bands carry, so the hull is unbroken. */
 .module { position: relative; }
 
-.module-inner { padding: var(--step) var(--gut); }
+.module-inner { padding: var(--step) var(--hull); }
 
 /* outside the pressure hull: no tube at all, the field shows through. The
  * text still needs holding to a measure though — losing the hull is not a
@@ -534,6 +567,13 @@ main { position: relative; z-index: 1; }
   border-color: var(--rule-hard);
   background: rgba(255, 255, 255, 0.5);
 }
+/* the hub's bolt circle. A dashed ring is a bolt circle at this size, and it
+ * costs one element instead of twenty-four. */
+.rim-bolts {
+  width: 118px;
+  height: 118px;
+  border: 1px dashed var(--ink-dim);
+}
 
 /* ---- handrails ----
  * Drawn as tubes, not hairlines: two concentric edges three and a half pixels
@@ -721,7 +761,12 @@ main { position: relative; z-index: 1; }
   margin: calc(var(--gon-d) / -2) 0 0 calc(var(--gon-w) / -2);
 }
 .gon-top {
-  background: var(--paper);
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--rule) 0 1px,
+    transparent 1px 13px
+  );
   transform: rotateX(90deg) translateZ(calc(var(--gon-h) / 2));
 }
 .gon-bot {
@@ -741,10 +786,22 @@ main { position: relative; z-index: 1; }
 .gon-rt { transform: rotateY(90deg) translateZ(calc(var(--gon-w) / 2)); }
 
 .gon-face:hover { border-color: var(--ink); }
-.gondola[data-key="true"] .gon-face { border-color: var(--mark); }
+/* Current and key must not both be a blue border: --mark and --accent are
+ * near-identical at border weight, so "this one is selected" and "this one
+ * is a publication" read as the same thing. Current keeps the border; key
+ * gets a payload tag in the corner instead. */
 .gondola[data-current="true"] .gon-face {
   border-color: var(--accent);
   border-width: 2px;
+}
+.gondola[data-key="true"] .gon-face::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  background: var(--mark);
 }
 
 .gon-face .seg {
@@ -785,6 +842,26 @@ main { position: relative; z-index: 1; }
     translateZ(var(--ring-r))
     translateY(calc(var(--gon-h) / 2 + 15px));
 }
+
+/* a diagram callout, the same device the connectors use */
+.ring-callout {
+  position: absolute;
+  right: 50%;
+  bottom: 54px;
+  margin-right: 300px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  pointer-events: none;
+}
+.ring-callout .cc-text {
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.ring-callout .cc-leader { width: 46px; height: 1px; background: var(--accent); }
 
 /* ---- controls: the ring must be operable without a pointer ---- */
 .ring-controls {
@@ -833,7 +910,7 @@ main { position: relative; z-index: 1; }
 
 /* ---------------------------------------------------------- narrow screens */
 @media (max-width: 760px) {
-  :root { --gut: 16px; }
+  :root { --gut: 16px; --hull: 16px; }
   .tube { border-left: 0; border-right: 0; background-image: none; }
   .tube::before, .tube::after { display: none; }
   .rack { grid-template-columns: 56px 1fr; }
@@ -852,7 +929,7 @@ main { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
   .rail, .rail-grip, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
@@ -875,7 +952,7 @@ main { position: relative; z-index: 1; }
     padding: 9px 0;
     background: none;
   }
-  .gondola[data-key="true"] .gon-face { border-top-color: var(--mark); }
+  .gondola[data-key="true"] .gon-face::after { top: 11px; right: 0; }
   .gondola[data-current="true"] .gon-face { border-width: 1px 0 0; border-top-color: var(--accent); }
 }
 
@@ -884,7 +961,7 @@ main { position: relative; z-index: 1; }
 @media (max-width: 860px) {
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
   .rail, .rail-grip, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
@@ -907,7 +984,7 @@ main { position: relative; z-index: 1; }
     padding: 9px 0;
     background: none;
   }
-  .gondola[data-key="true"] .gon-face { border-top-color: var(--mark); }
+  .gondola[data-key="true"] .gon-face::after { top: 11px; right: 0; }
   .gondola[data-current="true"] .gon-face { border-width: 1px 0 0; border-top-color: var(--accent); }
 }
 
@@ -921,7 +998,7 @@ main { position: relative; z-index: 1; }
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
   .station, .hatch, .cap, .spacefield, .skip,
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
   .rail, .rail-grip, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
 
@@ -932,6 +1009,7 @@ main { position: relative; z-index: 1; }
     background-image: none;
     border: 0;
   }
+  .connector { display: none; }
   .tube::before, .tube::after { display: none; }
   .placard { border-top: 1.5pt solid #000; }
 

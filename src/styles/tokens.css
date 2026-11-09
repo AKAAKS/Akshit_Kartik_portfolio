@@ -51,6 +51,8 @@
   --page: 1060px;          /* outer page width */
   --measure: 62ch;         /* max line length for running prose */
   --gut: 22px;             /* inner padding of a panel */
+  --hull: 72px;            /* clear margin inside the hull, where the structural
+                              detail lives: racks are mounted inboard of it */
   --step: 26px;            /* vertical rhythm unit */
 
   /* ---- fixed chrome ---- */
