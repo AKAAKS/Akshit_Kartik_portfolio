@@ -468,10 +468,12 @@ main { position: relative; z-index: 1; }
 }
 
 /* ---- handrails ----
- * Two more discs in the ring's plane, raised and lowered off the gondolas.
- * Visually they are hairlines; the grab target is a separate 24px band
- * straddling each one, because a 1px circle in perspective is impossible to
- * hit. The visible rail takes no pointer events so the two never fight. */
+ * Drawn as tubes, not hairlines: two concentric edges three and a half pixels
+ * apart read as a pipe seen from the side, which is the same trick as drawing
+ * a cylinder with two parallel lines. Posts tie the rails together at every
+ * bay. The grab target is a separate 24px band straddling each rail, because
+ * a pipe that thin in perspective is impossible to hit; the visible rails take
+ * no pointer events so the two never fight. */
 .rail,
 .rail-grip {
   position: absolute;
@@ -482,14 +484,28 @@ main { position: relative; z-index: 1; }
 }
 
 .rail {
-  width: calc(var(--ring-r) * 2);
-  height: calc(var(--ring-r) * 2);
-  margin: calc(var(--ring-r) * -1) 0 0 calc(var(--ring-r) * -1);
+  width: calc(var(--rr) * 2);
+  height: calc(var(--rr) * 2);
+  margin: calc(var(--rr) * -1) 0 0 calc(var(--rr) * -1);
   border: 1px solid var(--rule-hard);
   pointer-events: none;
 }
+.rail-o { --rr: calc(var(--ring-r) + 3.5px); border-color: var(--ink-dim); }
+.rail-i { --rr: calc(var(--ring-r) - 3.5px); }
+
 .rail-top { transform: translateY(calc(var(--rail-y) * -1)) rotateX(90deg); }
 .rail-bot { transform: translateY(var(--rail-y)) rotateX(90deg); }
+
+.stanchion {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: calc(var(--rail-y) * 2);
+  margin-top: calc(var(--rail-y) * -1);
+  background: var(--rule-hard);
+  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
+}
 
 /* outer radius r+12, 24px band, so the grip straddles the rail it serves */
 .rail-grip {
@@ -538,6 +554,27 @@ main { position: relative; z-index: 1; }
   border-left: 1px solid var(--rule-hard);
   border-right: 1px solid var(--rule-hard);
 }
+/* banding, so the spin axis reads as machined hardware rather than a bar */
+.shaft::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--rule) 0 1px,
+    transparent 1px 17px
+  );
+}
+.shaft::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46%;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.55;
+}
 .shaft-cap {
   position: absolute;
   left: 50%;
@@ -550,6 +587,7 @@ main { position: relative; z-index: 1; }
   background: var(--card);
   transform: rotateX(90deg);
 }
+.shaft-cap-lo { margin-top: 30px; border-color: var(--rule); }
 
 /* ---- gondolas: actual boxes on the rim ----
  * Six faces, each shaded for its orientation, so a gondola is a solid object
@@ -747,7 +785,7 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
-  .rail, .rail-grip,
+  .rail, .rail-grip, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
@@ -779,7 +817,7 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
-  .rail, .rail-grip,
+  .rail, .rail-grip, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
@@ -816,7 +854,7 @@ main { position: relative; z-index: 1; }
 
   .station, .hatch, .cap, .spacefield, .skip,
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
-  .rail, .rail-grip,
+  .rail, .rail-grip, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
 
   .module, .module--eva { background: none; }

@@ -100,10 +100,10 @@ export default function Centrifuge({ mod }) {
    * every move and the release are delivered here no matter what the pointer
    * is over - and a buttons check recovers if a release is still missed.
    *
-   * A press that lands on a gondola face never starts a drag, so a gondola
-   * click is always just a click and can never be a mis-aimed spin. The rails
-   * above and below the boxes are the handle, which is also why they are the
-   * only part of the ring with a grab cursor. */
+   * Only the rails start a drag. A press anywhere else - a gondola, the
+   * machinery, empty space - stays a plain click, so a gondola can never be
+   * a mis-aimed spin. The rails are correspondingly the only part of the ring
+   * with a grab cursor. */
   useEffect(() => {
     const stage = stageRef.current
     if (!stage) return
@@ -125,8 +125,9 @@ export default function Centrifuge({ mod }) {
 
     const onDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return
-      // a press on a gondola face is a click, never a drag
-      if (e.target.closest && e.target.closest('.gon-face')) return
+      // The rails are the only handle. Everything else on the ring is either
+      // a link or scenery, and a press anywhere else must stay a plain click.
+      if (!(e.target.closest && e.target.closest('.rail-grip'))) return
       down = true
       moved = false
       startX = e.clientX
@@ -224,8 +225,16 @@ export default function Centrifuge({ mod }) {
             {/* The handrails, above and below the gondolas. These are the
               * drag handle: a wide invisible grip band sits on each one, and
               * they are the only part of the ring with a grab cursor. */}
-            <div className="rail rail-top" />
-            <div className="rail rail-bot" />
+            <div className="rail rail-top rail-o" />
+            <div className="rail rail-top rail-i" />
+            <div className="rail rail-bot rail-o" />
+            <div className="rail rail-bot rail-i" />
+
+            {/* posts tying the two rails together, one per gondola bay */}
+            {timeline.map((n, i) => (
+              <div className="stanchion" key={`p-${n.seg}`} style={{ '--a': i * STEP }} />
+            ))}
+
             <div className="rail-grip rail-grip-top" />
             <div className="rail-grip rail-grip-bot" />
 
@@ -235,6 +244,7 @@ export default function Centrifuge({ mod }) {
 
             <div className="shaft" />
             <div className="shaft-cap" />
+            <div className="shaft-cap shaft-cap-lo" />
 
             <ol className="gondolas">
               {timeline.map((n, i) => (
