@@ -5,7 +5,7 @@ import { Module } from './Module.jsx'
 export default function Contact({ mod }) {
   return (
     <Module mod={mod} lead={contact.blurb}>
-      <p style={{ marginTop: '18px' }}>
+      <p>
         <a className="contact-email" href={`mailto:${contact.email}`}>
           {contact.email}
         </a>

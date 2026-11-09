@@ -215,7 +215,7 @@
 .module-lead {
   color: var(--ink-dim);
   font-size: var(--t3);
-  margin-top: 8px;
+  margin: 0 0 16px;
   max-width: var(--measure);
 }
 
@@ -370,9 +370,13 @@
  * The truss linearises into a list, since a horizontal scroller cannot paginate.
  */
 @media print {
-  body { background: #fff; }
+  @page { margin: 16mm; }
+
+  /* 15px body is sized for a screen at arm's length, not for paper. */
+  body { background: #fff; font-size: 11pt; line-height: 1.45; }
+
   .page { max-width: none; border: 0; min-height: 0; }
-  .plan, .track-hint { display: none; }
+  .plan, .track-hint, .skip { display: none; }
 
   .track { overflow: visible; }
   .truss { min-width: 0; padding: 0; }
@@ -383,13 +387,21 @@
 
   .rack { break-inside: avoid; background: none; }
   .rack-bay { background: none; }
-  .module { break-inside: avoid; }
 
-  /* a reader on paper cannot follow a link, so print its target */
-  a[href^='http']::after {
+  /* NOT `break-inside: avoid` on .module — Projects and Experience are both
+   * taller than a page, and asking the engine to keep an over-tall block
+   * whole either gets ignored or strands a blank page before it. Keep the
+   * racks intact instead, and just stop a heading dangling at a page foot. */
+  .module { break-inside: auto; }
+  .module-head { break-after: avoid; }
+  .entry-title { break-after: avoid; }
+
+  /* A reader on paper cannot follow a link, so print its target. Skipped for
+   * the contact links, whose visible text is already the address. */
+  a[href^='http']:not(.ref[href*='linkedin']):not(.ref[href*='github.com/AKAAKS'])::after {
     content: ' (' attr(href) ')';
     font-family: var(--f-mono);
-    font-size: 9px;
+    font-size: 8pt;
     word-break: break-all;
   }
 }

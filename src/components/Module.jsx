@@ -2,19 +2,17 @@
  * (one entry inside it, in a numbered bay). Every section is built from these,
  * so spacing and rule weight stay consistent without being restated. */
 
-export function Module({ mod, lead, children, bleed }) {
+export function Module({ mod, lead, children }) {
   return (
     <section id={mod.id} className="module" aria-labelledby={`${mod.id}-h`}>
       <div className="module-head">
         <span className="stamp">{mod.desig} · {mod.hatch}</span>
         <h2 id={`${mod.id}-h`} className="module-title">{mod.name}</h2>
       </div>
-      {lead && (
-        <div className="module-body" style={bleed ? { paddingBottom: 0 } : undefined}>
-          <p className="module-lead">{lead}</p>
-        </div>
-      )}
-      {bleed ? children : <div className="module-body">{children}</div>}
+      <div className="module-body">
+        {lead && <p className="module-lead">{lead}</p>}
+        {children}
+      </div>
     </section>
   )
 }

@@ -72,13 +72,18 @@ export default function Truss({ mod }) {
         <h2 id={`${mod.id}-h`} className="module-title">{mod.name}</h2>
       </div>
       <div className="module-body" style={{ paddingBottom: 0 }}>
-        <p className="module-lead">
+        <p className="module-lead" style={{ marginBottom: 0 }}>
           Roles, publications and projects in order, January 2024 to now. Each node
           links to its detail.
         </p>
       </div>
 
-      <div className="track" ref={trackRef}>
+      <div
+        className="track"
+        ref={trackRef}
+        role="region"
+        aria-label="Career timeline, scrolls horizontally"
+      >
         <div className="truss">
           <div className="truss-beam" aria-hidden="true">
             {timeline.map((n) => <i key={n.seg} />)}
