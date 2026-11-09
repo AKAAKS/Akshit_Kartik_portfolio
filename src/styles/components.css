@@ -415,10 +415,12 @@ main { position: relative; z-index: 1; }
   --gon-w: 180px;
   --gon-h: 86px;
   --gon-d: 48px;
+  --rail-y: 62px;        /* how far the rails sit above and below the boxes */
   --tilt: 16deg;
   position: relative;
   height: 520px;
   overflow-x: clip;        /* safe: perspective flattens nothing, only preserve-3d would */
+  user-select: none;
   perspective: 2400px;
   perspective-origin: 50% 44%;
 }
@@ -464,6 +466,41 @@ main { position: relative; z-index: 1; }
   border-color: var(--rule-hard);
   background: rgba(255, 255, 255, 0.5);
 }
+
+/* ---- handrails ----
+ * Two more discs in the ring's plane, raised and lowered off the gondolas.
+ * Visually they are hairlines; the grab target is a separate 24px band
+ * straddling each one, because a 1px circle in perspective is impossible to
+ * hit. The visible rail takes no pointer events so the two never fight. */
+.rail,
+.rail-grip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.rail {
+  width: calc(var(--ring-r) * 2);
+  height: calc(var(--ring-r) * 2);
+  margin: calc(var(--ring-r) * -1) 0 0 calc(var(--ring-r) * -1);
+  border: 1px solid var(--rule-hard);
+  pointer-events: none;
+}
+.rail-top { transform: translateY(calc(var(--rail-y) * -1)) rotateX(90deg); }
+.rail-bot { transform: translateY(var(--rail-y)) rotateX(90deg); }
+
+/* outer radius r+12, 24px band, so the grip straddles the rail it serves */
+.rail-grip {
+  width: calc(var(--ring-r) * 2 + 24px);
+  height: calc(var(--ring-r) * 2 + 24px);
+  margin: calc((var(--ring-r) + 12px) * -1) 0 0 calc((var(--ring-r) + 12px) * -1);
+  border: 24px solid transparent;
+  cursor: grab;
+}
+.rail-grip-top { transform: translateY(calc(var(--rail-y) * -1)) rotateX(90deg); }
+.rail-grip-bot { transform: translateY(var(--rail-y)) rotateX(90deg); }
 
 /* spokes. A bar lying along +X, pushed out to mid-radius and turned to point
  * radially, so it runs from the hub to the rim in the ring's own plane. */
@@ -630,13 +667,17 @@ main { position: relative; z-index: 1; }
 .ring-index {
   position: absolute;
   left: 50%;
-  bottom: 44px;
+  top: 50%;
   width: 0;
   height: 0;
-  margin-left: -6px;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 8px solid var(--accent);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 9px solid var(--accent);
+  /* out to the front of the ring, then down clear of the gondola */
+  transform:
+    translateX(-7px)
+    translateZ(var(--ring-r))
+    translateY(calc(var(--gon-h) / 2 + 15px));
 }
 
 /* ---- controls: the ring must be operable without a pointer ---- */
@@ -677,8 +718,11 @@ main { position: relative; z-index: 1; }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .ring-stage { cursor: grab; }
-  .ring-stage.spinning { cursor: grabbing; }
+  /* Only the rails offer a grab. The gondolas are links and keep the
+   * pointer cursor, which is the whole point: what you can drag and what
+   * you can click are told apart before you press, not after. */
+  .ring-stage.spinning,
+  .ring-stage.spinning .rail-grip { cursor: grabbing; }
 }
 
 /* ---------------------------------------------------------- narrow screens */
@@ -700,9 +744,10 @@ main { position: relative; z-index: 1; }
  * it becomes an ordinary vertical list. Pure CSS: the component does not
  * branch, it just stops being a ring. */
 @media (prefers-reduced-motion: reduce) {
-  .ring-stage { height: auto; perspective: none; cursor: auto; padding: 0 var(--gut); }
+  .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .rail, .rail-grip,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
@@ -731,9 +776,10 @@ main { position: relative; z-index: 1; }
 /* A 600px ring does not fit a phone, and shrinking it makes the gondolas
  * unreadable, so below the breakpoint it becomes the same plain list. */
 @media (max-width: 860px) {
-  .ring-stage { height: auto; perspective: none; cursor: auto; padding: 0 var(--gut); }
+  .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .rail, .rail-grip,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
@@ -770,6 +816,7 @@ main { position: relative; z-index: 1; }
 
   .station, .hatch, .cap, .spacefield, .skip,
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .rail, .rail-grip,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
 
   .module, .module--eva { background: none; }

@@ -91,7 +91,19 @@ export default function Centrifuge({ mod }) {
     }
   }, [])
 
-  /* ---- drag to spin ---- */
+  /* ---- hold and drag to spin ----
+   *
+   * Press, hold, move, release. It used to latch on instead: dragging across
+   * a gondola started the browser's own link-drag, which swallowed the
+   * pointerup, so `down` stayed true and the ring kept following the mouse
+   * with no button held. Pointer capture fixes that properly - once captured,
+   * every move and the release are delivered here no matter what the pointer
+   * is over - and a buttons check recovers if a release is still missed.
+   *
+   * A press that lands on a gondola face never starts a drag, so a gondola
+   * click is always just a click and can never be a mis-aimed spin. The rails
+   * above and below the boxes are the handle, which is also why they are the
+   * only part of the ring with a grab cursor. */
   useEffect(() => {
     const stage = stageRef.current
     if (!stage) return
@@ -100,17 +112,35 @@ export default function Centrifuge({ mod }) {
     let moved = false
     let startX = 0
     let startT = 0
+    let pid = null
+
+    const release = () => {
+      if (pid !== null && stage.hasPointerCapture?.(pid)) {
+        stage.releasePointerCapture(pid)
+      }
+      pid = null
+      down = false
+      stage.classList.remove('spinning')
+    }
 
     const onDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return
+      // a press on a gondola face is a click, never a drag
+      if (e.target.closest && e.target.closest('.gon-face')) return
       down = true
       moved = false
       startX = e.clientX
       startT = theta.current
+      pid = e.pointerId
+      stage.setPointerCapture?.(e.pointerId)
+      // stops text selection and the native link-drag
+      e.preventDefault()
     }
 
     const onMove = (e) => {
       if (!down) return
+      // the button was let go somewhere we never heard about
+      if (e.pointerType === 'mouse' && e.buttons === 0) { release(); return }
       const dx = e.clientX - startX
       if (!moved && Math.abs(dx) > 4) {
         moved = true
@@ -122,12 +152,9 @@ export default function Centrifuge({ mod }) {
       }
     }
 
-    const onUp = () => {
-      down = false
-      stage.classList.remove('spinning')
-    }
+    const onUp = () => release()
 
-    // a drag that ends on a gondola must not also follow its link
+    // belt and braces: a drag that happens to end on a link must not follow it
     const onClick = (e) => {
       if (!moved) return
       e.preventDefault()
@@ -152,6 +179,8 @@ export default function Centrifuge({ mod }) {
 
     stage.addEventListener('pointerdown', onDown)
     stage.addEventListener('pointermove', onMove)
+    stage.addEventListener('pointerup', onUp)
+    stage.addEventListener('pointercancel', onUp)
     window.addEventListener('pointerup', onUp)
     stage.addEventListener('click', onClick, true)
     stage.addEventListener('wheel', onWheel, { passive: false })
@@ -159,6 +188,8 @@ export default function Centrifuge({ mod }) {
     return () => {
       stage.removeEventListener('pointerdown', onDown)
       stage.removeEventListener('pointermove', onMove)
+      stage.removeEventListener('pointerup', onUp)
+      stage.removeEventListener('pointercancel', onUp)
       window.removeEventListener('pointerup', onUp)
       stage.removeEventListener('click', onClick, true)
       stage.removeEventListener('wheel', onWheel)
@@ -190,6 +221,14 @@ export default function Centrifuge({ mod }) {
             <div className="rim rim-inner" />
             <div className="rim rim-hub" />
 
+            {/* The handrails, above and below the gondolas. These are the
+              * drag handle: a wide invisible grip band sits on each one, and
+              * they are the only part of the ring with a grab cursor. */}
+            <div className="rail rail-top" />
+            <div className="rail rail-bot" />
+            <div className="rail-grip rail-grip-top" />
+            <div className="rail-grip rail-grip-bot" />
+
             {timeline.map((n, i) => (
               <div className="strut" key={`s-${n.seg}`} style={{ '--a': i * STEP }} />
             ))}
@@ -208,7 +247,12 @@ export default function Centrifuge({ mod }) {
                 >
                   {/* six faces, so it is a box on the ring rather than a flat
                     * card floating in a 3D scene */}
-                  <a className="gon gon-face" href={n.href} onFocus={() => rotateTo(i)}>
+                  <a
+                    className="gon gon-face"
+                    href={n.href}
+                    draggable={false}
+                    onFocus={() => rotateTo(i)}
+                  >
                     <span className="seg">{n.seg}</span>
                     <span className="w">{n.title}</span>
                     <span className="d">{n.date}</span>
@@ -222,10 +266,15 @@ export default function Centrifuge({ mod }) {
               ))}
             </ol>
           </div>
-        </div>
 
-        {/* the read position, fixed while the ring turns past it */}
-        <span className="ring-index" aria-hidden="true" />
+          {/* The read position. It lives in the tilted space but outside the
+            * rotating ring, so it holds still at the front while the ring
+            * turns past it - and being in the 3D scene it tracks the camera
+            * angle instead of drifting away from the gondola as the tilt
+            * changes, which is what it did when it was positioned in 2D
+            * against the stage. */}
+          <span className="ring-index" aria-hidden="true" />
+        </div>
       </div>
 
       <div className="ring-controls">
