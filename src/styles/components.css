@@ -5,7 +5,7 @@
  *  scrolling. Modules are full-bleed so the hull curvature reads out in the
  *  gutters; content is held to a measure down the middle. Between each pair of
  *  modules is a hatch: a bulkhead arc, a hatch ring, and the designator plate
- *  of the module you are entering. The truss is the one place you are outside.
+ *  of the module you are entering. The centrifuge is the one place you are outside.
  *
  *  Structure is carried by hairline rules. No shadows, no glow, no fills
  *  beyond --fill. Square corners everywhere EXCEPT the station-map chips,
@@ -86,7 +86,7 @@ main { position: relative; z-index: 1; }
 
 /* =========================================================== station map (nav)
  * The station seen side-on. Cylinders joined by hatch connectors, with the
- * truss hanging off the chain because it is not pressurized. A marker travels
+ * centrifuge hanging off the chain because it is not pressurized. A marker travels
  * along as you scroll, so this is a map of position, not a row of tabs. */
 .station {
   position: sticky;
@@ -156,7 +156,7 @@ main { position: relative; z-index: 1; }
 .station-mod[data-active='true'] .sm-name,
 .station-mod[data-active='true'] .sm-desig { color: var(--accent); }
 
-/* the truss hangs off the chain rather than sitting in it */
+/* the centrifuge hangs off the chain rather than sitting in it */
 .station-mod--eva {
   position: relative;
   transform: translateY(-9px);
@@ -227,8 +227,7 @@ main { position: relative; z-index: 1; }
  * text still needs holding to a measure though — losing the hull is not a
  * reason to let a line run the full width of a monitor. */
 .module--eva { background: transparent; }
-.module--eva .module-inner,
-.module--eva .track-hint { max-width: var(--page); margin: 0 auto; }
+.module--eva .module-inner { max-width: var(--page); margin: 0 auto; }
 
 /* ---- the designator placard: what a real hatch carries ---- */
 .placard { border-top: 2px solid var(--ink); padding-top: 9px; }
@@ -391,55 +390,161 @@ main { position: relative; z-index: 1; }
 }
 .contact-email:hover { border-bottom: 1px solid var(--accent); }
 
-/* ============================================ truss (external, horizontal) */
-.track { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
-.track::-webkit-scrollbar { height: 7px; }
-.track::-webkit-scrollbar-thumb { background: var(--rule-hard); }
-.track::-webkit-scrollbar-track { background: var(--fill); }
-
-.truss { min-width: calc(var(--node-w) * 11); padding: 20px var(--gut) 4px; }
-
-.truss-beam {
-  height: 10px;
-  border-top: 1px solid var(--rule-hard);
-  border-bottom: 1px solid var(--rule);
+/* ===================================== centrifuge (external, rotating ring)
+ * Rotation is carried by one custom property, --theta, set on .ring. Every
+ * gondola derives its own counter-rotation from it in CSS, so a frame costs
+ * one style write regardless of how many nodes there are - and the fallbacks
+ * below can flatten the whole mechanism without the component knowing. */
+.ring-wrap {
+  position: relative;
+  height: 724px;
+  max-width: var(--page);
+  margin: 0 auto;
   display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.truss-beam i { flex: 0 0 var(--node-w); border-right: 1px solid var(--rule); }
 
-.truss-attachments { display: flex; padding-top: 10px; margin: 0; list-style: none; }
-.attach { flex: 0 0 var(--node-w); padding-right: 12px; }
-.attach .seg { font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-dim); }
+.ring {
+  position: relative;
+  width: 680px;
+  height: 680px;
+  --theta: 0;
+  transform: rotate(calc(1deg * var(--theta)));
+  touch-action: pan-y;        /* vertical touch still scrolls the page */
+}
+
+.ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ring-svg .rim { fill: none; stroke: var(--rule-hard); stroke-width: 1; }
+.ring-svg .rim-inner { stroke: var(--rule); }
+.ring-svg .strut { stroke: var(--rule); stroke-width: 1; }
+.ring-svg .rim-tick { stroke: var(--rule-hard); stroke-width: 1; }
+.ring-svg .hub { fill: var(--card); stroke: var(--rule-hard); stroke-width: 1; }
+.ring-svg .hub-core { fill: none; stroke: var(--rule); }
+
+/* ---- gondolas ---- */
+.spokes { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+
+.spoke {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 152px;
+  margin-left: -76px;
+  margin-top: -43px;
+  transform: rotate(calc(1deg * var(--a))) translateY(-286px);
+}
+
+/* Upright whatever the ring is doing - ferris-wheel gondolas, because radial
+ * text cannot be read. The angle is the ring's own rotation plus the spoke's
+ * fixed position, negated. */
+.spoke .attach-box {
+  transform: rotate(calc(-1deg * (var(--a) + var(--theta))));
+}
 
 .attach-box {
   display: block;
   border: 1px solid var(--rule);
   background: var(--card);
-  padding: 9px 10px;
-  margin-top: 6px;
+  padding: 8px 10px;
   text-decoration: none;
   color: inherit;
 }
 .attach-box:hover { border-color: var(--rule-hard); }
-.attach[data-key='true'] .attach-box { border-color: var(--mark); }
+.spoke[data-key="true"] .attach-box { border-color: var(--mark); }
+.spoke[data-current="true"] .attach-box {
+  border-color: var(--accent);
+  background: var(--paper);
+}
+
+.attach-box .seg {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-dim);
+}
 .attach-box .w {
+  display: block;
   font-family: var(--f-head);
   font-weight: 500;
   font-size: var(--t2);
-  line-height: 1.35;
+  line-height: 1.3;
+  margin-top: 3px;
 }
 .attach-box .d {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  color: var(--ink-dim);
+  margin-top: 4px;
+}
+
+/* ---- the read position, fixed while the ring turns under it ---- */
+.ring-index {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--accent);
+  z-index: 2;
+}
+
+/* ---- hub readout ---- */
+.ring-read {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 210px;
+  text-align: center;
+  pointer-events: none;
+}
+.rr-date { font-family: var(--f-mono); font-size: var(--t1); color: var(--accent); }
+.rr-title {
+  font-family: var(--f-head);
+  font-weight: 500;
+  font-size: var(--t3);
+  line-height: 1.3;
+  margin-top: 5px;
+}
+.rr-detail {
   font-family: var(--f-mono);
   font-size: 9.5px;
   color: var(--ink-dim);
   margin-top: 5px;
 }
 
-.track-hint {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
+/* ---- controls: the ring must be operable without a pointer ---- */
+.ring-controls {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 20px;
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 4px var(--gut) var(--step);
+}
+.ring-controls button {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--rule-hard);
+  cursor: pointer;
+  padding: 0;
+}
+.ring-controls button:disabled {
   color: var(--ink-dim);
-  padding: 8px var(--gut) var(--step);
+  border-bottom-color: var(--rule);
+  cursor: default;
+}
+.ring-count { font-family: var(--f-mono); font-size: var(--t1); color: var(--ink-dim); }
+
+@media (hover: hover) and (pointer: fine) {
+  .ring { cursor: grab; }
+  .ring.spinning { cursor: grabbing; }
 }
 
 /* ---------------------------------------------------------- narrow screens */
@@ -449,32 +554,41 @@ main { position: relative; z-index: 1; }
   .tube::before, .tube::after { display: none; }
   .rack { grid-template-columns: 56px 1fr; }
   .station-mod { flex: 0 0 auto; }
-  .hatch { padding-top: 38px; }
+  .hatch-inner { padding-top: 16px; }
 }
 
 @media (max-width: 560px) {
   .skill-items li { grid-template-columns: 1fr; }
 }
 
-/* ------------------------------------- truss: drag affordance (mouse only) */
-@media (hover: hover) and (pointer: fine) {
-  .track { cursor: grab; }
-  .track.dragging { cursor: grabbing; }
+/* ----------------------------------------------- centrifuge: linear fallback
+ * A rotating ring is a poor fit for anyone who has asked for less motion, so
+ * it becomes an ordinary vertical list. Pure CSS: the component does not
+ * branch, it just stops being a ring. */
+@media (prefers-reduced-motion: reduce) {
+  .ring-wrap, .ring, .spoke, .spoke .attach-box { transform: none; }
+  .ring-wrap { height: auto; display: block; padding: 0 var(--gut); }
+  .ring { width: auto; height: auto; cursor: auto; touch-action: auto; }
+  .ring-svg, .ring-index, .ring-read, .ring-controls { display: none; }
+  .spokes { position: static; }
+  .spoke { position: static; width: auto; margin: 0; }
+  .spoke .attach-box { border: 0; border-top: 1px solid var(--rule); padding: 9px 0; }
+  .spoke[data-key="true"] .attach-box { border-top-color: var(--mark); }
+  .spoke[data-current="true"] .attach-box { background: none; border-top-color: var(--accent); }
 }
 
-/* --------------------------------------------------- truss: linear fallback
- * A horizontal scroller is a poor fit for anyone who has asked for less
- * motion, so the truss becomes an ordinary vertical list. Pure CSS: the
- * component does not branch. */
-@media (prefers-reduced-motion: reduce) {
-  .track { overflow-x: visible; cursor: auto; }
-  .truss { min-width: 0; }
-  .truss-beam { display: none; }
-  .truss-attachments { display: block; padding-top: 0; }
-  .attach { padding: 0; }
-  .attach-box { border: 0; border-top: 1px solid var(--rule); margin-top: 0; padding: 9px 0; }
-  .attach[data-key='true'] .attach-box { border-top-color: var(--mark); }
-  .track-hint { display: none; }
+/* A 680px ring does not fit a phone, and shrinking it makes the gondolas
+ * unreadable, so below the breakpoint it becomes the same plain list. */
+@media (max-width: 860px) {
+  .ring-wrap, .ring, .spoke, .spoke .attach-box { transform: none; }
+  .ring-wrap { height: auto; display: block; padding: 0 var(--gut); }
+  .ring { width: auto; height: auto; cursor: auto; touch-action: auto; }
+  .ring-svg, .ring-index, .ring-read, .ring-controls { display: none; }
+  .spokes { position: static; }
+  .spoke { position: static; width: auto; margin: 0; }
+  .spoke .attach-box { border: 0; border-top: 1px solid var(--rule); padding: 9px 0; }
+  .spoke[data-key="true"] .attach-box { border-top-color: var(--mark); }
+  .spoke[data-current="true"] .attach-box { background: none; border-top-color: var(--accent); }
 }
 
 /* ------------------------------------------------------------------- print
@@ -486,7 +600,8 @@ main { position: relative; z-index: 1; }
   /* 15px body is sized for a screen at arm's length, not for paper. */
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
-  .station, .hatch, .cap, .spacefield, .track-hint, .skip { display: none; }
+  .station, .hatch, .cap, .spacefield, .skip,
+  .ring-svg, .ring-index, .ring-read, .ring-controls { display: none; }
 
   .module, .module--eva { background: none; }
   .module-inner { padding: 0; margin-top: 10pt; }
@@ -498,12 +613,12 @@ main { position: relative; z-index: 1; }
   .tube::before, .tube::after { display: none; }
   .placard { border-top: 1.5pt solid #000; }
 
-  .track { overflow: visible; }
-  .truss { min-width: 0; padding: 0; }
-  .truss-beam { display: none; }
-  .truss-attachments { display: block; padding: 0; }
-  .attach { padding: 0; break-inside: avoid; }
-  .attach-box { border: 0; border-top: 1px solid #ccc; margin: 0; padding: 6px 0; }
+  .ring-wrap, .ring, .spoke, .spoke .attach-box { transform: none; }
+  .ring-wrap { height: auto; display: block; }
+  .ring { width: auto; height: auto; }
+  .spokes { position: static; }
+  .spoke { position: static; width: auto; margin: 0; break-inside: avoid; }
+  .spoke .attach-box { border: 0; border-top: 1px solid #ccc; padding: 6px 0; background: none; }
 
   .rack { break-inside: avoid; background: none; }
   .rack-bay { background: none; }

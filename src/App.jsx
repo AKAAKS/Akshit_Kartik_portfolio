@@ -4,7 +4,7 @@ import StationMap from './components/StationMap.jsx'
 import Hatch from './components/Hatch.jsx'
 import { TubeCap } from './components/Tube.jsx'
 import Intro from './components/Intro.jsx'
-import Truss from './components/Truss.jsx'
+import Centrifuge from './components/Centrifuge.jsx'
 import Publications from './components/Publications.jsx'
 import Experience from './components/Experience.jsx'
 import Projects from './components/Projects.jsx'
@@ -17,10 +17,10 @@ import Contact from './components/Contact.jsx'
  * the hatch plates all read, so moving a module moves every one of them. The
  * tube is continuous: a hatch band carries the same hull as the modules either
  * side of it, with a rib at each join. End caps close it top and bottom. The
- * truss breaks out of the tube entirely, because it is outside. */
+ * centrifuge breaks out of the tube entirely, because it is outside. */
 const SECTIONS = {
   intro: Intro,
-  timeline: Truss,
+  timeline: Centrifuge,
   publications: Publications,
   experience: Experience,
   projects: Projects,

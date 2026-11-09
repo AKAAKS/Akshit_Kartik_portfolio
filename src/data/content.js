@@ -25,7 +25,7 @@ export const profile = {
  * outside the pressurized volume — the truss is not a module you walk into. */
 export const modules = [
   { id: 'intro', desig: 'Node 1', hatch: 'Hatch 01', name: 'Intro', element: 'NOD1' },
-  { id: 'timeline', desig: 'Truss', hatch: 'EVA', name: 'Timeline', element: 'ITS', external: true },
+  { id: 'timeline', desig: 'Centrifuge', hatch: 'EVA', name: 'Timeline', element: 'CAM', external: true },
   { id: 'publications', desig: 'Lab B', hatch: 'Hatch 03', name: 'Publications', element: 'LAB2' },
   { id: 'experience', desig: 'Node 2', hatch: 'Hatch 04', name: 'Experience', element: 'NOD2' },
   { id: 'projects', desig: 'Lab C', hatch: 'Hatch 05', name: 'Projects', element: 'LAB3' },
