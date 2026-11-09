@@ -21,7 +21,7 @@ body {
 
 /* Anchors land below the sticky module nav instead of under it. */
 html {
-  scroll-padding-top: 58px;
+  scroll-padding-top: var(--nav-h);
   scroll-behavior: smooth;
 }
 

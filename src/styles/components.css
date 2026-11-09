@@ -1,112 +1,255 @@
 /* =============================================================================
- *  COMPONENTS — the ISS-modular structure, "Bay grid" density.
+ *  COMPONENTS — the station.
  *
- *  The page is a station. The plan view across the top is both a cutaway and
- *  the navigation. Inside a module, each entry is a rack in a numbered bay.
- *  The career timeline is the truss: a beam with items at attach points.
+ *  The page is a linear chain of pressurized cylinders you travel through by
+ *  scrolling. Modules are full-bleed so the hull curvature reads out in the
+ *  gutters; content is held to a measure down the middle. Between each pair of
+ *  modules is a hatch: a bulkhead arc, a hatch ring, and the designator plate
+ *  of the module you are entering. The truss is the one place you are outside.
  *
- *  Structure is carried by hairline rules only. No shadows, no fills beyond
- *  --fill, no radii, no glow. See tokens.css before adding a value.
+ *  Structure is carried by hairline rules. No shadows, no glow, no fills
+ *  beyond --fill. Square corners everywhere EXCEPT the station-map chips,
+ *  which are elliptical because a pressurized module is literally a cylinder
+ *  seen side-on. That is the only radius in the file; keep it that way.
  * ========================================================================== */
 
-/* ---------------------------------------------------------------- page frame */
-.page {
-  max-width: var(--page);
-  margin: 0 auto;
-  background: var(--paper);
-  border-left: 1px solid var(--rule);
-  border-right: 1px solid var(--rule);
-  min-height: 100vh;
-}
-
-/* ------------------------------------------------- plan view = module nav */
-.plan {
+/* =========================================================== station map (nav)
+ * The station seen side-on. Cylinders joined by hatch connectors, with the
+ * truss hanging off the chain because it is not pressurized. A marker travels
+ * along as you scroll, so this is a map of position, not a row of tabs. */
+.station {
   position: sticky;
   top: 0;
   z-index: 50;
+  height: var(--nav-h);
   display: flex;
-  overflow-x: auto;
+  align-items: center;
   background: var(--paper);
   border-bottom: 1px solid var(--rule);
+}
+
+.station-scroll {
+  width: 100%;
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 var(--gut);
+  overflow-x: auto;
   scrollbar-width: none;
 }
-.plan::-webkit-scrollbar { display: none; }
+.station-scroll::-webkit-scrollbar { display: none; }
 
-.plan-mod {
-  flex: 0 0 auto;
-  padding: 10px 15px;
-  border-right: 1px solid var(--rule);
-  white-space: nowrap;
+.station-chain {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding-bottom: 8px;
+}
+
+.station-slot { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; }
+
+/* the hatch connector between two cylinders */
+.station-joint {
+  flex: 0 0 9px;
+  height: 7px;
+  border-top: 1px solid var(--rule-hard);
+  border-bottom: 1px solid var(--rule-hard);
+}
+
+.station-mod {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--rule-hard);
+  border-radius: 7px / 50%;      /* the one radius: a cylinder, side-on */
   text-decoration: none;
   color: inherit;
+  white-space: nowrap;
+  text-align: center;
 }
-.plan-mod .desig {
+.station-mod:hover { background: var(--fill); }
+.station-mod[data-active='true'] { background: var(--fill); border-color: var(--ink); }
+
+.station-mod .sm-desig {
   display: block;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-dim);
+}
+.station-mod .sm-name {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  margin-top: 2px;
+}
+.station-mod[data-active='true'] .sm-name,
+.station-mod[data-active='true'] .sm-desig { color: var(--accent); }
+
+/* the truss hangs off the chain rather than sitting in it */
+.station-mod--eva {
+  position: relative;
+  transform: translateY(-9px);
+  border-style: dashed;
+  border-radius: 0;              /* unpressurized: not a cylinder */
+}
+.station-mod--eva::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 1px;
+  height: 9px;
+  background: var(--rule-hard);
+}
+
+.station-marker {
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 6px solid var(--accent);
+  transform: translateX(-50%);
+}
+
+/* ================================================================ the hatch
+ * A bulkhead you pass through. The arc is full-bleed on purpose: the hull
+ * curving away is what fills the gutters. */
+.hatch {
+  position: relative;
+  padding: 46px 0 22px;
+  text-align: center;
+  background: var(--paper);
+}
+
+.hatch-bulkhead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 44px;
+  fill: none;
+  stroke: var(--rule-hard);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.hatch-ring { width: 56px; margin: 0 auto; }
+.hatch-ring svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hatch-ring .ring-outer { fill: none; stroke: var(--rule-hard); stroke-width: 1.5; }
+.hatch-ring .ring-inner { fill: var(--card); stroke: var(--rule); stroke-width: 1; }
+.hatch-ring line { stroke: var(--rule-hard); stroke-width: 1.5; }
+
+.hatch-plate {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 11px;
   font-family: var(--f-mono);
   font-size: 9.5px;
   color: var(--ink-dim);
 }
-.plan-mod .name {
-  display: block;
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  margin-top: 3px;
-  color: var(--ink);
+.hatch-plate .hp-desig { color: var(--accent); }
+.hatch-plate .hp-sep { opacity: 0.5; }
+
+/* going outside: an airlock, not an internal hatch */
+.hatch--eva { background: linear-gradient(to bottom, var(--paper) 55%, var(--sunk)); }
+.hatch--eva .hatch-bulkhead { stroke-dasharray: 4 4; }
+.hatch--eva .hatch-ring .ring-outer { stroke-dasharray: 3 3; }
+
+/* ================================================================= a module */
+.module { background: var(--paper); }
+
+.module-inner {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: var(--step) var(--gut);
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
 }
-.plan-mod:hover { background: var(--fill); }
-.plan-mod[aria-current='true'] { background: var(--fill); }
-.plan-mod[aria-current='true'] .name,
-.plan-mod[aria-current='true'] .desig { color: var(--accent); }
 
-/* --------------------------------------------------------------- a module */
-.module { border-top: 1px solid var(--rule); }
-.module:first-of-type { border-top: 0; }
+/* outside the pressure hull: recessed field, no hull edges */
+.module--eva { background: var(--sunk); }
+.module--eva .module-inner { border-left: 0; border-right: 0; }
 
-.module-head {
+/* ---- the designator placard: what a real hatch carries ---- */
+.placard { border-top: 2px solid var(--ink); padding-top: 9px; }
+
+.placard-top {
   display: flex;
   align-items: baseline;
   gap: 14px;
-  flex-wrap: wrap;
-  padding: var(--step) var(--gut) 0;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
 }
-.module-body { padding: 18px var(--gut) var(--step); }
+.placard-top .pl-desig { color: var(--accent); }
+.placard-top .pl-note { margin-left: auto; text-align: right; }
 
-/* the hatch stamp: says where you are, costs one line */
-.stamp {
+.module-title { font-size: var(--t5); line-height: 1.1; margin-top: 5px; }
+
+.module-body { padding-top: 18px; }
+
+.module-lead {
+  color: var(--ink-dim);
+  font-size: var(--t3);
+  margin: 0 0 16px;
+  max-width: var(--measure);
+}
+
+.actions { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; }
+
+/* ============================================================ intro (Node 1) */
+.intro-name { font-size: var(--t5); line-height: 1.05; margin-top: 5px; }
+
+.intro-role {
   font-family: var(--f-mono);
   font-size: var(--t1);
   color: var(--accent);
-  border: 1px solid var(--rule-hard);
-  padding: 3px 7px;
-  white-space: nowrap;
 }
 
-.module-title {
-  font-size: var(--t5);
-  line-height: 1.1;
+.intro-tagline {
+  font-family: var(--f-head);
+  font-weight: 400;
+  font-size: var(--t4);
+  line-height: 1.45;
+  margin-top: 14px;
+  max-width: 46ch;
 }
 
-/* ------------------------------------------------------------ a rack (entry) */
+/* ============================================== a rack, in a numbered bay
+ * Bay codes are real ISS rack locations: the letter is the module wall the
+ * rack is bolted to (deck, overhead, port, starboard), as in LAB1O2. */
 .rack {
   display: grid;
-  grid-template-columns: 64px 1fr;
+  grid-template-columns: 68px 1fr;
   border: 1px solid var(--rule);
-  margin-top: -1px;          /* collapse shared edges into one rule */
+  margin-top: -1px;              /* collapse shared edges into one rule */
   background: var(--card);
 }
 .rack-bay {
   border-right: 1px solid var(--rule);
-  padding: 15px 0;
+  padding: 14px 0;
   text-align: center;
   background: var(--fill);
 }
 .rack-bay .b {
+  display: block;
   font-family: var(--f-mono);
   font-size: var(--t2);
   color: var(--accent);
 }
+.rack-bay .w {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  color: var(--ink-dim);
+  margin-top: 4px;
+}
 .rack-load { padding: 15px 17px 17px; }
 
+/* ---- entry internals ---- */
 .entry-title { font-size: var(--t4); line-height: 1.34; }
 
 .entry-meta {
@@ -116,11 +259,45 @@
   margin-top: 6px;
 }
 
-.entry-desc {
-  font-size: var(--t3);
-  margin-top: 8px;
-  max-width: var(--measure);
+.entry-desc { font-size: var(--t3); margin-top: 8px; max-width: var(--measure); }
+
+.entry-metric {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--accent);
+  margin-bottom: 7px;
 }
+
+.entry-note {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+  margin-top: 10px;
+}
+
+.points { margin: 8px 0 0; padding: 0; list-style: none; max-width: var(--measure); }
+.points li { position: relative; padding-left: 15px; font-size: var(--t3); margin-top: 5px; }
+/* a drawn tick, not a bullet glyph */
+.points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.66em;
+  width: 7px;
+  height: 1px;
+  background: var(--rule-hard);
+}
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tags span {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
+  padding: 3px 7px;
+}
+
+.entry-links { display: flex; flex-wrap: wrap; gap: 16px; }
 
 .ref {
   display: inline-block;
@@ -133,46 +310,50 @@
 }
 .ref:hover { border-bottom-color: var(--accent); color: var(--accent); }
 
-/* ------------------------------------------------------- truss (timeline) */
-.track {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
+/* ========================================================= skills (racks) */
+.skill-items { margin: 0; padding: 0; list-style: none; }
+.skill-items li {
+  display: grid;
+  grid-template-columns: minmax(0, 15em) 1fr;
+  gap: 2px 18px;
+  padding: 7px 0;
+  border-top: 1px solid var(--rule);
 }
+.skill-items li:first-child { border-top: 0; padding-top: 0; }
+.skill-items .n { font-family: var(--f-head); font-weight: 500; font-size: var(--t2); }
+.skill-items .w { font-family: var(--f-mono); font-size: var(--t1); color: var(--ink-dim); }
+
+/* ====================================================== contact (Airlock) */
+.contact-email {
+  font-family: var(--f-head);
+  font-weight: 500;
+  font-size: var(--t4);
+  color: var(--accent);
+  text-decoration: none;
+  word-break: break-word;
+}
+.contact-email:hover { border-bottom: 1px solid var(--accent); }
+
+/* ============================================ truss (external, horizontal) */
+.track { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
 .track::-webkit-scrollbar { height: 7px; }
 .track::-webkit-scrollbar-thumb { background: var(--rule-hard); }
 .track::-webkit-scrollbar-track { background: var(--fill); }
 
-.truss {
-  min-width: calc(var(--node-w) * 11);
-  padding: 20px var(--gut) 4px;
-}
+.truss { min-width: calc(var(--node-w) * 11); padding: 20px var(--gut) 4px; }
+
 .truss-beam {
   height: 10px;
   border-top: 1px solid var(--rule-hard);
   border-bottom: 1px solid var(--rule);
   display: flex;
 }
-.truss-beam i {
-  flex: 0 0 var(--node-w);
-  border-right: 1px solid var(--rule);
-}
+.truss-beam i { flex: 0 0 var(--node-w); border-right: 1px solid var(--rule); }
 
-.truss-attachments {
-  display: flex;
-  padding-top: 10px;
-  margin: 0;
-  list-style: none;
-}
-.attach {
-  flex: 0 0 var(--node-w);
-  padding-right: 12px;
-}
-.attach .seg {
-  font-family: var(--f-mono);
-  font-size: 9.5px;
-  color: var(--ink-dim);
-}
+.truss-attachments { display: flex; padding-top: 10px; margin: 0; list-style: none; }
+.attach { flex: 0 0 var(--node-w); padding-right: 12px; }
+.attach .seg { font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-dim); }
+
 .attach-box {
   display: block;
   border: 1px solid var(--rule);
@@ -201,151 +382,29 @@
   font-family: var(--f-mono);
   font-size: var(--t1);
   color: var(--ink-dim);
-  padding: 8px var(--gut) 0;
+  padding: 8px var(--gut) var(--step);
 }
 
-/* -------------------------------------------------------------- narrow screens */
+/* ---------------------------------------------------------- narrow screens */
 @media (max-width: 760px) {
-  .page { border-left: 0; border-right: 0; }
-  .rack { grid-template-columns: 52px 1fr; }
   :root { --gut: 16px; }
+  .module-inner { border-left: 0; border-right: 0; }
+  .rack { grid-template-columns: 56px 1fr; }
+  .station-mod { flex: 0 0 auto; }
+  .hatch { padding-top: 38px; }
 }
-
-/* ------------------------------------------------------- module lead + actions */
-.module-lead {
-  color: var(--ink-dim);
-  font-size: var(--t3);
-  margin: 0 0 16px;
-  max-width: var(--measure);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  margin-top: 18px;
-}
-
-/* ------------------------------------------------------------- intro (Node 1) */
-.intro-name { font-size: var(--t5); line-height: 1.05; }
-
-.intro-role {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  color: var(--accent);
-  margin-top: 10px;
-}
-
-.intro-tagline {
-  font-family: var(--f-head);
-  font-weight: 400;
-  font-size: var(--t4);
-  line-height: 1.45;
-  margin-top: 14px;
-  max-width: 46ch;
-}
-
-/* ------------------------------------------------------------ entry internals */
-.entry-metric {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  color: var(--accent);
-  margin-bottom: 7px;
-}
-
-.entry-note {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  color: var(--ink-dim);
-  margin-top: 10px;
-}
-
-.points {
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-  max-width: var(--measure);
-}
-.points li {
-  position: relative;
-  padding-left: 15px;
-  font-size: var(--t3);
-  margin-top: 5px;
-}
-/* a drawn tick, not a bullet glyph */
-.points li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.66em;
-  width: 7px;
-  height: 1px;
-  background: var(--rule-hard);
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-}
-.tags span {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  color: var(--ink-dim);
-  border: 1px solid var(--rule);
-  padding: 3px 7px;
-}
-
-.entry-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-/* -------------------------------------------------------------- skills (D1-D3) */
-.skill-items { margin: 0; padding: 0; list-style: none; }
-.skill-items li {
-  display: grid;
-  grid-template-columns: minmax(0, 15em) 1fr;
-  gap: 2px 18px;
-  padding: 7px 0;
-  border-top: 1px solid var(--rule);
-}
-.skill-items li:first-child { border-top: 0; padding-top: 0; }
-.skill-items .n {
-  font-family: var(--f-head);
-  font-weight: 500;
-  font-size: var(--t2);
-}
-.skill-items .w {
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  color: var(--ink-dim);
-}
-
-/* ------------------------------------------------------------ contact (Airlock) */
-.contact-email {
-  font-family: var(--f-head);
-  font-weight: 500;
-  font-size: var(--t4);
-  color: var(--accent);
-  text-decoration: none;
-  word-break: break-word;
-}
-.contact-email:hover { border-bottom: 1px solid var(--accent); }
 
 @media (max-width: 560px) {
   .skill-items li { grid-template-columns: 1fr; }
 }
 
-/* ----------------------------------------- truss: drag affordance (mouse only) */
+/* ------------------------------------- truss: drag affordance (mouse only) */
 @media (hover: hover) and (pointer: fine) {
   .track { cursor: grab; }
   .track.dragging { cursor: grabbing; }
 }
 
-/* ------------------------------------------------- truss: linear fallback
+/* --------------------------------------------------- truss: linear fallback
  * A horizontal scroller is a poor fit for anyone who has asked for less
  * motion, so the truss becomes an ordinary vertical list. Pure CSS: the
  * component does not branch. */
@@ -355,28 +414,30 @@
   .truss-beam { display: none; }
   .truss-attachments { display: block; padding-top: 0; }
   .attach { padding: 0; }
-  .attach-box {
-    border: 0;
-    border-top: 1px solid var(--rule);
-    margin-top: 0;
-    padding: 9px 0;
-  }
+  .attach-box { border: 0; border-top: 1px solid var(--rule); margin-top: 0; padding: 9px 0; }
   .attach[data-key='true'] .attach-box { border-top-color: var(--mark); }
   .track-hint { display: none; }
 }
 
-/* ----------------------------------------------------------------------- print
- * Replaces the separate printable route: the themed page *is* the print page.
- * The truss linearises into a list, since a horizontal scroller cannot paginate.
- */
+/* ------------------------------------------------------------------- print
+ * The themed page is the print page; there is no separate printable route.
+ * Station hardware is screen furniture, so it comes off on paper. */
 @media print {
   @page { margin: 16mm; }
 
   /* 15px body is sized for a screen at arm's length, not for paper. */
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
-  .page { max-width: none; border: 0; min-height: 0; }
-  .plan, .track-hint, .skip { display: none; }
+  .station, .hatch, .track-hint, .skip { display: none; }
+
+  .module, .module--eva { background: none; }
+  .module-inner {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    margin-top: 10pt;
+  }
+  .placard { border-top: 1.5pt solid #000; }
 
   .track { overflow: visible; }
   .truss { min-width: 0; padding: 0; }
@@ -393,8 +454,7 @@
    * whole either gets ignored or strands a blank page before it. Keep the
    * racks intact instead, and just stop a heading dangling at a page foot. */
   .module { break-inside: auto; }
-  .module-head { break-after: avoid; }
-  .entry-title { break-after: avoid; }
+  .placard, .entry-title { break-after: avoid; }
 
   /* A reader on paper cannot follow a link, so print its target. Skipped for
    * the contact links, whose visible text is already the address. */

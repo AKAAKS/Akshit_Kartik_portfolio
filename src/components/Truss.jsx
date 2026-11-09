@@ -1,13 +1,21 @@
 import { useEffect, useRef } from 'react'
 import { timeline } from '../data/content.js'
+import { Placard } from './Module.jsx'
 
-/* The truss: the career spine as a cross-braced beam with items at attach
- * points, port to starboard. The site's one piece of deliberate novelty.
+/* The truss — and the one place you are outside.
+ *
+ * The real integrated truss is external: perpendicular to the module chain,
+ * unpressurized, hung with payloads at its attach points. So this section is
+ * treated as EVA rather than as another cylinder: no hull curvature, a
+ * recessed field instead of the paper white, and the bare beam.
+ *
+ * It is also the one section that scrolls sideways, which is the point — the
+ * change of direction and the change of environment are the same event.
  *
  * Scrolling is native. Trackpad swipes and shift+wheel already work, a plain
  * vertical wheel still scrolls the page, and touch keeps its own momentum.
- * The only thing added is click-and-drag for mouse users; under
- * prefers-reduced-motion CSS turns the whole thing into a vertical list. */
+ * Only click-and-drag is added, for mice. Under prefers-reduced-motion, CSS
+ * alone turns the whole thing into a vertical list. */
 export default function Truss({ mod }) {
   const trackRef = useRef(null)
 
@@ -21,7 +29,6 @@ export default function Truss({ mod }) {
     let startLeft = 0
 
     const onDown = (e) => {
-      // Touch and pen pan natively; only mice need help.
       if (e.pointerType !== 'mouse' || e.button !== 0) return
       down = true
       moved = false
@@ -66,16 +73,15 @@ export default function Truss({ mod }) {
   }, [])
 
   return (
-    <section id={mod.id} className="module" aria-labelledby={`${mod.id}-h`}>
-      <div className="module-head">
-        <span className="stamp">{mod.desig} · {mod.hatch}</span>
-        <h2 id={`${mod.id}-h`} className="module-title">{mod.name}</h2>
-      </div>
-      <div className="module-body" style={{ paddingBottom: 0 }}>
-        <p className="module-lead" style={{ marginBottom: 0 }}>
-          Roles, publications and projects in order, January 2024 to now. Each node
-          links to its detail.
-        </p>
+    <section id={mod.id} className="module module--eva" aria-labelledby={`${mod.id}-h`}>
+      <div className="module-inner">
+        <Placard mod={mod} note="External · unpressurized" />
+        <div className="module-body" style={{ paddingBottom: 0 }}>
+          <p className="module-lead" style={{ marginBottom: 0 }}>
+            Roles, publications and projects in order, January 2024 to now. Each node
+            links to its detail.
+          </p>
+        </div>
       </div>
 
       <div

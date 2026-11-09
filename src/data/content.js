@@ -20,22 +20,23 @@ export const profile = {
   resumeUrl: '/resume.pdf',
 }
 
-/* The station. Order here is the order of the page, and the plan view reads
- * from it, so moving a module moves both. */
+/* The station. Order here is the order of the page, and the station map reads
+ * from it, so moving a module moves both. `external: true` marks a section
+ * outside the pressurized volume — the truss is not a module you walk into. */
 export const modules = [
-  { id: 'intro', desig: 'Node 1', hatch: 'Hatch 01', name: 'Intro' },
-  { id: 'timeline', desig: 'Lab A', hatch: 'Hatch 02', name: 'Timeline' },
-  { id: 'publications', desig: 'Lab B', hatch: 'Hatch 03', name: 'Publications' },
-  { id: 'experience', desig: 'Node 2', hatch: 'Hatch 04', name: 'Experience' },
-  { id: 'projects', desig: 'Lab C', hatch: 'Hatch 05', name: 'Projects' },
-  { id: 'skills', desig: 'Node 3', hatch: 'Hatch 06', name: 'Skills' },
-  { id: 'contact', desig: 'Airlock', hatch: 'Hatch 07', name: 'Contact' },
+  { id: 'intro', desig: 'Node 1', hatch: 'Hatch 01', name: 'Intro', element: 'NOD1' },
+  { id: 'timeline', desig: 'Truss', hatch: 'EVA', name: 'Timeline', element: 'ITS', external: true },
+  { id: 'publications', desig: 'Lab B', hatch: 'Hatch 03', name: 'Publications', element: 'LAB2' },
+  { id: 'experience', desig: 'Node 2', hatch: 'Hatch 04', name: 'Experience', element: 'NOD2' },
+  { id: 'projects', desig: 'Lab C', hatch: 'Hatch 05', name: 'Projects', element: 'LAB3' },
+  { id: 'skills', desig: 'Node 3', hatch: 'Hatch 06', name: 'Skills', element: 'NOD3' },
+  { id: 'contact', desig: 'Airlock', hatch: 'Hatch 07', name: 'Contact', element: 'A/L' },
 ]
 
 /* --------------------------------------------------------------- publications */
 export const publications = [
   {
-    bay: 'A1',
+    bay: 'O1',
     title: 'AquaTag: a wearable platform for flexible sensor placement in aquatic sensing',
     venue: 'Proc. ACM IMWUT',
     year: '2026',
@@ -44,7 +45,7 @@ export const publications = [
     ref: { label: 'doi:10.1145/3831639', url: 'https://dl.acm.org/doi/10.1145/3831639' },
   },
   {
-    bay: 'A2',
+    bay: 'O2',
     title: 'OmniSch: a multimodal PCB schematic benchmark for diagram reasoning',
     venue: 'arXiv preprint cs.CV',
     year: '2026',
@@ -57,7 +58,7 @@ export const publications = [
 /* ----------------------------------------------------------------- experience */
 export const experience = [
   {
-    bay: 'B1',
+    bay: 'P1',
     role: 'Undergraduate Researcher — Sensing Platforms & Diagnostic Tooling',
     org: 'The Pennsylvania State University',
     place: 'University Park, PA',
@@ -70,7 +71,7 @@ export const experience = [
     ],
   },
   {
-    bay: 'B2',
+    bay: 'P2',
     role: 'Research & Development Intern — Robotics',
     org: 'Meritus.AI',
     place: 'Chennai, India',
@@ -82,7 +83,7 @@ export const experience = [
     ],
   },
   {
-    bay: 'B3',
+    bay: 'S1',
     role: 'Learning Assistant',
     org: 'The Pennsylvania State University',
     place: 'University Park, PA',
@@ -96,7 +97,7 @@ export const experience = [
 ]
 
 export const education = {
-  bay: 'B0',
+  bay: 'D1',
   school: 'The Pennsylvania State University',
   place: 'University Park, PA',
   degree: 'BS Computer Science',
@@ -110,7 +111,7 @@ export const education = {
  * `metric` is the headline outcome and leads the card. */
 export const projects = [
   {
-    bay: 'C1',
+    bay: 'D1',
     name: 'Parts Procurement Engine',
     subtitle: 'B. Braun Medical Inc.',
     from: 'Aug 2025',
@@ -124,7 +125,7 @@ export const projects = [
     links: { repo: 'https://github.com/AadhityaT/capstone-ai-website-app' },
   },
   {
-    bay: 'C2',
+    bay: 'D2',
     name: 'J.A.R.V.I.S.',
     subtitle: 'Agentic voice & text assistant',
     from: 'Mar 2026',
@@ -139,7 +140,7 @@ export const projects = [
     },
   },
   {
-    bay: 'C3',
+    bay: 'O1',
     name: 'OS Agent',
     subtitle: 'Windows telemetry & anomaly triage',
     from: 'Jan 2026',
@@ -154,7 +155,7 @@ export const projects = [
     },
   },
   {
-    bay: 'C4',
+    bay: 'P1',
     name: 'Agentic Labeling Engine',
     subtitle: 'LLM classification with human review',
     from: '2026',
@@ -165,7 +166,7 @@ export const projects = [
     links: {},
   },
   {
-    bay: 'C5',
+    bay: 'S1',
     name: 'Cardio BP',
     subtitle: 'Cuffless blood pressure estimation',
     from: '2026',
@@ -183,7 +184,7 @@ export const projects = [
  * used — no self-assigned levels, because nothing backs a number like that. */
 export const skills = [
   {
-    bay: 'D1',
+    bay: 'P1',
     group: 'AI & agent tooling',
     items: [
       { name: 'Claude & OpenAI APIs', where: 'JARVIS, OS Agent' },
@@ -194,7 +195,7 @@ export const skills = [
     ],
   },
   {
-    bay: 'D2',
+    bay: 'S1',
     group: 'Integrations & automation',
     items: [
       { name: 'REST APIs, webhooks', where: 'B. Braun engine, JARVIS' },
@@ -205,7 +206,7 @@ export const skills = [
     ],
   },
   {
-    bay: 'D3',
+    bay: 'O1',
     group: 'Languages, web & tools',
     items: [
       { name: 'Python', where: 'JARVIS, OS Agent, research tooling' },
