@@ -24,7 +24,8 @@
   overflow: hidden;
   pointer-events: none;
 }
-.sf-svg { display: block; will-change: transform; }
+.sf-svg { display: block; }  /* deliberately NOT will-change: a 3000px
+   promoted layer is enormous, and the parallax is a cheap 2D slide */
 
 .sf-dot { fill: var(--ink-dim); opacity: 0.5; }
 .sf-ring { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.45; }
@@ -404,14 +405,22 @@ main { position: relative; z-index: 1; }
  * --tilt is the knob: raise it and you climb above the ring (more top-down),
  * lower it and you sink into its plane (more edge-on, less legible). */
 .ring-stage {
-  --ring-r: 300px;
+  /* Diameter matches the tube's width, so the ring reads as part of the same
+   * craft. This is a LAYOUT radius, not the width you see: perspective
+   * magnifies the near half, so a circle of radius r projects wider than 2r.
+   * Measured in the browser - 434px lands the projected silhouette on 1060px,
+   * the tube's width. Capped against the viewport so it never forces a
+   * sideways scrollbar on a narrower screen. */
+  --ring-r: min(434px, 36vw);
+  --gon-w: 180px;
+  --gon-h: 86px;
+  --gon-d: 48px;
   --tilt: 16deg;
   position: relative;
-  height: 430px;
-  max-width: var(--page);
-  margin: 0 auto;
-  perspective: 1150px;
-  perspective-origin: 50% 46%;
+  height: 520px;
+  overflow-x: clip;        /* safe: perspective flattens nothing, only preserve-3d would */
+  perspective: 2400px;
+  perspective-origin: 50% 44%;
 }
 
 .ring-tilt {
@@ -445,15 +454,15 @@ main { position: relative; z-index: 1; }
 }
 .rim-outer { width: calc(var(--ring-r) * 2); height: calc(var(--ring-r) * 2); }
 .rim-inner {
-  width: calc(var(--ring-r) * 2 - 26px);
-  height: calc(var(--ring-r) * 2 - 26px);
+  width: calc(var(--ring-r) * 2 - 34px);
+  height: calc(var(--ring-r) * 2 - 34px);
   border-color: var(--rule);
 }
 .rim-hub {
-  width: 130px;
-  height: 130px;
+  width: 150px;
+  height: 150px;
   border-color: var(--rule-hard);
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* spokes. A bar lying along +X, pushed out to mid-radius and turned to point
@@ -472,15 +481,14 @@ main { position: relative; z-index: 1; }
     rotateY(90deg);
 }
 
-/* the spin axis, as a short length of cylinder. Same shading trick as the
- * hull: lighter down the middle, falling away at both edges. */
+/* the spin axis, as a short length of cylinder */
 .shaft {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 64px;
-  height: 128px;
-  margin: -64px 0 0 -32px;
+  width: 72px;
+  height: 132px;
+  margin: -66px 0 0 -36px;
   background-color: var(--card);
   background-image: linear-gradient(
     to right,
@@ -497,20 +505,21 @@ main { position: relative; z-index: 1; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 64px;
-  height: 64px;
-  margin: -96px 0 0 -32px;
+  width: 72px;
+  height: 72px;
+  margin: -102px 0 0 -36px;
   border: 1px solid var(--rule-hard);
   border-radius: 50%;
   background: var(--card);
   transform: rotateX(90deg);
 }
 
-/* ---- gondolas ----
- * Tangent panels facing outward. The front ones come toward you and are
- * readable; the sides turn edge-on; the far half is hidden by
- * backface-visibility rather than shown mirrored. They are still in the tab
- * order, and focusing one rotates it to the front. */
+/* ---- gondolas: actual boxes on the rim ----
+ * Six faces, each shaded for its orientation, so a gondola is a solid object
+ * in the same 3D space as the machinery rather than a flat card floating in
+ * it. The rim passes through the middle of the box, which is how a module is
+ * mounted. Faces that turn away hide themselves, so the far side of the ring
+ * shows backs and undersides instead of mirrored text. */
 .gondolas {
   position: absolute;
   inset: 0;
@@ -524,41 +533,84 @@ main { position: relative; z-index: 1; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 150px;
-  height: 86px;
-  margin: -43px 0 0 -75px;
-  /* deliberately NOT preserve-3d: a gondola is one flat panel, and keeping it
-   * flat is what makes backface-visibility actually hide the far half instead
-   * of letting the box inside it render mirrored. */
-  backface-visibility: hidden;
+  width: var(--gon-w);
+  height: var(--gon-h);
+  margin: calc(var(--gon-h) / -2) 0 0 calc(var(--gon-w) / -2);
+  transform-style: preserve-3d;
   transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
 }
 
-.gon-box {
-  display: block;
-  height: 100%;
+.gon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   box-sizing: border-box;
   border: 1px solid var(--rule-hard);
   background: var(--card);
-  padding: 8px 10px;
+}
+
+/* the two large faces */
+.gon-face,
+.gon-back {
+  width: var(--gon-w);
+  height: var(--gon-h);
+  margin: calc(var(--gon-h) / -2) 0 0 calc(var(--gon-w) / -2);
+  backface-visibility: hidden;
+}
+.gon-face {
+  display: block;
+  padding: 9px 11px;
   text-decoration: none;
   color: inherit;
   overflow: hidden;
+  transform: translateZ(calc(var(--gon-d) / 2));
 }
-.gon-box:hover { border-color: var(--ink); }
-.gondola[data-key="true"] .gon-box { border-color: var(--mark); }
-.gondola[data-current="true"] .gon-box {
+.gon-back {
+  background: var(--sunk);
+  transform: rotateY(180deg) translateZ(calc(var(--gon-d) / 2));
+}
+
+/* top and underside */
+.gon-top,
+.gon-bot {
+  width: var(--gon-w);
+  height: var(--gon-d);
+  margin: calc(var(--gon-d) / -2) 0 0 calc(var(--gon-w) / -2);
+}
+.gon-top {
+  background: var(--paper);
+  transform: rotateX(90deg) translateZ(calc(var(--gon-h) / 2));
+}
+.gon-bot {
+  background: var(--sunk);
+  transform: rotateX(-90deg) translateZ(calc(var(--gon-h) / 2));
+}
+
+/* ends */
+.gon-lt,
+.gon-rt {
+  width: var(--gon-d);
+  height: var(--gon-h);
+  margin: calc(var(--gon-h) / -2) 0 0 calc(var(--gon-d) / -2);
+  background: var(--sunk);
+}
+.gon-lt { transform: rotateY(-90deg) translateZ(calc(var(--gon-w) / 2)); }
+.gon-rt { transform: rotateY(90deg) translateZ(calc(var(--gon-w) / 2)); }
+
+.gon-face:hover { border-color: var(--ink); }
+.gondola[data-key="true"] .gon-face { border-color: var(--mark); }
+.gondola[data-current="true"] .gon-face {
   border-color: var(--accent);
   border-width: 2px;
 }
 
-.gon-box .seg {
+.gon-face .seg {
   display: block;
   font-family: var(--f-mono);
   font-size: 9px;
   color: var(--ink-dim);
 }
-.gon-box .w {
+.gon-face .w {
   display: block;
   font-family: var(--f-head);
   font-weight: 500;
@@ -566,7 +618,7 @@ main { position: relative; z-index: 1; }
   line-height: 1.28;
   margin-top: 3px;
 }
-.gon-box .d {
+.gon-face .d {
   display: block;
   font-family: var(--f-mono);
   font-size: 9.5px;
@@ -650,7 +702,8 @@ main { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   .ring-stage { height: auto; perspective: none; cursor: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls { display: none; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
     position: static;
@@ -658,17 +711,21 @@ main { position: relative; z-index: 1; }
     height: auto;
     margin: 0;
     transform: none;
-    backface-visibility: visible;
   }
-  .gon-box {
+  .gon-face {
+    position: static;
+    width: auto;
     height: auto;
+    margin: 0;
+    transform: none;
+    backface-visibility: visible;
     border: 0;
     border-top: 1px solid var(--rule);
     padding: 9px 0;
     background: none;
   }
-  .gondola[data-key="true"] .gon-box { border-top-color: var(--mark); }
-  .gondola[data-current="true"] .gon-box { border-width: 0 0 0 0; border-top: 1px solid var(--accent); }
+  .gondola[data-key="true"] .gon-face { border-top-color: var(--mark); }
+  .gondola[data-current="true"] .gon-face { border-width: 1px 0 0; border-top-color: var(--accent); }
 }
 
 /* A 600px ring does not fit a phone, and shrinking it makes the gondolas
@@ -676,7 +733,8 @@ main { position: relative; z-index: 1; }
 @media (max-width: 860px) {
   .ring-stage { height: auto; perspective: none; cursor: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls { display: none; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
     position: static;
@@ -684,17 +742,21 @@ main { position: relative; z-index: 1; }
     height: auto;
     margin: 0;
     transform: none;
-    backface-visibility: visible;
   }
-  .gon-box {
+  .gon-face {
+    position: static;
+    width: auto;
     height: auto;
+    margin: 0;
+    transform: none;
+    backface-visibility: visible;
     border: 0;
     border-top: 1px solid var(--rule);
     padding: 9px 0;
     background: none;
   }
-  .gondola[data-key="true"] .gon-box { border-top-color: var(--mark); }
-  .gondola[data-current="true"] .gon-box { border-width: 0 0 0 0; border-top: 1px solid var(--accent); }
+  .gondola[data-key="true"] .gon-face { border-top-color: var(--mark); }
+  .gondola[data-current="true"] .gon-face { border-width: 1px 0 0; border-top-color: var(--accent); }
 }
 
 /* ------------------------------------------------------------------- print
@@ -707,7 +769,8 @@ main { position: relative; z-index: 1; }
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
   .station, .hatch, .cap, .spacefield, .skip,
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls { display: none; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls,
+  .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
 
   .module, .module--eva { background: none; }
   .module-inner { padding: 0; margin-top: 10pt; }
@@ -728,10 +791,20 @@ main { position: relative; z-index: 1; }
     height: auto;
     margin: 0;
     transform: none;
-    backface-visibility: visible;
     break-inside: avoid;
   }
-  .gon-box { height: auto; border: 0; border-top: 1px solid #ccc; padding: 6px 0; background: none; }
+  .gon-face {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    backface-visibility: visible;
+    border: 0;
+    border-top: 1px solid #ccc;
+    padding: 6px 0;
+    background: none;
+  }
 
   .rack { break-inside: avoid; background: none; }
   .rack-bay { background: none; }

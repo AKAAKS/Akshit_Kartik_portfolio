@@ -4,25 +4,24 @@ import { Placard } from './Module.jsx'
 
 /* The centrifuge — the career spine as a spin-gravity ring, seen from the side.
  *
- * This is real 3D, not a circle drawn on the page. The ring lies in a
- * horizontal plane, its axis along the craft's long axis, and the camera looks
- * at it from barely above that plane — the same viewing angle as the tube, so
- * it belongs to the same ship. A horizontal circle seen that way is a shallow
- * ellipse: gondolas at the front come toward you and are readable, the ones at
- * the sides turn edge-on, and the far half is behind the machinery. Three or
- * four legible at a time is the point, not a cost.
+ * Real CSS 3D. The ring lies in a horizontal plane with its axis along the
+ * craft's long axis, and the camera sits just above that plane, so the ring is
+ * seen at the same angle as the tube and belongs to the same ship. Nothing is
+ * drawn as an ellipse — the discs are round and laid flat into the ring's
+ * plane, so they foreshorten correctly at every angle.
  *
- * Seen face-on it would be a merry-go-round, which is indistinguishable from a
- * list arranged in a circle. The foreshortening is the whole idea.
+ * The camera angle is not fixed: it starts oblique as the section comes into
+ * view and flattens toward the horizontal as you scroll, so you see enough of
+ * the ring's shape to read it as a wheel, then settle into the craft's own
+ * eye level. Under prefers-reduced-motion it simply holds one angle.
+ *
+ * Gondolas are real boxes, not cards — six faces each, shaded by face — so
+ * they match the rest of the geometry instead of being flat panels floating
+ * in a 3D scene.
  *
  * A ring cannot normally carry a timeline, because a circle has no beginning
- * and no end. The rotation is clamped: oldest is one hard stop, newest is the
- * other, no wrapping. So it spins like a wheel and still runs in order.
- *
- * Rotation lives in one custom property, --theta, set on .ring. Everything
- * else — gondola angles, strut angles — is static CSS, so a frame costs one
- * style write, and the reduced-motion, narrow and print fallbacks can flatten
- * the entire mechanism without this component knowing. */
+ * and no end. The rotation is clamped: oldest is one hard stop, newest the
+ * other, no wrapping. So it spins like a wheel and still runs in order. */
 
 const N = timeline.length
 const STEP = 360 / N
@@ -31,10 +30,15 @@ const MAX = 0               // oldest at the front
 const DRAG = 0.3            // degrees per pixel
 const WHEEL = 0.25
 
+const TILT_FAR = 21         // degrees above the ring's plane, on approach
+const TILT_NEAR = 4         // once the section is settled in view
+const TILT_STILL = 9        // the one angle used when motion is unwanted
+
 const clamp = (v) => Math.min(MAX, Math.max(MIN, v))
 const indexFor = (theta) => Math.min(N - 1, Math.max(0, Math.round(-theta / STEP)))
 
 export default function Centrifuge({ mod }) {
+  const stageRef = useRef(null)
   const ringRef = useRef(null)
   const theta = useRef(0)
   const [current, setCurrent] = useState(0)
@@ -53,10 +57,44 @@ export default function Centrifuge({ mod }) {
 
   useEffect(() => { paint() }, [paint])
 
+  /* ---- camera: oblique on approach, flattening to eye level ---- */
   useEffect(() => {
-    const el = ringRef.current
-    if (!el) return
-    const stage = el.closest('.ring-stage') || el
+    const stage = stageRef.current
+    if (!stage) return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      stage.style.setProperty('--tilt', `${TILT_STILL}deg`)
+      return
+    }
+
+    let raf = 0
+    const apply = () => {
+      raf = 0
+      const r = stage.getBoundingClientRect()
+      const vh = window.innerHeight || 1
+      const centre = r.top + r.height / 2
+      // 0 while the section is still coming up from the bottom of the
+      // viewport, 1 once its middle has reached the middle of the screen
+      const p = Math.min(1, Math.max(0, (vh - centre) / (vh / 2)))
+      const tilt = TILT_FAR - (TILT_FAR - TILT_NEAR) * p
+      stage.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`)
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply) }
+
+    apply()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  /* ---- drag to spin ---- */
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage) return
 
     let down = false
     let moved = false
@@ -139,9 +177,7 @@ export default function Centrifuge({ mod }) {
         </div>
       </div>
 
-      <div className="ring-stage">
-        {/* camera tilt: how far above the ring's plane we are looking from.
-          * Low, because the rest of the craft is seen from the side too. */}
+      <div className="ring-stage" ref={stageRef}>
         <div className="ring-tilt">
           <div
             className="ring"
@@ -149,9 +185,7 @@ export default function Centrifuge({ mod }) {
             role="group"
             aria-label="Career timeline, drag to rotate"
           >
-            {/* ---- machinery. Discs laid into the horizontal plane, so they
-              * foreshorten with everything else instead of being drawn as
-              * ellipses that only look right at one angle. ---- */}
+            {/* ---- machinery: round divs laid flat into the ring's plane ---- */}
             <div className="rim rim-outer" />
             <div className="rim rim-inner" />
             <div className="rim rim-hub" />
@@ -172,11 +206,18 @@ export default function Centrifuge({ mod }) {
                   data-key={n.key ? 'true' : undefined}
                   data-current={current === i ? 'true' : undefined}
                 >
-                  <a className="gon-box" href={n.href} onFocus={() => rotateTo(i)}>
+                  {/* six faces, so it is a box on the ring rather than a flat
+                    * card floating in a 3D scene */}
+                  <a className="gon gon-face" href={n.href} onFocus={() => rotateTo(i)}>
                     <span className="seg">{n.seg}</span>
                     <span className="w">{n.title}</span>
                     <span className="d">{n.date}</span>
                   </a>
+                  <span className="gon gon-back" aria-hidden="true" />
+                  <span className="gon gon-top" aria-hidden="true" />
+                  <span className="gon gon-bot" aria-hidden="true" />
+                  <span className="gon gon-lt" aria-hidden="true" />
+                  <span className="gon gon-rt" aria-hidden="true" />
                 </li>
               ))}
             </ol>

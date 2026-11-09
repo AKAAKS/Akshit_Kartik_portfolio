@@ -131,7 +131,8 @@ export default function SpaceField() {
       raf = 0
       // wrap within one band so the stacked copies hide the seam
       const y = -((window.scrollY * RATE) % BAND)
-      el.style.transform = `translate3d(0, ${y}px, 0)`
+      // 2D translate on purpose: translate3d promotes a 3000px layer
+      el.style.transform = `translateY(${y}px)`
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply) }
 
