@@ -390,88 +390,183 @@ main { position: relative; z-index: 1; }
 }
 .contact-email:hover { border-bottom: 1px solid var(--accent); }
 
-/* ===================================== centrifuge (external, rotating ring)
- * Rotation is carried by one custom property, --theta, set on .ring. Every
- * gondola derives its own counter-rotation from it in CSS, so a frame costs
- * one style write regardless of how many nodes there are - and the fallbacks
- * below can flatten the whole mechanism without the component knowing. */
-.ring-wrap {
+/* ============================ centrifuge (external, rotating ring, seen 3D)
+ * Real CSS 3D, not a circle drawn on the page. The ring lies in a horizontal
+ * plane with its axis along the craft's long axis, and the camera sits barely
+ * above that plane - the same viewing angle as the tube, so the ring belongs
+ * to the same ship. A horizontal circle seen that way foreshortens into a
+ * shallow ellipse by itself; nothing here is drawn as an ellipse, which is
+ * why it stays correct at every angle.
+ *
+ * Face-on it would be a merry-go-round, and a merry-go-round is just a list
+ * arranged in a circle. The foreshortening is the whole idea.
+ *
+ * --tilt is the knob: raise it and you climb above the ring (more top-down),
+ * lower it and you sink into its plane (more edge-on, less legible). */
+.ring-stage {
+  --ring-r: 300px;
+  --tilt: 16deg;
   position: relative;
-  height: 724px;
+  height: 430px;
   max-width: var(--page);
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  perspective: 1150px;
+  perspective-origin: 50% 46%;
+}
+
+.ring-tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* negated so --tilt reads as degrees ABOVE the ring's plane: a positive
+   * rotateX would tip the near side upward and show us the underside. */
+  transform: rotateX(calc(-1 * var(--tilt)));
 }
 
 .ring {
-  position: relative;
-  width: 680px;
-  height: 680px;
+  position: absolute;
+  inset: 0;
   --theta: 0;
-  transform: rotate(calc(1deg * var(--theta)));
+  transform-style: preserve-3d;
+  transform: rotateY(calc(1deg * var(--theta)));
   touch-action: pan-y;        /* vertical touch still scrolls the page */
 }
 
-.ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.ring-svg .rim { fill: none; stroke: var(--rule-hard); stroke-width: 1; }
-.ring-svg .rim-inner { stroke: var(--rule); }
-.ring-svg .strut { stroke: var(--rule); stroke-width: 1; }
-.ring-svg .rim-tick { stroke: var(--rule-hard); stroke-width: 1; }
-.ring-svg .hub { fill: var(--card); stroke: var(--rule-hard); stroke-width: 1; }
-.ring-svg .hub-core { fill: none; stroke: var(--rule); }
-
-/* ---- gondolas ---- */
-.spokes { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
-
-.spoke {
+/* ---- machinery ----
+ * Each disc is an ordinary round div laid flat into the ring's plane. It is
+ * the 90deg rotation that makes it horizontal; perspective does the rest. */
+.rim {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 152px;
-  margin-left: -76px;
-  margin-top: -43px;
-  transform: rotate(calc(1deg * var(--a))) translateY(-286px);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotateX(90deg);
+  border: 1px solid var(--rule-hard);
+}
+.rim-outer { width: calc(var(--ring-r) * 2); height: calc(var(--ring-r) * 2); }
+.rim-inner {
+  width: calc(var(--ring-r) * 2 - 26px);
+  height: calc(var(--ring-r) * 2 - 26px);
+  border-color: var(--rule);
+}
+.rim-hub {
+  width: 130px;
+  height: 130px;
+  border-color: var(--rule-hard);
+  background: rgba(255, 255, 255, 0.55);
 }
 
-/* Upright whatever the ring is doing - ferris-wheel gondolas, because radial
- * text cannot be read. The angle is the ring's own rotation plus the spoke's
- * fixed position, negated. */
-.spoke .attach-box {
-  transform: rotate(calc(-1deg * (var(--a) + var(--theta))));
+/* spokes. A bar lying along +X, pushed out to mid-radius and turned to point
+ * radially, so it runs from the hub to the rim in the ring's own plane. */
+.strut {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--ring-r);
+  height: 1px;
+  margin-left: calc(var(--ring-r) / -2);
+  background: var(--rule);
+  transform:
+    rotateY(calc(1deg * var(--a)))
+    translateZ(calc(var(--ring-r) / 2))
+    rotateY(90deg);
 }
 
-.attach-box {
+/* the spin axis, as a short length of cylinder. Same shading trick as the
+ * hull: lighter down the middle, falling away at both edges. */
+.shaft {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 128px;
+  margin: -64px 0 0 -32px;
+  background-color: var(--card);
+  background-image: linear-gradient(
+    to right,
+    rgba(15, 17, 19, 0.12) 0%,
+    rgba(15, 17, 19, 0.03) 22%,
+    rgba(15, 17, 19, 0) 50%,
+    rgba(15, 17, 19, 0.03) 78%,
+    rgba(15, 17, 19, 0.12) 100%
+  );
+  border-left: 1px solid var(--rule-hard);
+  border-right: 1px solid var(--rule-hard);
+}
+.shaft-cap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  margin: -96px 0 0 -32px;
+  border: 1px solid var(--rule-hard);
+  border-radius: 50%;
+  background: var(--card);
+  transform: rotateX(90deg);
+}
+
+/* ---- gondolas ----
+ * Tangent panels facing outward. The front ones come toward you and are
+ * readable; the sides turn edge-on; the far half is hidden by
+ * backface-visibility rather than shown mirrored. They are still in the tab
+ * order, and focusing one rotates it to the front. */
+.gondolas {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform-style: preserve-3d;
+}
+
+.gondola {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 86px;
+  margin: -43px 0 0 -75px;
+  /* deliberately NOT preserve-3d: a gondola is one flat panel, and keeping it
+   * flat is what makes backface-visibility actually hide the far half instead
+   * of letting the box inside it render mirrored. */
+  backface-visibility: hidden;
+  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
+}
+
+.gon-box {
   display: block;
-  border: 1px solid var(--rule);
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--rule-hard);
   background: var(--card);
   padding: 8px 10px;
   text-decoration: none;
   color: inherit;
+  overflow: hidden;
 }
-.attach-box:hover { border-color: var(--rule-hard); }
-.spoke[data-key="true"] .attach-box { border-color: var(--mark); }
-.spoke[data-current="true"] .attach-box {
+.gon-box:hover { border-color: var(--ink); }
+.gondola[data-key="true"] .gon-box { border-color: var(--mark); }
+.gondola[data-current="true"] .gon-box {
   border-color: var(--accent);
-  background: var(--paper);
+  border-width: 2px;
 }
 
-.attach-box .seg {
+.gon-box .seg {
   display: block;
   font-family: var(--f-mono);
   font-size: 9px;
   color: var(--ink-dim);
 }
-.attach-box .w {
+.gon-box .w {
   display: block;
   font-family: var(--f-head);
   font-weight: 500;
   font-size: var(--t2);
-  line-height: 1.3;
+  line-height: 1.28;
   margin-top: 3px;
 }
-.attach-box .d {
+.gon-box .d {
   display: block;
   font-family: var(--f-mono);
   font-size: 9.5px;
@@ -479,43 +574,17 @@ main { position: relative; z-index: 1; }
   margin-top: 4px;
 }
 
-/* ---- the read position, fixed while the ring turns under it ---- */
+/* ---- the read position, fixed while the ring turns past it ---- */
 .ring-index {
   position: absolute;
-  top: 6px;
   left: 50%;
+  bottom: 44px;
   width: 0;
   height: 0;
   margin-left: -6px;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid var(--accent);
-  z-index: 2;
-}
-
-/* ---- hub readout ---- */
-.ring-read {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 210px;
-  text-align: center;
-  pointer-events: none;
-}
-.rr-date { font-family: var(--f-mono); font-size: var(--t1); color: var(--accent); }
-.rr-title {
-  font-family: var(--f-head);
-  font-weight: 500;
-  font-size: var(--t3);
-  line-height: 1.3;
-  margin-top: 5px;
-}
-.rr-detail {
-  font-family: var(--f-mono);
-  font-size: 9.5px;
-  color: var(--ink-dim);
-  margin-top: 5px;
+  border-bottom: 8px solid var(--accent);
 }
 
 /* ---- controls: the ring must be operable without a pointer ---- */
@@ -526,7 +595,7 @@ main { position: relative; z-index: 1; }
   gap: 20px;
   max-width: var(--page);
   margin: 0 auto;
-  padding: 4px var(--gut) var(--step);
+  padding: 2px var(--gut) var(--step);
 }
 .ring-controls button {
   background: none;
@@ -540,11 +609,24 @@ main { position: relative; z-index: 1; }
   border-bottom-color: var(--rule);
   cursor: default;
 }
-.ring-count { font-family: var(--f-mono); font-size: var(--t1); color: var(--ink-dim); }
+.ring-count { text-align: center; }
+.ring-count .rc-now {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--accent);
+}
+.ring-count .rc-of {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
 
 @media (hover: hover) and (pointer: fine) {
-  .ring { cursor: grab; }
-  .ring.spinning { cursor: grabbing; }
+  .ring-stage { cursor: grab; }
+  .ring-stage.spinning { cursor: grabbing; }
 }
 
 /* ---------------------------------------------------------- narrow screens */
@@ -566,29 +648,53 @@ main { position: relative; z-index: 1; }
  * it becomes an ordinary vertical list. Pure CSS: the component does not
  * branch, it just stops being a ring. */
 @media (prefers-reduced-motion: reduce) {
-  .ring-wrap, .ring, .spoke, .spoke .attach-box { transform: none; }
-  .ring-wrap { height: auto; display: block; padding: 0 var(--gut); }
-  .ring { width: auto; height: auto; cursor: auto; touch-action: auto; }
-  .ring-svg, .ring-index, .ring-read, .ring-controls { display: none; }
-  .spokes { position: static; }
-  .spoke { position: static; width: auto; margin: 0; }
-  .spoke .attach-box { border: 0; border-top: 1px solid var(--rule); padding: 9px 0; }
-  .spoke[data-key="true"] .attach-box { border-top-color: var(--mark); }
-  .spoke[data-current="true"] .attach-box { background: none; border-top-color: var(--accent); }
+  .ring-stage { height: auto; perspective: none; cursor: auto; padding: 0 var(--gut); }
+  .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls { display: none; }
+  .gondolas { position: static; }
+  .gondola {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    backface-visibility: visible;
+  }
+  .gon-box {
+    height: auto;
+    border: 0;
+    border-top: 1px solid var(--rule);
+    padding: 9px 0;
+    background: none;
+  }
+  .gondola[data-key="true"] .gon-box { border-top-color: var(--mark); }
+  .gondola[data-current="true"] .gon-box { border-width: 0 0 0 0; border-top: 1px solid var(--accent); }
 }
 
-/* A 680px ring does not fit a phone, and shrinking it makes the gondolas
+/* A 600px ring does not fit a phone, and shrinking it makes the gondolas
  * unreadable, so below the breakpoint it becomes the same plain list. */
 @media (max-width: 860px) {
-  .ring-wrap, .ring, .spoke, .spoke .attach-box { transform: none; }
-  .ring-wrap { height: auto; display: block; padding: 0 var(--gut); }
-  .ring { width: auto; height: auto; cursor: auto; touch-action: auto; }
-  .ring-svg, .ring-index, .ring-read, .ring-controls { display: none; }
-  .spokes { position: static; }
-  .spoke { position: static; width: auto; margin: 0; }
-  .spoke .attach-box { border: 0; border-top: 1px solid var(--rule); padding: 9px 0; }
-  .spoke[data-key="true"] .attach-box { border-top-color: var(--mark); }
-  .spoke[data-current="true"] .attach-box { background: none; border-top-color: var(--accent); }
+  .ring-stage { height: auto; perspective: none; cursor: auto; padding: 0 var(--gut); }
+  .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls { display: none; }
+  .gondolas { position: static; }
+  .gondola {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    backface-visibility: visible;
+  }
+  .gon-box {
+    height: auto;
+    border: 0;
+    border-top: 1px solid var(--rule);
+    padding: 9px 0;
+    background: none;
+  }
+  .gondola[data-key="true"] .gon-box { border-top-color: var(--mark); }
+  .gondola[data-current="true"] .gon-box { border-width: 0 0 0 0; border-top: 1px solid var(--accent); }
 }
 
 /* ------------------------------------------------------------------- print
@@ -601,7 +707,7 @@ main { position: relative; z-index: 1; }
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
   .station, .hatch, .cap, .spacefield, .skip,
-  .ring-svg, .ring-index, .ring-read, .ring-controls { display: none; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls { display: none; }
 
   .module, .module--eva { background: none; }
   .module-inner { padding: 0; margin-top: 10pt; }
@@ -613,12 +719,19 @@ main { position: relative; z-index: 1; }
   .tube::before, .tube::after { display: none; }
   .placard { border-top: 1.5pt solid #000; }
 
-  .ring-wrap, .ring, .spoke, .spoke .attach-box { transform: none; }
-  .ring-wrap { height: auto; display: block; }
-  .ring { width: auto; height: auto; }
-  .spokes { position: static; }
-  .spoke { position: static; width: auto; margin: 0; break-inside: avoid; }
-  .spoke .attach-box { border: 0; border-top: 1px solid #ccc; padding: 6px 0; background: none; }
+  .ring-stage { height: auto; perspective: none; }
+  .ring-tilt, .ring { position: static; transform: none; }
+  .gondolas { position: static; }
+  .gondola {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    backface-visibility: visible;
+    break-inside: avoid;
+  }
+  .gon-box { height: auto; border: 0; border-top: 1px solid #ccc; padding: 6px 0; background: none; }
 
   .rack { break-inside: avoid; background: none; }
   .rack-bay { background: none; }

@@ -2,28 +2,32 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { timeline } from '../data/content.js'
 import { Placard } from './Module.jsx'
 
-/* The centrifuge — the career spine as a spin-gravity ring.
+/* The centrifuge — the career spine as a spin-gravity ring, seen from the side.
  *
- * A ring normally cannot carry a timeline, because a circle has no beginning
- * and no end and chronology is the only thing a timeline owes the reader. The
- * fix is to clamp the rotation: the oldest node is one hard stop, the newest
- * is the other, and it will not wrap past either. So it rotates, drags and
- * scrolls like a wheel while still running Jan 2024 to now, in order.
+ * This is real 3D, not a circle drawn on the page. The ring lies in a
+ * horizontal plane, its axis along the craft's long axis, and the camera looks
+ * at it from barely above that plane — the same viewing angle as the tube, so
+ * it belongs to the same ship. A horizontal circle seen that way is a shallow
+ * ellipse: gondolas at the front come toward you and are readable, the ones at
+ * the sides turn edge-on, and the far half is behind the machinery. Three or
+ * four legible at a time is the point, not a cost.
  *
- * All eleven nodes stay on screen at once, so nothing is hidden behind the
- * hub — the rotation moves which one sits at the read position rather than
- * revealing anything. Gondolas stay upright as the ring turns, ferris-wheel
- * fashion, because radial text cannot be read.
+ * Seen face-on it would be a merry-go-round, which is indistinguishable from a
+ * list arranged in a circle. The foreshortening is the whole idea.
  *
- * It hangs outside the pressure hull with the field behind it. Rotation lives
- * entirely in two CSS custom properties, so there is one style write per frame
- * no matter how many nodes there are, and the reduced-motion and narrow-screen
- * fallbacks can switch the whole thing to a plain list in CSS alone. */
+ * A ring cannot normally carry a timeline, because a circle has no beginning
+ * and no end. The rotation is clamped: oldest is one hard stop, newest is the
+ * other, no wrapping. So it spins like a wheel and still runs in order.
+ *
+ * Rotation lives in one custom property, --theta, set on .ring. Everything
+ * else — gondola angles, strut angles — is static CSS, so a frame costs one
+ * style write, and the reduced-motion, narrow and print fallbacks can flatten
+ * the entire mechanism without this component knowing. */
 
 const N = timeline.length
 const STEP = 360 / N
-const MIN = -(N - 1) * STEP // newest at the read position
-const MAX = 0               // oldest at the read position
+const MIN = -(N - 1) * STEP // newest at the front
+const MAX = 0               // oldest at the front
 const DRAG = 0.3            // degrees per pixel
 const WHEEL = 0.25
 
@@ -35,8 +39,6 @@ export default function Centrifuge({ mod }) {
   const theta = useRef(0)
   const [current, setCurrent] = useState(0)
 
-  /* One style write per frame, on the container only. Every gondola's own
-   * counter-rotation is derived from --theta in CSS. */
   const paint = useCallback(() => {
     const el = ringRef.current
     if (el) el.style.setProperty('--theta', String(theta.current))
@@ -51,10 +53,10 @@ export default function Centrifuge({ mod }) {
 
   useEffect(() => { paint() }, [paint])
 
-  // ---- drag to spin (mouse and touch), vertical gestures left to the page
   useEffect(() => {
     const el = ringRef.current
     if (!el) return
+    const stage = el.closest('.ring-stage') || el
 
     let down = false
     let moved = false
@@ -74,7 +76,7 @@ export default function Centrifuge({ mod }) {
       const dx = e.clientX - startX
       if (!moved && Math.abs(dx) > 4) {
         moved = true
-        el.classList.add('spinning')
+        stage.classList.add('spinning')
       }
       if (moved) {
         theta.current = clamp(startT + dx * DRAG)
@@ -84,7 +86,7 @@ export default function Centrifuge({ mod }) {
 
     const onUp = () => {
       down = false
-      el.classList.remove('spinning')
+      stage.classList.remove('spinning')
     }
 
     // a drag that ends on a gondola must not also follow its link
@@ -110,22 +112,20 @@ export default function Centrifuge({ mod }) {
       }
     }
 
-    el.addEventListener('pointerdown', onDown)
-    el.addEventListener('pointermove', onMove)
+    stage.addEventListener('pointerdown', onDown)
+    stage.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
-    el.addEventListener('click', onClick, true)
-    el.addEventListener('wheel', onWheel, { passive: false })
+    stage.addEventListener('click', onClick, true)
+    stage.addEventListener('wheel', onWheel, { passive: false })
 
     return () => {
-      el.removeEventListener('pointerdown', onDown)
-      el.removeEventListener('pointermove', onMove)
+      stage.removeEventListener('pointerdown', onDown)
+      stage.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
-      el.removeEventListener('click', onClick, true)
-      el.removeEventListener('wheel', onWheel)
+      stage.removeEventListener('click', onClick, true)
+      stage.removeEventListener('wheel', onWheel)
     }
   }, [paint])
-
-  const node = timeline[current]
 
   return (
     <section id={mod.id} className="module module--eva" aria-labelledby={`${mod.id}-h`}>
@@ -139,71 +139,52 @@ export default function Centrifuge({ mod }) {
         </div>
       </div>
 
-      <div className="ring-wrap">
-        {/* the read position: fixed while the ring turns under it */}
-        <span className="ring-index" aria-hidden="true" />
+      <div className="ring-stage">
+        {/* camera tilt: how far above the ring's plane we are looking from.
+          * Low, because the rest of the craft is seen from the side too. */}
+        <div className="ring-tilt">
+          <div
+            className="ring"
+            ref={ringRef}
+            role="group"
+            aria-label="Career timeline, drag to rotate"
+          >
+            {/* ---- machinery. Discs laid into the horizontal plane, so they
+              * foreshorten with everything else instead of being drawn as
+              * ellipses that only look right at one angle. ---- */}
+            <div className="rim rim-outer" />
+            <div className="rim rim-inner" />
+            <div className="rim rim-hub" />
 
-        <div
-          className="ring"
-          ref={ringRef}
-          role="group"
-          aria-label="Career timeline, drag to rotate"
-        >
-          <svg className="ring-svg" viewBox="-340 -340 680 680" aria-hidden="true" focusable="false">
-            <circle className="rim" r="286" />
-            <circle className="rim rim-inner" r="272" />
-            {timeline.map((n, i) => {
-              const a = (i * STEP - 90) * (Math.PI / 180)
-              return (
-                <g key={n.seg}>
-                  <line
-                    className="strut"
-                    x1={Math.cos(a) * 54} y1={Math.sin(a) * 54}
-                    x2={Math.cos(a) * 286} y2={Math.sin(a) * 286}
-                  />
-                  <line
-                    className="rim-tick"
-                    x1={Math.cos(a) * 286} y1={Math.sin(a) * 286}
-                    x2={Math.cos(a) * 303} y2={Math.sin(a) * 303}
-                  />
-                </g>
-              )
-            })}
-            <circle className="hub" r="54" />
-            <circle className="hub hub-core" r="22" />
-          </svg>
-
-          <ol className="spokes">
             {timeline.map((n, i) => (
-              <li
-                className="spoke"
-                key={n.seg}
-                style={{ '--a': i * STEP }}
-                data-key={n.key ? 'true' : undefined}
-                data-current={current === i ? 'true' : undefined}
-              >
-                <a
-                  className="attach-box"
-                  href={n.href}
-                  onFocus={() => rotateTo(i)}
-                >
-                  <span className="seg">{n.seg}</span>
-                  <span className="w">{n.title}</span>
-                  <span className="d">{n.date}</span>
-                </a>
-              </li>
+              <div className="strut" key={`s-${n.seg}`} style={{ '--a': i * STEP }} />
             ))}
-          </ol>
 
+            <div className="shaft" />
+            <div className="shaft-cap" />
+
+            <ol className="gondolas">
+              {timeline.map((n, i) => (
+                <li
+                  className="gondola"
+                  key={n.seg}
+                  style={{ '--a': i * STEP }}
+                  data-key={n.key ? 'true' : undefined}
+                  data-current={current === i ? 'true' : undefined}
+                >
+                  <a className="gon-box" href={n.href} onFocus={() => rotateTo(i)}>
+                    <span className="seg">{n.seg}</span>
+                    <span className="w">{n.title}</span>
+                    <span className="d">{n.date}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
-        {/* The hub readout sits OUTSIDE .ring on purpose: anything inside it
-         * turns with the ring, and a readout that rotates is unreadable. */}
-        <div className="ring-read" aria-live="polite">
-          <p className="rr-date">{node.date}</p>
-          <p className="rr-title">{node.title}</p>
-          <p className="rr-detail">{node.detail}</p>
-        </div>
+        {/* the read position, fixed while the ring turns past it */}
+        <span className="ring-index" aria-hidden="true" />
       </div>
 
       <div className="ring-controls">
@@ -216,7 +197,8 @@ export default function Centrifuge({ mod }) {
           ← earlier
         </button>
         <span className="ring-count">
-          {current + 1} / {N}
+          <span className="rc-now">{timeline[current].date}</span>
+          <span className="rc-of">{current + 1} / {N}</span>
         </span>
         <button
           type="button"
