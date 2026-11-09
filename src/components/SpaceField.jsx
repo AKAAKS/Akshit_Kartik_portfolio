@@ -36,23 +36,39 @@ function buildBand() {
   const r = rng(20260211)
   const marks = []
 
-  // stars: mostly faint, a few bright enough to earn a plus-tick
-  for (let i = 0; i < 46; i += 1) {
+  /* Stars, by magnitude the way an atlas prints them: a great many faint
+   * points, progressively fewer bright ones, and only the brightest get a
+   * plus-tick. The steep falloff is what keeps a dense field from reading as
+   * noise — an even spread of equal dots looks like a texture, not a sky. */
+  for (let i = 0; i < 124; i += 1) {
     const x = r() * 100
     const y = r() * BAND
     const m = r()
-    if (m > 0.88) marks.push({ t: 'tick', x, y, s: 4.5 })
-    else if (m > 0.6) marks.push({ t: 'ring', x, y, s: 2.6 })
-    else marks.push({ t: 'dot', x, y, s: m > 0.3 ? 1.5 : 1 })
+    if (m > 0.955) marks.push({ t: 'tick', x, y, s: 5 })
+    else if (m > 0.9) marks.push({ t: 'tick', x, y, s: 3.6 })
+    else if (m > 0.78) marks.push({ t: 'ring', x, y, s: 2.8 })
+    else if (m > 0.66) marks.push({ t: 'ring', x, y, s: 1.9 })
+    else if (m > 0.4) marks.push({ t: 'dot', x, y, s: 1.4 })
+    else marks.push({ t: 'dot', x, y, s: 0.9 })
   }
 
-  // a couple of paths, drawn as hairline arcs
+  // a few close pairs — real fields have them, even spacing does not
+  for (let i = 0; i < 5; i += 1) {
+    const x = r() * 100
+    const y = r() * BAND
+    marks.push({ t: 'dot', x, y, s: 1.3 })
+    marks.push({ t: 'dot', x: x + 0.5 + r() * 0.7, y: y + 3 + r() * 4, s: 1 })
+  }
+
+  // paths, drawn as hairline arcs
+  for (let i = 0; i < 3; i += 1) {
+    marks.push({ t: 'arc', y: 150 + r() * (BAND - 300), k: r() > 0.5 ? 1 : -1 })
+  }
+
+  // rocks, in contour — deliberately not circles
   for (let i = 0; i < 2; i += 1) {
-    marks.push({ t: 'arc', y: 170 + r() * (BAND - 340), k: r() > 0.5 ? 1 : -1 })
+    marks.push({ t: 'rock', x: 6 + r() * 88, y: r() * BAND })
   }
-
-  // one rock, in contour — deliberately not a circle
-  marks.push({ t: 'rock', x: 8 + r() * 84, y: r() * BAND })
 
   return marks
 }
