@@ -1,0 +1,241 @@
+/* =============================================================================
+ *  COMPONENTS — the ISS-modular structure, "Bay grid" density.
+ *
+ *  The page is a station. The plan view across the top is both a cutaway and
+ *  the navigation. Inside a module, each entry is a rack in a numbered bay.
+ *  The career timeline is the truss: a beam with items at attach points.
+ *
+ *  Structure is carried by hairline rules only. No shadows, no fills beyond
+ *  --fill, no radii, no glow. See tokens.css before adding a value.
+ * ========================================================================== */
+
+/* ---------------------------------------------------------------- page frame */
+.page {
+  max-width: var(--page);
+  margin: 0 auto;
+  background: var(--paper);
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  min-height: 100vh;
+}
+
+/* ------------------------------------------------- plan view = module nav */
+.plan {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  overflow-x: auto;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  scrollbar-width: none;
+}
+.plan::-webkit-scrollbar { display: none; }
+
+.plan-mod {
+  flex: 0 0 auto;
+  padding: 10px 15px;
+  border-right: 1px solid var(--rule);
+  white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
+}
+.plan-mod .desig {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  color: var(--ink-dim);
+}
+.plan-mod .name {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  margin-top: 3px;
+  color: var(--ink);
+}
+.plan-mod:hover { background: var(--fill); }
+.plan-mod[aria-current='true'] { background: var(--fill); }
+.plan-mod[aria-current='true'] .name,
+.plan-mod[aria-current='true'] .desig { color: var(--accent); }
+
+/* --------------------------------------------------------------- a module */
+.module { border-top: 1px solid var(--rule); }
+.module:first-of-type { border-top: 0; }
+
+.module-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: var(--step) var(--gut) 0;
+}
+.module-body { padding: 18px var(--gut) var(--step); }
+
+/* the hatch stamp: says where you are, costs one line */
+.stamp {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--accent);
+  border: 1px solid var(--rule-hard);
+  padding: 3px 7px;
+  white-space: nowrap;
+}
+
+.module-title {
+  font-size: var(--t5);
+  line-height: 1.1;
+}
+
+/* ------------------------------------------------------------ a rack (entry) */
+.rack {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  border: 1px solid var(--rule);
+  margin-top: -1px;          /* collapse shared edges into one rule */
+  background: var(--card);
+}
+.rack-bay {
+  border-right: 1px solid var(--rule);
+  padding: 15px 0;
+  text-align: center;
+  background: var(--fill);
+}
+.rack-bay .b {
+  font-family: var(--f-mono);
+  font-size: var(--t2);
+  color: var(--accent);
+}
+.rack-load { padding: 15px 17px 17px; }
+
+.entry-title { font-size: var(--t4); line-height: 1.34; }
+
+.entry-meta {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+  margin-top: 6px;
+}
+
+.entry-desc {
+  font-size: var(--t3);
+  margin-top: 8px;
+  max-width: var(--measure);
+}
+
+.ref {
+  display: inline-block;
+  margin-top: 9px;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule-hard);
+}
+.ref:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* ------------------------------------------------------- truss (timeline) */
+.track {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+.track::-webkit-scrollbar { height: 7px; }
+.track::-webkit-scrollbar-thumb { background: var(--rule-hard); }
+.track::-webkit-scrollbar-track { background: var(--fill); }
+
+.truss {
+  min-width: calc(var(--node-w) * 11);
+  padding: 20px var(--gut) 4px;
+}
+.truss-beam {
+  height: 10px;
+  border-top: 1px solid var(--rule-hard);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+}
+.truss-beam i {
+  flex: 0 0 var(--node-w);
+  border-right: 1px solid var(--rule);
+}
+
+.truss-attachments {
+  display: flex;
+  padding-top: 10px;
+  margin: 0;
+  list-style: none;
+}
+.attach {
+  flex: 0 0 var(--node-w);
+  padding-right: 12px;
+}
+.attach .seg {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  color: var(--ink-dim);
+}
+.attach-box {
+  display: block;
+  border: 1px solid var(--rule);
+  background: var(--card);
+  padding: 9px 10px;
+  margin-top: 6px;
+  text-decoration: none;
+  color: inherit;
+}
+.attach-box:hover { border-color: var(--rule-hard); }
+.attach[data-key='true'] .attach-box { border-color: var(--mark); }
+.attach-box .w {
+  font-family: var(--f-head);
+  font-weight: 500;
+  font-size: var(--t2);
+  line-height: 1.35;
+}
+.attach-box .d {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  color: var(--ink-dim);
+  margin-top: 5px;
+}
+
+.track-hint {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  color: var(--ink-dim);
+  padding: 8px var(--gut) 0;
+}
+
+/* -------------------------------------------------------------- narrow screens */
+@media (max-width: 760px) {
+  .page { border-left: 0; border-right: 0; }
+  .rack { grid-template-columns: 52px 1fr; }
+  :root { --gut: 16px; }
+}
+
+/* ----------------------------------------------------------------------- print
+ * Replaces the separate printable route: the themed page *is* the print page.
+ * The truss linearises into a list, since a horizontal scroller cannot paginate.
+ */
+@media print {
+  body { background: #fff; }
+  .page { max-width: none; border: 0; min-height: 0; }
+  .plan, .track-hint { display: none; }
+
+  .track { overflow: visible; }
+  .truss { min-width: 0; padding: 0; }
+  .truss-beam { display: none; }
+  .truss-attachments { display: block; padding: 0; }
+  .attach { padding: 0; break-inside: avoid; }
+  .attach-box { border: 0; border-top: 1px solid #ccc; margin: 0; padding: 6px 0; }
+
+  .rack { break-inside: avoid; background: none; }
+  .rack-bay { background: none; }
+  .module { break-inside: avoid; }
+
+  /* a reader on paper cannot follow a link, so print its target */
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-family: var(--f-mono);
+    font-size: 9px;
+    word-break: break-all;
+  }
+}

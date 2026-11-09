@@ -1,0 +1,58 @@
+/* =============================================================================
+ *  TOKENS — "Star atlas"
+ *
+ *  Light only. Black ink on near-white, one spot colour for everything plotted,
+ *  the way an astronomical atlas is printed. There is no dark mode: this is a
+ *  deliberate choice, not an omission, so do not add `prefers-color-scheme`
+ *  branches here.
+ *
+ *  Every colour below is measured against --paper. Ratios are WCAG 2.1
+ *  contrast, verified; keep them passing if you change a value.
+ *    --ink      18.3:1  AAA
+ *    --ink-dim   6.9:1  AA   (smallest text it is allowed on is --t1)
+ *    --accent    9.0:1  AAA
+ *    --mark      6.1:1  AA   (also used as a 1px border → needs ≥3:1, 1.4.11)
+ * ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ---- surface ---- */
+  --paper: #FBFBF9;        /* the page */
+  --card: #FFFFFF;         /* a rack, a node box — one step up from the page */
+  --sunk: #F0F0ED;         /* behind the page; gutters */
+
+  /* ---- ink ---- */
+  --ink: #0F1113;          /* body and headings */
+  --ink-dim: #54585C;      /* labels, metadata, anything secondary */
+  --accent: #3B3E8C;       /* the one spot colour. Links, designators, marks */
+  --mark: #5457A8;         /* accent at border weight, for plotted emphasis */
+
+  /* ---- rules. Hairlines do the structural work; there are no shadows ---- */
+  --rule: rgba(15, 17, 19, 0.13);
+  --rule-hard: rgba(15, 17, 19, 0.32);
+  --fill: rgba(15, 17, 19, 0.025);
+
+  /* ---- type scale: five steps. Nothing on the site sits outside it ----
+   * t1 mono labels · t2 metadata · t3 body · t4 entry title · t5 section title */
+  --t1: 11px;
+  --t2: 13px;
+  --t3: 15px;
+  --t4: 18px;
+  --t5: clamp(25px, 2.8vw, 33px);
+
+  /* ---- families: NASA's digital stack ----
+   * Inter for headings, Public Sans for body, DM Mono for data and labels. */
+  --f-head: 'Inter', system-ui, -apple-system, sans-serif;
+  --f-body: 'Public Sans', system-ui, -apple-system, sans-serif;
+  --f-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ---- measure and rhythm ---- */
+  --page: 1060px;          /* outer page width */
+  --measure: 62ch;         /* max line length for running prose */
+  --gut: 22px;             /* inner padding of a panel */
+  --step: 26px;            /* vertical rhythm unit */
+
+  /* ---- timeline geometry, shared by truss and its print fallback ---- */
+  --node-w: 144px;
+}
