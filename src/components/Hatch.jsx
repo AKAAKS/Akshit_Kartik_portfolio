@@ -1,49 +1,40 @@
+import { Rib, HatchRing } from './Tube.jsx'
+
 /* The threshold between two modules.
  *
  * On the station you do not cross a line from one module to the next, you pass
- * through a hatch in a bulkhead. This is that: a full-bleed bulkhead arc (the
- * pressure hull curving away past the content column), a hatch ring, and the
- * designator plate of the module you are entering.
+ * through a hatch in a bulkhead. The tube runs continuously through this band —
+ * same hull edges, same shading — so the craft reads as one unbroken cylinder
+ * with ribs at intervals rather than as a stack of separate cards.
  *
- * The arc is deliberately full width so the curvature reads in the gutters
- * rather than stopping at the edge of the text. */
+ * Leaving for the truss is different: that is an airlock, and the tube ends.
+ * `from` and `into` tell this component which of the three it is. */
 
-export default function Hatch({ into, index, total }) {
-  const external = Boolean(into.external)
+export default function Hatch({ from, into, index, total }) {
+  const exiting = Boolean(into.external)   // going outside
+  const entering = Boolean(from.external)  // coming back in
+  const eva = exiting || entering
 
   return (
-    <div className={`hatch${external ? ' hatch--eva' : ''}`} aria-hidden="true">
-      {/* bulkhead: a shallow dome, stretched to whatever the viewport is */}
-      <svg
-        className="hatch-bulkhead"
-        viewBox="0 0 1000 44"
-        preserveAspectRatio="none"
-        focusable="false"
-      >
-        <path d="M0 44 Q500 0 1000 44" />
-      </svg>
-
-      <div className="hatch-ring">
-        <svg viewBox="0 0 64 64" focusable="false">
-          <circle className="ring-outer" cx="32" cy="32" r="27" />
-          <circle className="ring-inner" cx="32" cy="32" r="20" />
-          {/* dogs around the hatch rim */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <line
-              key={i}
-              x1="32" y1="5" x2="32" y2="11"
-              transform={`rotate(${i * 45} 32 32)`}
-            />
-          ))}
-        </svg>
+    <div
+      className={`hatch${eva ? ' hatch--eva' : ''}`}
+      data-cap={exiting ? 'exit' : entering ? 'enter' : undefined}
+      aria-hidden="true"
+    >
+      <div className="tube hatch-inner">
+        <Rib ry={15} />
+        <div className="hatch-ring">
+          <HatchRing eva={eva} />
+        </div>
+        <p className="hatch-plate">
+          <span className="hp-desig">{into.desig}</span>
+          <span className="hp-sep">/</span>
+          <span className="hp-elem">{into.element}</span>
+          <span className="hp-seq">
+            {eva ? (exiting ? 'airlock' : 'ingress') : `${index} of ${total}`}
+          </span>
+        </p>
       </div>
-
-      <p className="hatch-plate">
-        <span className="hp-desig">{into.desig}</span>
-        <span className="hp-sep">/</span>
-        <span className="hp-elem">{into.element}</span>
-        <span className="hp-seq">{index} of {total}</span>
-      </p>
     </div>
   )
 }

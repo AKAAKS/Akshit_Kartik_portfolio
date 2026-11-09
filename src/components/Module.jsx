@@ -16,7 +16,7 @@ export function Module({ mod, lead, children }) {
       className={`module${mod.external ? ' module--eva' : ''}`}
       aria-labelledby={`${mod.id}-h`}
     >
-      <div className="module-inner">
+      <div className="tube module-inner">
         <Placard mod={mod} />
         <div className="module-body">
           {lead && <p className="module-lead">{lead}</p>}

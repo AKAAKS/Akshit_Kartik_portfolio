@@ -13,6 +13,77 @@
  *  seen side-on. That is the only radius in the file; keep it that way.
  * ========================================================================== */
 
+/* =============================================================== space field
+ * What is behind the craft. Drawn, not lit: atlas marks at hairline weight,
+ * fixed behind everything, drifting slowly with scroll. Nothing here glows,
+ * pulses or animates its opacity. */
+.spacefield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sf-svg { display: block; will-change: transform; }
+
+.sf-dot { fill: var(--ink-dim); opacity: 0.5; }
+.sf-ring { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.45; }
+.sf-tick line { stroke: var(--ink-dim); stroke-width: 1; opacity: 0.55; }
+.sf-arc { fill: none; stroke: var(--ink); stroke-width: 1; opacity: 0.12; }
+.sf-rock path { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.5; }
+.sf-rock .sf-rock-shade { opacity: 0.28; }
+
+/* the craft sits in front of the field */
+main { position: relative; z-index: 1; }
+
+/* ==================================================================== tube
+ * The pressurized hull, seen from outside, running down the page. Three cues
+ * do all the work and none of them is an image: a cross-axis shading fall-off
+ * toward each edge, panel seams bunched near the edges (foreshortening), and
+ * elliptical ribs at every join. */
+.tube {
+  position: relative;
+  max-width: var(--page);
+  margin: 0 auto;
+  background-color: var(--paper);
+  background-image: linear-gradient(
+    to right,
+    rgba(15, 17, 19, 0.075) 0%,
+    rgba(15, 17, 19, 0.022) 4%,
+    rgba(15, 17, 19, 0) 16%,
+    rgba(15, 17, 19, 0) 84%,
+    rgba(15, 17, 19, 0.022) 96%,
+    rgba(15, 17, 19, 0.075) 100%
+  );
+  border-left: 1px solid var(--rule-hard);
+  border-right: 1px solid var(--rule-hard);
+}
+
+/* panel seams. They line up across module and hatch bands alike, which is
+ * what makes the tube read as continuous rather than segmented. */
+.tube::before,
+.tube::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule);
+  pointer-events: none;
+}
+.tube::before { left: 8%; }
+.tube::after { right: 8%; }
+
+/* ---- ribs: a ring around a tube seen side-on is an ellipse ---- */
+.rib { display: block; width: 100%; }
+.rib path { fill: none; vector-effect: non-scaling-stroke; }
+.rib-front { stroke: var(--rule-hard); stroke-width: 1; }
+.rib-back { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; }
+
+/* ---- end caps: the tube closes, so both arcs are solid ---- */
+.cap-inner { padding: 16px 0; }
+.cap--bottom .cap-inner { padding-bottom: 30px; }
+
 /* =========================================================== station map (nav)
  * The station seen side-on. Cylinders joined by hatch connectors, with the
  * truss hanging off the chain because it is not pressurized. A marker travels
@@ -114,38 +185,25 @@
 }
 
 /* ================================================================ the hatch
- * A bulkhead you pass through. The arc is full-bleed on purpose: the hull
- * curving away is what fills the gutters. */
-.hatch {
-  position: relative;
-  padding: 46px 0 22px;
-  text-align: center;
-  background: var(--paper);
-}
+ * A bulkhead you pass through. The tube runs continuously through this band —
+ * same hull, same shading, same seams — so the craft reads as one unbroken
+ * cylinder with ribs at the joins rather than a stack of cards. */
+.hatch { position: relative; }
 
-.hatch-bulkhead {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 44px;
-  fill: none;
-  stroke: var(--rule-hard);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
+.hatch-inner { padding: 20px 0 18px; text-align: center; }
 
-.hatch-ring { width: 56px; margin: 0 auto; }
-.hatch-ring svg { display: block; width: 100%; height: auto; overflow: visible; }
-.hatch-ring .ring-outer { fill: none; stroke: var(--rule-hard); stroke-width: 1.5; }
-.hatch-ring .ring-inner { fill: var(--card); stroke: var(--rule); stroke-width: 1; }
-.hatch-ring line { stroke: var(--rule-hard); stroke-width: 1.5; }
+.hatch-ring { margin-top: 12px; }
+.hatch-ring svg { display: block; margin: 0 auto; overflow: visible; }
+
+.hring-outer { fill: var(--card); stroke: var(--rule-hard); stroke-width: 1.5; }
+.hring-inner { fill: none; stroke: var(--rule); stroke-width: 1; }
+.hring-dog { stroke: var(--rule-hard); stroke-width: 1.5; }
 
 .hatch-plate {
   display: flex;
   justify-content: center;
   gap: 9px;
-  margin-top: 11px;
+  margin-top: 12px;
   font-family: var(--f-mono);
   font-size: 9.5px;
   color: var(--ink-dim);
@@ -153,25 +211,24 @@
 .hatch-plate .hp-desig { color: var(--accent); }
 .hatch-plate .hp-sep { opacity: 0.5; }
 
-/* going outside: an airlock, not an internal hatch */
-.hatch--eva { background: linear-gradient(to bottom, var(--paper) 55%, var(--sunk)); }
-.hatch--eva .hatch-bulkhead { stroke-dasharray: 4 4; }
-.hatch--eva .hatch-ring .ring-outer { stroke-dasharray: 3 3; }
+/* an airlock: the pressurized volume ends here */
+.hatch--eva .hring-outer { stroke-dasharray: 3 3; }
+.hatch[data-cap='exit'] .hatch-inner { padding-bottom: 26px; }
+.hatch[data-cap='enter'] .hatch-inner { padding-top: 26px; }
 
-/* ================================================================= a module */
-.module { background: var(--paper); }
+/* ================================================================= a module
+ * The module is a segment of the tube. The cylinder work lives on .tube,
+ * which both modules and hatch bands carry, so the hull is unbroken. */
+.module { position: relative; }
 
-.module-inner {
-  max-width: var(--page);
-  margin: 0 auto;
-  padding: var(--step) var(--gut);
-  border-left: 1px solid var(--rule);
-  border-right: 1px solid var(--rule);
-}
+.module-inner { padding: var(--step) var(--gut); }
 
-/* outside the pressure hull: recessed field, no hull edges */
-.module--eva { background: var(--sunk); }
-.module--eva .module-inner { border-left: 0; border-right: 0; }
+/* outside the pressure hull: no tube at all, the field shows through. The
+ * text still needs holding to a measure though — losing the hull is not a
+ * reason to let a line run the full width of a monitor. */
+.module--eva { background: transparent; }
+.module--eva .module-inner,
+.module--eva .track-hint { max-width: var(--page); margin: 0 auto; }
 
 /* ---- the designator placard: what a real hatch carries ---- */
 .placard { border-top: 2px solid var(--ink); padding-top: 9px; }
@@ -388,7 +445,8 @@
 /* ---------------------------------------------------------- narrow screens */
 @media (max-width: 760px) {
   :root { --gut: 16px; }
-  .module-inner { border-left: 0; border-right: 0; }
+  .tube { border-left: 0; border-right: 0; background-image: none; }
+  .tube::before, .tube::after { display: none; }
   .rack { grid-template-columns: 56px 1fr; }
   .station-mod { flex: 0 0 auto; }
   .hatch { padding-top: 38px; }
@@ -428,15 +486,16 @@
   /* 15px body is sized for a screen at arm's length, not for paper. */
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
-  .station, .hatch, .track-hint, .skip { display: none; }
+  .station, .hatch, .cap, .spacefield, .track-hint, .skip { display: none; }
 
   .module, .module--eva { background: none; }
-  .module-inner {
+  .module-inner { padding: 0; margin-top: 10pt; }
+  .tube {
     max-width: none;
-    padding: 0;
+    background-image: none;
     border: 0;
-    margin-top: 10pt;
   }
+  .tube::before, .tube::after { display: none; }
   .placard { border-top: 1.5pt solid #000; }
 
   .track { overflow: visible; }

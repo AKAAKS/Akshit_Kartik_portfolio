@@ -6,7 +6,7 @@ import { Placard } from './Module.jsx'
 export default function Intro({ mod }) {
   return (
     <section id={mod.id} className="module" aria-labelledby={`${mod.id}-h`}>
-      <div className="module-inner">
+      <div className="tube module-inner">
         <div className="placard">
           <p className="placard-top">
             <span className="pl-desig">{mod.desig}</span>
