@@ -185,37 +185,105 @@ main { position: relative; z-index: 1; }
   transform: translateX(-50%);
 }
 
-/* ================================================================ the hatch
- * A bulkhead you pass through. The tube runs continuously through this band —
- * same hull, same shading, same seams — so the craft reads as one unbroken
- * cylinder with ribs at the joins rather than a stack of cards. */
+/* ============================================================ the connector
+ * A docking adapter bolted between two pressure hulls: a narrower barrel,
+ * transition rings where the wide hull steps in, a bolt circle, a docking
+ * target, a grapple fixture, utility jumpers bridging the two modules, and a
+ * placard. Nothing here carries content, so it is the one place on the page
+ * that is allowed to be dense.
+ *
+ * The silhouette stretches to the tube's width; the detail cluster must not,
+ * or the bolt circle becomes an oval. Hence two SVGs. */
 .hatch { position: relative; }
 
-.hatch-inner { padding: 20px 0 18px; text-align: center; }
+.connector {
+  position: relative;
+  max-width: var(--page);
+  margin: 0 auto;
+  height: 190px;
+}
 
-.hatch-ring { margin-top: 12px; }
-.hatch-ring svg { display: block; margin: 0 auto; overflow: visible; }
+.conn-hull {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.conn-hull path { vector-effect: non-scaling-stroke; }
 
-.hring-outer { fill: var(--card); stroke: var(--rule-hard); stroke-width: 1.5; }
-.hring-inner { fill: none; stroke: var(--rule); stroke-width: 1; }
-.hring-dog { stroke: var(--rule-hard); stroke-width: 1.5; }
+.ch-fill { fill: var(--paper); stroke: none; }
+.ch-shade { fill: url(#hullshade); stroke: none; }
 
+.ch-edge,
+.ch-ring { fill: none; stroke: var(--rule-hard); stroke-width: 1; }
+.ch-ring-far { fill: none; stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; }
+.ch-jumper { fill: none; stroke: var(--rule); stroke-width: 1; }
+
+/* ---- the undistorted detail cluster ---- */
+.conn-detail {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+.cd-hatch { fill: var(--card); stroke: var(--rule-hard); stroke-width: 1.5; }
+.cd-hatch-in { fill: none; stroke: var(--rule); stroke-width: 1; }
+.cd-bolt { fill: var(--ink-dim); }
+
+.cd-target { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+.cd-target circle { fill: none; }
+
+.cd-grapple { fill: none; stroke: var(--rule-hard); stroke-width: 1; }
+.cd-handrail { fill: none; stroke: var(--rule-hard); stroke-width: 1.5; }
+
+/* ---- placard: a plate bolted on, which is also why it reads over art ---- */
 .hatch-plate {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: center;
   gap: 9px;
-  margin-top: 12px;
+  align-items: baseline;
+  background: var(--card);
+  border: 1px solid var(--rule-hard);
+  padding: 4px 10px;
   font-family: var(--f-mono);
   font-size: 9.5px;
   color: var(--ink-dim);
+  white-space: nowrap;
 }
 .hatch-plate .hp-desig { color: var(--accent); }
 .hatch-plate .hp-sep { opacity: 0.5; }
 
-/* an airlock: the pressurized volume ends here */
-.hatch--eva .hring-outer { stroke-dasharray: 3 3; }
-.hatch[data-cap='exit'] .hatch-inner { padding-bottom: 26px; }
-.hatch[data-cap='enter'] .hatch-inner { padding-top: 26px; }
+/* ---- a drawn callout, the way a diagram labels its parts ---- */
+.conn-callout {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: 86px;
+  margin-top: -40px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  pointer-events: none;
+}
+.conn-callout .cc-leader {
+  width: 54px;
+  height: 1px;
+  background: var(--accent);
+}
+.conn-callout .cc-text {
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* going outside: an airlock, so the seals are broken lines */
+.hatch--eva .ch-ring { stroke-dasharray: 4 4; }
+.hatch--eva .cd-hatch { stroke-dasharray: 3 3; }
 
 /* ================================================================= a module
  * The module is a segment of the tube. The cylinder work lives on .tube,
@@ -770,7 +838,7 @@ main { position: relative; z-index: 1; }
   .tube::before, .tube::after { display: none; }
   .rack { grid-template-columns: 56px 1fr; }
   .station-mod { flex: 0 0 auto; }
-  .hatch-inner { padding-top: 16px; }
+  .connector { height: 150px; }
 }
 
 @media (max-width: 560px) {

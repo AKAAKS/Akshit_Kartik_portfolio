@@ -54,32 +54,3 @@ export function TubeCap({ edge = 'top' }) {
     </div>
   )
 }
-
-/* The hatch ring itself. Drawn at natural size rather than stretched, so it
- * stays a believable opening on the tube's surface instead of a flat target. */
-export function HatchRing({ eva = false }) {
-  const rx = 38
-  const ry = 14
-  return (
-    <svg
-      className={`hring${eva ? ' hring--eva' : ''}`}
-      viewBox="0 0 100 44"
-      width="100"
-      height="44"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <ellipse className="hring-outer" cx="50" cy="22" rx={rx} ry={ry} />
-      <ellipse className="hring-inner" cx="50" cy="22" rx={rx - 7} ry={ry - 5} />
-      {/* dogs around the rim, spaced around the ellipse rather than a circle */}
-      {Array.from({ length: 10 }).map((_, i) => {
-        const a = (i / 10) * Math.PI * 2
-        const x = 50 + Math.cos(a) * rx
-        const y = 22 + Math.sin(a) * ry
-        const x2 = 50 + Math.cos(a) * (rx + 4)
-        const y2 = 22 + Math.sin(a) * (ry + 2.5)
-        return <line key={i} className="hring-dog" x1={x} y1={y} x2={x2} y2={y2} />
-      })}
-    </svg>
-  )
-}
