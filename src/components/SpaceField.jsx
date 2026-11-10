@@ -3,24 +3,37 @@ import { useEffect, useRef } from 'react'
 /* What is behind the craft.
  *
  * Drawn, not lit — this is the half of "space" that generated pages get wrong.
- * Marks are printed the way a star atlas prints them: open circles sized by
- * magnitude, plus-ticks for the bright ones, and the
- * occasional rock in contour. No glow, no twinkle, no gradient, no opacity
- * animation, nothing that pulses.
+ * No glow, no twinkle, no gradient, no opacity animation, nothing that pulses.
  *
- * It drifts slowly against the scroll so the page reads as travel along the
- * station. The band is generated once from a fixed seed and stacked three
- * times, so the drift wraps seamlessly, tall viewports stay covered, and
- * nothing is ever regenerated mid-scroll. Under prefers-reduced-motion the
- * transform is simply never applied.
+ * Two registers, deliberately different. The SHIP is a technical schematic:
+ * even-weight lines, three stroke widths, nothing shaded. The SKY is an
+ * engraving: form carried entirely by how dense the hatching is, the way a
+ * printed plate carries it. Bodies out here have no fill and no gradient —
+ * an earlier pass gave them both and they read as stickers. A line that gets
+ * tighter and heavier toward the shadow is what makes a disc a sphere.
+ *
+ * It drifts against the scroll in three layers at three rates, so the page
+ * reads as travel rather than as a sheet sliding. Each band is generated once
+ * from a fixed seed and stacked, so the drift wraps seamlessly and nothing is
+ * regenerated mid-scroll. Under prefers-reduced-motion no transform is ever
+ * applied.
  *
  * Marks are placed with percentage x so they spread across any width without
- * distorting. That means nested <svg> for the composite marks: percentages are
- * legal on x/y, and calc() is not legal in SVG geometry attributes at all. */
+ * distorting. That means nested <svg> for the composite marks: percentages
+ * are legal on x/y, and calc() is not legal in SVG geometry attributes. */
 
-const BAND = 1000   // px of pattern before it repeats
-const COPIES = 3    // enough that a tall viewport is never short of field
-const RATE = 0.08   // parallax: 8% of scroll distance
+const BAND = 1000 // px of pattern before it repeats
+const COPIES = 3 // enough that a tall viewport is never short of field
+
+/* Depth. One rate for everything was what made the scroll feel flat:
+ * differential motion is the only depth cue available on a white page, and
+ * without it the whole field reads as a single sheet sliding. Far stars
+ * barely move, rocks move noticeably, and the eye does the rest. */
+const LAYERS = [
+  { key: 'far', rate: 0.03 },
+  { key: 'mid', rate: 0.075 },
+  { key: 'near', rate: 0.17 },
+]
 
 /* A small deterministic PRNG. The field must be identical on every render and
  * every reload — a field that reshuffles is a field you notice. */
@@ -32,152 +45,271 @@ function rng(seed) {
   }
 }
 
-function buildBand() {
+function buildBands() {
   const r = rng(20260211)
-  const marks = []
+  const far = []
+  const mid = []
+  const near = []
 
   /* Stars, by magnitude the way an atlas prints them: a great many faint
    * points, progressively fewer bright ones, and only the brightest get a
    * plus-tick. The steep falloff is what keeps a dense field from reading as
-   * noise — an even spread of equal dots looks like a texture, not a sky. */
+   * noise — an even spread of equal dots looks like a texture, not a sky.
+   *
+   * Brightness doubles as depth: faint ones go to the slow layer, bright ones
+   * to the middle. That is also the right way round physically. */
   for (let i = 0; i < 124; i += 1) {
     const x = r() * 100
     const y = r() * BAND
     const m = r()
-    if (m > 0.955) marks.push({ t: 'tick', x, y, s: 5 })
-    else if (m > 0.9) marks.push({ t: 'tick', x, y, s: 3.6 })
-    else if (m > 0.78) marks.push({ t: 'ring', x, y, s: 2.8 })
-    else if (m > 0.66) marks.push({ t: 'ring', x, y, s: 1.9 })
-    else if (m > 0.4) marks.push({ t: 'dot', x, y, s: 1.4 })
-    else marks.push({ t: 'dot', x, y, s: 0.9 })
+    if (m > 0.955) mid.push({ t: 'tick', x, y, s: 5 })
+    else if (m > 0.9) mid.push({ t: 'tick', x, y, s: 3.6 })
+    else if (m > 0.78) mid.push({ t: 'ring', x, y, s: 2.8 })
+    else if (m > 0.66) far.push({ t: 'ring', x, y, s: 1.9 })
+    else if (m > 0.4) far.push({ t: 'dot', x, y, s: 1.4 })
+    else far.push({ t: 'dot', x, y, s: 0.9 })
   }
 
   // a few close pairs — real fields have them, even spacing does not
   for (let i = 0; i < 5; i += 1) {
     const x = r() * 100
     const y = r() * BAND
-    marks.push({ t: 'dot', x, y, s: 1.3 })
-    marks.push({ t: 'dot', x: x + 0.5 + r() * 0.7, y: y + 3 + r() * 4, s: 1 })
+    far.push({ t: 'dot', x, y, s: 1.3 })
+    far.push({ t: 'dot', x: x + 0.5 + r() * 0.7, y: y + 3 + r() * 4, s: 1 })
   }
 
-  // rocks, in contour — deliberately not circles
+  // small rocks in contour, plus the two big ones that carry real craters
   for (let i = 0; i < 2; i += 1) {
-    marks.push({ t: 'rock', x: 6 + r() * 88, y: r() * BAND })
+    near.push({ t: 'rock', x: 6 + r() * 88, y: r() * BAND })
   }
+  /* Kept clear of both bodies in x as well as y: the near layer slides four
+   * times faster than the mid one, so two marks that merely miss each other
+   * at rest will cross later in the scroll. */
+  near.push({ t: 'bigrock', x: 54, y: BAND * 0.05, s: 1 })
+  near.push({ t: 'bigrock', x: 13, y: BAND * 0.93, s: 0.78 })
 
-  /* SPIKE: bodies.
-   *
-   * These are the one thing on the page that is NOT a drawing. The ship is
-   * the schematic; what it is flying through is real. So a body gets shading,
-   * banding and a soft terminator, and it gets no outline, no latitude
-   * circles, no designation and no scale bar - all of which were turning it
-   * into another diagram.
-   *
-   * px x, not percent, because a body meant to be half off the edge has to
-   * stay half off the edge at every width. */
-  marks.push({ t: 'body', px: -118, y: BAND * 0.26, r: 212, kind: 'giant' })
-  marks.push({ t: 'body', x: 84, y: BAND * 0.72, r: 58, kind: 'rock' })
+  /* Bodies. The large one crops a page edge, which is why its x is in px and
+   * not a percentage — half off the edge has to stay half off the edge at
+   * every width. */
+  mid.push({ t: 'giant', px: -118, y: BAND * 0.26, r: 212 })
+  mid.push({ t: 'ringed', x: 78, y: BAND * 0.76, r: 52 })
 
-  /* A transfer arc with range ticks. The one piece of plotted geometry out
-   * here, so it is the one thing drawn in the accent rather than in ink. */
-  marks.push({ t: 'traj', y: BAND * 0.46 })
+  /* A transfer arc with range ticks: plotted geometry rather than a body, so
+   * it stays schematic and stays in the accent. */
+  near.push({ t: 'traj', y: BAND * 0.44 })
 
-  return marks
+  return { far, mid, near }
 }
 
-/* A body.
+const BANDS = buildBands()
+
+/* =========================================================================
+ *  Engraving
+ * ====================================================================== */
+
+/* Latitude hatching across a sphere.
  *
- * Shading is one offset radial gradient: lit toward the upper left, falling
- * off into a darkened limb on the other side. That single gradient is what
- * makes a flat circle read as a sphere, and it is why these are the only
- * elements on the site allowed to carry one.
- *
- * Surface is flat shapes clipped to the disc - bands for a giant, maria for a
- * rocky body. Deliberately low contrast: at this opacity the eye reads them
- * as surface rather than as pattern. */
-/* Wider apart in hue than the first pass, which sat in such a narrow band of
- * slate that the banding read as noise rather than as a surface. */
-const GIANT = ['#55678A', '#A3B2C6', '#495B80', '#BCC8D6', '#5F7094', '#8C9DB5']
+ * Every arc bows the same way because the body is seen from slightly above
+ * its equator, so the near side of each latitude circle sits lower on the
+ * page. Density and weight both climb toward the bottom: that gradient IS the
+ * shading, and it is the only thing making a flat disc read as round. */
+function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
+  const out = []
+  for (let i = 1; i < n; i += 1) {
+    /* Spacing tightens toward the bottom. An even spread reads as a grille;
+     * the squeeze is what an engraver does to darken a region. */
+    const u = i / n
+    const biased = u + 0.2 * u * (1 - u)
+    const y = -r * 0.995 + 2 * r * 0.995 * biased
+    const w = Math.sqrt(Math.max(0, r * r - y * y))
+    if (w < r * 0.05) continue
 
-/* Craters, as fractions of the radius: x, y, size. Hand-placed rather than
- * random - a real surface has a few big basins and a scatter of small ones,
- * and an even sprinkle of equal circles is what makes a moon look like a golf
- * ball. */
-const CRATERS = [
-  [-0.30, -0.26, 0.21], [0.27, 0.11, 0.17], [-0.08, 0.40, 0.14],
-  [0.44, -0.38, 0.11], [-0.55, 0.14, 0.10], [0.12, -0.52, 0.09],
-  [-0.22, 0.04, 0.08], [0.58, 0.22, 0.07], [-0.44, -0.54, 0.06],
-  [0.33, 0.49, 0.06], [0.02, 0.16, 0.05], [-0.62, -0.22, 0.05],
-  [0.20, -0.18, 0.045], [-0.14, -0.66, 0.04], [0.50, -0.08, 0.04],
-  [-0.36, 0.56, 0.035],
-]
+    const sag = w * tilt
+    const lit = (y + r) / (2 * r) // 0 at the top, 1 at the bottom
 
-function Body({ r, kind, uid }) {
-  const giant = kind === 'giant'
-  const base = giant ? '#8794A7' : '#8A8F96'
+    /* The spread between the lightest and heaviest line IS the modelling. The
+     * first pass ran 0.4 to 1.2 and the whole body collapsed into an even
+     * grey; an engraving needs its darkest line to be several times its
+     * lightest or there is no form in it at all. */
+    let weight = 0.45 + lit * 1.75
 
-  const surface = []
-  if (giant) {
-    /* Bands of uneven height, because evenly striped is a beach ball. */
-    const h = [0.18, 0.1, 0.22, 0.13, 0.19, 0.18]
-    let y = -r
-    h.forEach((f, i) => {
-      const hh = f * 2 * r
-      surface.push(
-        <rect key={`b${i}`} x={-r} y={y} width={r * 2} height={hh} fill={GIANT[i % GIANT.length]} />,
-      )
-      y += hh
-    })
-    // one storm, the asymmetry that stops it reading as wallpaper
-    surface.push(
-      <ellipse key="storm" cx={r * 0.28} cy={r * 0.14} rx={r * 0.21} ry={r * 0.1} fill="#44557A" />,
+    /* Banding, for a giant: clusters of heavy lines with quieter gaps, not
+     * one even field of hatch. */
+    if (band) {
+      const b = Math.sin((y / r) * band * Math.PI)
+      weight *= 0.45 + 1.0 * (b * b)
+    }
+
+    out.push(
+      <path
+        key={`l${i}`}
+        className="sf-lat"
+        d={`M${-w} ${y} Q 0 ${y + sag} ${w} ${y}`}
+        style={{ strokeWidth: weight }}
+      />,
     )
-  } else {
-    /* Each crater is two ellipses: a floor, and a rim offset AWAY from the
-     * light. The offset is the whole trick - it is what makes a flat disc
-     * read as a dish rather than as a spot. Light is upper left, matching the
-     * gradient below, so the rim shadow falls lower right. */
-    CRATERS.forEach(([fx, fy, fs], i) => {
-      const cx = fx * r
-      const cy = fy * r
-      const rad = fs * r
-      // foreshorten toward the limb, so craters near the edge flatten
-      const d = Math.min(1, Math.hypot(fx, fy))
-      const sq = Math.sqrt(Math.max(0.12, 1 - d * d))
-      surface.push(
-        <g key={`c${i}`}>
-          <ellipse cx={cx + rad * 0.14} cy={cy + rad * 0.14} rx={rad} ry={rad * sq} fill="#5F646C" />
-          <ellipse cx={cx - rad * 0.08} cy={cy - rad * 0.08} rx={rad * 0.86} ry={rad * 0.86 * sq} fill="#969BA3" />
-        </g>,
-      )
-    })
-  }
 
+    /* Crosshatch on the shadow side only: a second, shorter arc riding the
+     * same curve. Doubling the line count on one side is how a plate darkens
+     * a region without reaching for a darker ink. */
+    if (lit > 0.54) {
+      const k = (lit - 0.54) / 0.46
+      const x0 = w - w * k * 1.9
+      out.push(
+        <path
+          key={`x${i}`}
+          className="sf-lat sf-lat--shade"
+          d={`M${x0} ${y + 1.5} Q ${(x0 + w) / 2} ${y + 1.5 + sag * 0.55} ${w} ${y + 1.5}`}
+          style={{ strokeWidth: weight * 0.75 }}
+        />,
+      )
+    }
+  }
+  return out
+}
+
+/* The large body: a giant, banded, with one storm. No rings — the small one
+ * carries those, and two ringed bodies on one page is a motif, not a sky. */
+function Giant({ r }) {
   return (
     <g className="sf-planet">
-      <defs>
-        <clipPath id={`pc${uid}`}>
-          <circle cx="0" cy="0" r={r} />
-        </clipPath>
-        <radialGradient id={`pg${uid}`} cx="33%" cy="29%" r="74%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.3" />
-          <stop offset="44%" stopColor="#FFFFFF" stopOpacity="0" />
-          <stop offset="100%" stopColor="#0A0F16" stopOpacity="0.66" />
-        </radialGradient>
-      </defs>
-      <circle cx="0" cy="0" r={r} fill={base} />
-      <g clipPath={`url(#pc${uid})`}>{surface}</g>
-      <circle cx="0" cy="0" r={r} fill={`url(#pg${uid})`} />
+      <circle className="dfill" cx="0" cy="0" r={r} />
+      {latitudes(r, { n: 46, tilt: 0.26, band: 3 })}
+      {/* the storm: its own nested contours, which is how an engraver draws a
+        * feature sitting on an already-hatched ground */}
+      {[1, 0.74, 0.5, 0.28].map((f, i) => (
+        <ellipse
+          key={i}
+          className="sf-storm"
+          cx={r * 0.3}
+          cy={r * 0.2}
+          rx={r * 0.2 * f}
+          ry={r * 0.095 * f}
+          transform={`rotate(-7 ${r * 0.3} ${r * 0.2})`}
+        />
+      ))}
+      <circle className="sf-limb" cx="0" cy="0" r={r} />
     </g>
   )
 }
 
-const BAND_MARKS = buildBand()
+/* The small distant body, after P1: a ringed planet. The ring passes BEHIND
+ * the globe at the top and in FRONT of it at the bottom, which is the whole
+ * illusion — draw both halves on one side and it collapses into a flat badge
+ * with a hoop painted on it. */
+const RINGS = [
+  [1.5, 1.76],
+  [1.86, 2.14],
+  [2.22, 2.32],
+]
+const RING_TILT = -17
 
-function Marks({ offset }) {
+function Ringed({ r }) {
+  const ry = (rx) => rx * 0.26
+  const arc = (rx, front) => `M${-rx} 0 A ${rx} ${ry(rx)} 0 0 ${front ? 0 : 1} ${rx} 0`
+  const half = (front) =>
+    RINGS.flatMap(([a, b], i) => [
+      <path key={`${front}${i}a`} className="sf-ring-line" d={arc(r * a, front)} />,
+      <path key={`${front}${i}b`} className="sf-ring-line" d={arc(r * b, front)} />,
+    ])
+
+  return (
+    <g className="sf-planet">
+      {/* ring, far half */}
+      <g transform={`rotate(${RING_TILT})`}>{half(false)}</g>
+
+      {/* the globe, on paper so it occludes the far half cleanly */}
+      <circle className="dfill" cx="0" cy="0" r={r} />
+      {latitudes(r, { n: 26, tilt: 0.3, band: 2 })}
+      <circle className="sf-limb" cx="0" cy="0" r={r} />
+
+      {/* ring, near half — drawn over the globe, because it is in front */}
+      <g transform={`rotate(${RING_TILT})`}>{half(true)}</g>
+    </g>
+  )
+}
+
+/* A big rock, after ROCK: a heavy irregular edge and craters drawn as closed
+ * loops with the shadow hatched inside them. Deliberately looser than the
+ * ship — nothing out here is drawn with a straightedge. */
+const ROCK_R = [1, 0.93, 1.05, 0.88, 0.98, 1.07, 0.91, 1.01, 0.94, 1.06, 0.9, 0.97]
+/* Six, not sixteen. At this size a crater has to be worth drawing twice —
+ * once as a rim and once as the shadow inside the bowl — and anything small
+ * enough to skip that reads as a speck of dirt. */
+const ROCK_CRATERS = [
+  [-0.3, -0.28, 0.3, 0.2, -14],
+  [0.32, -0.08, 0.24, 0.18, 8],
+  [-0.08, 0.36, 0.33, 0.22, -4],
+  [0.42, 0.38, 0.19, 0.14, 20],
+  [-0.54, 0.12, 0.17, 0.13, -28],
+  [0.1, -0.52, 0.16, 0.11, 6],
+]
+
+function BigRock({ s = 1 }) {
+  const R = 38 * s
+  const n = ROCK_R.length
+
+  // a closed, smoothed, deliberately uneven edge
+  const pts = ROCK_R.map((f, i) => {
+    const a = (i / n) * Math.PI * 2
+    return [Math.cos(a) * R * f, Math.sin(a) * R * f]
+  })
+  const mid0 = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]
+  let d = `M${mid0[0].toFixed(2)} ${mid0[1].toFixed(2)}`
+  for (let i = 1; i <= n; i += 1) {
+    const p = pts[i % n]
+    const q = pts[(i + 1) % n]
+    const mx = (p[0] + q[0]) / 2
+    const my = (p[1] + q[1]) / 2
+    d += ` Q ${p[0].toFixed(2)} ${p[1].toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)}`
+  }
+  d += ' Z'
+
+  return (
+    <g className="sf-bigrock sf-tumble">
+      <path className="dfill" d={d} />
+      {/* body shading: hatching that follows the form, heavier at the bottom */}
+      {Array.from({ length: 12 }).map((_, i) => {
+        const y = -R * 0.84 + (R * 1.68 * i) / 11
+        const w = Math.sqrt(Math.max(0, R * R - y * y)) * 0.9
+        const lit = (y + R) / (2 * R)
+        if (lit < 0.44) return null
+        return (
+          <path
+            key={`h${i}`}
+            className="sf-rock-hatch"
+            d={`M${-w * (lit - 0.34)} ${y} Q 0 ${y + w * 0.2} ${w} ${y}`}
+            style={{ strokeWidth: 0.35 + lit * 0.65 }}
+          />
+        )
+      })}
+      {ROCK_CRATERS.map(([cx, cy, rx, ry, rot], i) => (
+        <g key={`c${i}`} transform={`rotate(${rot} ${cx * R} ${cy * R})`}>
+          <ellipse className="sf-crater" cx={cx * R} cy={cy * R} rx={rx * R} ry={ry * R} />
+          {/* the shadow inside the bowl, on the side away from the light */}
+          <path
+            className="sf-crater-shade"
+            d={`M${(cx - rx * 0.9) * R} ${cy * R} A ${rx * 0.9 * R} ${ry * 0.9 * R} 0 0 0 ${(cx + rx * 0.9) * R} ${cy * R}`}
+          />
+          <path
+            className="sf-crater-shade"
+            d={`M${(cx - rx * 0.6) * R} ${(cy + ry * 0.22) * R} A ${rx * 0.6 * R} ${ry * 0.6 * R} 0 0 0 ${(cx + rx * 0.6) * R} ${(cy + ry * 0.22) * R}`}
+          />
+        </g>
+      ))}
+      <path className="sf-rock-edge sf-rock-edge--heavy" d={d} />
+    </g>
+  )
+}
+
+/* =========================================================================
+ *  The field
+ * ====================================================================== */
+
+function Marks({ list, offset }) {
   return (
     <g transform={`translate(0 ${offset})`}>
-      {BAND_MARKS.map((m, i) => {
+      {list.map((m, i) => {
         const key = `${offset}-${i}`
 
         if (m.t === 'dot') {
@@ -199,9 +331,10 @@ function Marks({ offset }) {
           )
         }
 
-        if (m.t === 'body') {
+        if (m.t === 'giant' || m.t === 'ringed') {
           const R = m.r
-          const box = R * 2 + 8
+          // the ringed body needs room either side for its rings
+          const box = m.t === 'ringed' ? R * 5.2 : R * 2 + 8
           return (
             <svg
               key={key}
@@ -212,13 +345,30 @@ function Marks({ offset }) {
               width={box}
               height={box}
             >
-              <Body r={R} kind={m.kind} uid={key} />
+              {m.t === 'giant' ? <Giant r={R} /> : <Ringed r={R} />}
+            </svg>
+          )
+        }
+
+        if (m.t === 'bigrock') {
+          const box = 98 * m.s
+          return (
+            <svg
+              key={key}
+              className="sf-rock sf-rock--big"
+              x={`${m.x}%`}
+              y={m.y - box / 2}
+              viewBox={`${-box / 2} ${-box / 2} ${box} ${box}`}
+              width={box}
+              height={box}
+            >
+              <BigRock s={m.s} />
             </svg>
           )
         }
 
         if (m.t === 'traj') {
-          /* Stretched to the page: an arc and a straight tick survive a
+          /* Stretched to the page: an arc and a straight tick both survive a
            * non-uniform scale, which is why the ticks are drawn vertical. */
           return (
             <svg
@@ -244,9 +394,11 @@ function Marks({ offset }) {
 
         return (
           <svg key={key} className="sf-rock" x={`${m.x}%`} y={m.y - 14} viewBox="-14 -14 28 28" width="28" height="28">
-            <path className="sf-rock-body" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
-            <path className="sf-rock-shade" d="M 3 -9 L 10 -3 L 8 6 L 2 1 Z" />
-            <path className="sf-rock-edge" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
+            <g className="sf-tumble">
+              <path className="dfill" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
+              <path className="sf-rock-shade" d="M 3 -9 L 10 -3 L 8 6 L 2 1 Z" />
+              <path className="sf-rock-edge" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
+            </g>
           </svg>
         )
       })}
@@ -255,20 +407,22 @@ function Marks({ offset }) {
 }
 
 export default function SpaceField() {
-  const ref = useRef(null)
+  const refs = useRef([])
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     let raf = 0
     const apply = () => {
       raf = 0
-      // wrap within one band so the stacked copies hide the seam
-      const y = -((window.scrollY * RATE) % BAND)
-      // 2D translate on purpose: translate3d promotes a 3000px layer
-      el.style.transform = `translateY(${y}px)`
+      LAYERS.forEach((layer, i) => {
+        const el = refs.current[i]
+        if (!el) return
+        // wrap within one band so the stacked copies hide the seam
+        const y = -((window.scrollY * layer.rate) % BAND)
+        // 2D translate on purpose: translate3d promotes a 3000px layer
+        el.style.transform = `translateY(${y}px)`
+      })
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply) }
 
@@ -282,11 +436,20 @@ export default function SpaceField() {
 
   return (
     <div className="spacefield" aria-hidden="true">
-      <svg className="sf-svg" ref={ref} width="100%" height={BAND * COPIES} focusable="false">
-        {Array.from({ length: COPIES }).map((_, i) => (
-          <Marks key={i} offset={i * BAND} />
-        ))}
-      </svg>
+      {LAYERS.map((layer, li) => (
+        <svg
+          key={layer.key}
+          className={`sf-svg sf-svg--${layer.key}`}
+          ref={(el) => { refs.current[li] = el }}
+          width="100%"
+          height={BAND * COPIES}
+          focusable="false"
+        >
+          {Array.from({ length: COPIES }).map((_, i) => (
+            <Marks key={i} list={BANDS[layer.key]} offset={i * BAND} />
+          ))}
+        </svg>
+      ))}
     </div>
   )
 }

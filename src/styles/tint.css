@@ -81,33 +81,57 @@
 :root[data-tint='3'] .tz-therm { fill: color-mix(in srgb, var(--paper), var(--ti-therm) var(--tz-amt)); }
 
 /* =============================================================================
- *  THE SKY
+ *  THE SKY — an engraving, not a schematic
  *
- *  Not level-gated. None of this is a tint on the ship — it is what is out
- *  there, and it looks the same whatever the ship is washed with.
+ *  Not level-gated and carrying no colour at all. The ship is the drawing
+ *  that has tint laid into it; what it flies through is ink on paper, shaded
+ *  the way a printed plate shades: by how many lines there are and how heavy
+ *  they run. Stroke WIDTHS are set per-path in the component, because the
+ *  width is the shading and it has to vary within a single body.
+ *
+ *  Three layers at three drift rates stack in the same fixed box.
  * ========================================================================== */
+.spacefield > .sf-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
 
-/* Darker than the atlas marks were. At --ink-dim and half opacity the field
- * sat so far back it read as paper grain; these are the craft's own drawing
- * inks, which is what gives the sky the same density as the ship. */
+/* Stars. Darker than the atlas marks were: at --ink-dim and half opacity the
+ * field sat so far back it read as paper grain. */
 .sf-dot { fill: var(--draw-mid); opacity: 0.85; }
 .sf-ring { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.8; }
 .sf-tick line { stroke: var(--draw); stroke-width: 1; opacity: 0.85; }
 
-/* Bodies. The one place on the site with a gradient, and the reason is that a
- * flat circle cannot read as a sphere without one. Kept well under full
- * strength: a body at full saturation on a white page reads as a sticker. */
-.sf-planet { opacity: 0.46; }
+/* Bodies. Held under full strength because a body at full ink on a white
+ * page out-draws the ship, and the ship is the subject. */
+.sf-planet { opacity: 0.85; }
+.sf-lat { fill: none; stroke: var(--draw-mid); stroke-linecap: round; }
+.sf-lat--shade { stroke: var(--draw); }
+.sf-limb { fill: none; stroke: var(--draw); stroke-width: 1.4; }
+.sf-storm { fill: none; stroke: var(--draw); stroke-width: 1; }
+.sf-ring-line { fill: none; stroke: var(--draw); stroke-width: 1.15; }
 
-/* Rocks are lit the same way, in flat facets rather than a gradient, because
- * at 28px a gradient is just a smudge. The edge stays drawn: it is the one
- * concession to the sheet, and without it they dissolve into the paper. */
-.sf-rock-body { fill: #8A8F96; stroke: none; opacity: 0.5; }
-.sf-rock-shade { fill: #5E646D; stroke: none; opacity: 0.5; }
-.sf-rock-edge { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.8; }
+/* Rocks. The big ones carry craters as closed loops with the bowl's shadow
+ * hatched inside, and a heavy edge: a scratchy outline is what separates a
+ * hand-drawn rock from a machined part, and the ship owns machined. */
+/* Every rule here is prefixed, because components.css carries
+ * `.sf-rock path { stroke: var(--ink-dim); stroke-width: 1; opacity: .5 }`
+ * at specificity 0,1,1 - which beats a single class and flattened the
+ * craters, the hatching and the heavy edge into one uniform hairline. It
+ * also blanked the paper occluder to fill: none. */
+.spacefield .sf-bigrock { opacity: 0.9; }
+.spacefield .sf-rock .dfill { fill: var(--paper); stroke: none; }
+.spacefield .sf-rock-hatch { fill: none; stroke: var(--draw-mid); stroke-linecap: round; opacity: 1; }
+.spacefield .sf-crater { fill: none; stroke: var(--draw); stroke-width: 1.15; opacity: 1; }
+.spacefield .sf-crater-shade { fill: none; stroke: var(--draw); stroke-width: 1.6; stroke-linecap: round; opacity: 1; }
+.spacefield .sf-rock-edge { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.85; }
+.spacefield .sf-rock-edge--heavy { stroke: var(--draw); stroke-width: 2.4; opacity: 1; }
+.spacefield .sf-rock-shade { fill: var(--draw-far); stroke: none; opacity: 0.5; }
 
-/* A transfer arc with range ticks: plotted geometry, so it stays drawn and
- * stays in the accent. Dashed, because a trajectory is a prediction. */
+/* A transfer arc with range ticks: plotted geometry, so it stays schematic
+ * and stays in the accent. Dashed, because a trajectory is a prediction. */
 .sf-arc {
   stroke: var(--mark);
   stroke-width: 1;
@@ -116,13 +140,15 @@
 }
 .sf-tick2 { stroke: var(--mark); stroke-width: 1; opacity: 0.55; }
 
-/* Rocks turn. The field already drifts with the scroll; this is the only
- * thing on the page with motion of its own, slow enough to read as tumbling
- * rather than spinning, and it stops dead for reduced motion. */
-.sf-rock { transform-box: fill-box; transform-origin: center; }
+/* Rocks turn. The field drifts with the scroll; this is the only thing on the
+ * page with motion of its own, slow enough to read as tumbling rather than
+ * spinning, and it stops dead for reduced motion. */
+.sf-tumble { transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: no-preference) {
-  .sf-rock { animation: sf-tumble 90s linear infinite; }
-  .sf-rock:nth-of-type(even) { animation-duration: 124s; animation-direction: reverse; }
+  .sf-tumble { animation: sf-tumble 90s linear infinite; }
+  .sf-rock:nth-of-type(even) .sf-tumble { animation-duration: 124s; animation-direction: reverse; }
+  .sf-rock--big .sf-tumble { animation-duration: 168s; }
+  .sf-rock--big:nth-of-type(even) .sf-tumble { animation-duration: 196s; }
 }
 @keyframes sf-tumble {
   from { transform: rotate(0deg); }
