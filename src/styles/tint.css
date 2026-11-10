@@ -107,10 +107,8 @@
 /* Bodies. Held under full strength because a body at full ink on a white
  * page out-draws the ship, and the ship is the subject. */
 .sf-planet { opacity: 0.85; }
-.sf-lat { fill: none; stroke: var(--draw-mid); stroke-linecap: round; }
-.sf-lat--shade { stroke: var(--draw); }
+.sf-lat { fill: none; stroke: var(--draw); stroke-linecap: round; }
 .sf-limb { fill: none; stroke: var(--draw); stroke-width: 1.4; }
-.sf-storm { fill: none; stroke: var(--draw); stroke-width: 1; }
 .sf-ring-line { fill: none; stroke: var(--draw); stroke-width: 1.15; }
 
 /* Rocks. The big ones carry craters as closed loops with the bowl's shadow
@@ -121,13 +119,8 @@
  * at specificity 0,1,1 - which beats a single class and flattened the
  * craters, the hatching and the heavy edge into one uniform hairline. It
  * also blanked the paper occluder to fill: none. */
-.spacefield .sf-bigrock { opacity: 0.9; }
 .spacefield .sf-rock .dfill { fill: var(--paper); stroke: none; }
-.spacefield .sf-rock-hatch { fill: none; stroke: var(--draw-mid); stroke-linecap: round; opacity: 1; }
-.spacefield .sf-crater { fill: none; stroke: var(--draw); stroke-width: 1.15; opacity: 1; }
-.spacefield .sf-crater-shade { fill: none; stroke: var(--draw); stroke-width: 1.6; stroke-linecap: round; opacity: 1; }
 .spacefield .sf-rock-edge { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.85; }
-.spacefield .sf-rock-edge--heavy { stroke: var(--draw); stroke-width: 2.4; opacity: 1; }
 .spacefield .sf-rock-shade { fill: var(--draw-far); stroke: none; opacity: 0.5; }
 
 /* A transfer arc with range ticks: plotted geometry, so it stays schematic
@@ -147,8 +140,6 @@
 @media (prefers-reduced-motion: no-preference) {
   .sf-tumble { animation: sf-tumble 90s linear infinite; }
   .sf-rock:nth-of-type(even) .sf-tumble { animation-duration: 124s; animation-direction: reverse; }
-  .sf-rock--big .sf-tumble { animation-duration: 168s; }
-  .sf-rock--big:nth-of-type(even) .sf-tumble { animation-duration: 196s; }
 }
 @keyframes sf-tumble {
   from { transform: rotate(0deg); }
@@ -189,3 +180,82 @@
   border-color: var(--ink);
 }
 @media print { .spike-tint { display: none; } }
+
+/* =============================================================================
+ *  THE STATION BAR — a bolted plate carrying a glass panel
+ *
+ *  Two surfaces, not one. The full-width bar is the METAL: a plate bolted to
+ *  the hull, one step back from paper, with a rivet line running its length.
+ *  The nav chain sits on a GLASS panel bolted onto that plate and standing
+ *  slightly proud of it.
+ *
+ *  The relief is drawn, not lit. A hard-edged offset — box-shadow at zero
+ *  blur — is a second edge line, which is exactly how a drawing says a plate
+ *  stands off a surface. Nothing here glows and nothing is soft.
+ * ========================================================================== */
+:root {
+  /* The bar has to be taller than the panel it carries, or there is no metal
+   * left showing and the whole two-surface idea collapses. This leaves about
+   * 10px of plate above and below the glass. */
+  --nav-h: 96px;
+}
+
+.station {
+  background-color: var(--sunk);
+  border-bottom: 1px solid var(--rule-hard);
+}
+
+/* the rivet line along the bottom of the plate, and the plate's inner edge */
+.station::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  height: 5px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle 1.6px at 11px 2.5px, var(--draw-mid) 96%, transparent 100%);
+  background-size: 46px 5px;
+  background-repeat: repeat-x;
+  opacity: 0.75;
+}
+.station::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  border-top: 1px solid var(--rule);
+  pointer-events: none;
+}
+
+.station-scroll {
+  position: relative;
+  /* Inset from the window as well as capped at the measure. Without this the
+   * panel runs edge to edge on a phone and there is no plate left showing at
+   * the sides — the bar reads as one surface again. */
+  width: calc(100% - 24px);
+  padding: 7px var(--gut);
+  background-color: var(--card);
+  border: 1px solid var(--rule-hard);
+  /* zero blur: this is an edge, not a shadow */
+  box-shadow: 2px 2px 0 0 var(--rule-hard);
+  /* the four bolts holding the panel down */
+  background-image:
+    radial-gradient(circle 2px at 9px 9px, var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 9px) 9px, var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at 9px calc(100% - 9px), var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 9px) calc(100% - 9px), var(--draw-mid) 96%, transparent 100%);
+  background-repeat: no-repeat;
+}
+
+/* It is glass, so it takes the same ink the viewports do — but only once a
+ * tint level is on, like every other wash on the ship. */
+:root[data-tint] .station-scroll {
+  background-color: color-mix(in srgb, var(--card), var(--ti-glass) 7%);
+}
+
+/* The chain has to clear the bolts, and the centrifuge chip rides 9px up out
+ * of the chain, so the panel needs that much headroom at the top. */
+.station-chain { padding-top: 5px; }

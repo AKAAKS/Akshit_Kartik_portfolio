@@ -78,15 +78,10 @@ function buildBands() {
     far.push({ t: 'dot', x: x + 0.5 + r() * 0.7, y: y + 3 + r() * 4, s: 1 })
   }
 
-  // small rocks in contour, plus the two big ones that carry real craters
+  // small rocks, in contour — deliberately not circles
   for (let i = 0; i < 2; i += 1) {
     near.push({ t: 'rock', x: 6 + r() * 88, y: r() * BAND })
   }
-  /* Kept clear of both bodies in x as well as y: the near layer slides four
-   * times faster than the mid one, so two marks that merely miss each other
-   * at rest will cross later in the scroll. */
-  near.push({ t: 'bigrock', x: 54, y: BAND * 0.05, s: 1 })
-  near.push({ t: 'bigrock', x: 13, y: BAND * 0.93, s: 0.78 })
 
   /* Bodies. The large one crops a page edge, which is why its x is in px and
    * not a percentage — half off the edge has to stay half off the edge at
@@ -111,33 +106,47 @@ const BANDS = buildBands()
  *
  * Every arc bows the same way because the body is seen from slightly above
  * its equator, so the near side of each latitude circle sits lower on the
- * page. Density and weight both climb toward the bottom: that gradient IS the
- * shading, and it is the only thing making a flat disc read as round. */
-function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
+ * page.
+ *
+ * The field FADES rather than darkening. It begins as solid line at the top,
+ * and past a threshold each arc breaks into dashes that shorten while their
+ * gaps open, until the last of them are dots with a lot of paper between.
+ * The spacing opens the same way. An earlier pass did the engraver's usual
+ * thing and piled crosshatch into the shadow, which ended the body in a
+ * clotted dark mass instead of letting it fall away into the page. */
+const FADE = 0.4
+
+function latitudes(r, { n = 42, tilt = 0.24, band = 0 } = {}) {
   const out = []
   for (let i = 1; i < n; i += 1) {
-    /* Spacing tightens toward the bottom. An even spread reads as a grille;
-     * the squeeze is what an engraver does to darken a region. */
+    /* Lines sit tight at the top and spread as they go down, so the field
+     * thins by count as well as by weight. */
     const u = i / n
-    const biased = u + 0.2 * u * (1 - u)
-    const y = -r * 0.995 + 2 * r * 0.995 * biased
+    const y = -r * 0.995 + 2 * r * 0.995 * Math.pow(u, 1.35)
     const w = Math.sqrt(Math.max(0, r * r - y * y))
     if (w < r * 0.05) continue
 
     const sag = w * tilt
     const lit = (y + r) / (2 * r) // 0 at the top, 1 at the bottom
 
-    /* The spread between the lightest and heaviest line IS the modelling. The
-     * first pass ran 0.4 to 1.2 and the whole body collapsed into an even
-     * grey; an engraving needs its darkest line to be several times its
-     * lightest or there is no form in it at all. */
-    let weight = 0.45 + lit * 1.75
+    // heaviest where it is solid, lightening as it breaks up
+    let weight = 1.45 - lit * 0.75
 
-    /* Banding, for a giant: clusters of heavy lines with quieter gaps, not
-     * one even field of hatch. */
+    /* Banding, for a giant: clusters of heavier line with quieter gaps
+     * between them, rather than one even field of hatch. */
     if (band) {
       const b = Math.sin((y / r) * band * Math.PI)
-      weight *= 0.45 + 1.0 * (b * b)
+      weight *= 0.62 + 0.55 * (b * b)
+    }
+
+    /* Solid until FADE, then dashes that shorten as their gaps widen. Round
+     * caps are what turn the short end of that run into dots. */
+    let dash
+    if (lit > FADE) {
+      const k = (lit - FADE) / (1 - FADE)
+      const len = Math.max(0.45, 6 * (1 - k * k))
+      const gap = 2.2 + 17 * k * k
+      dash = `${len.toFixed(2)} ${gap.toFixed(2)}`
     }
 
     out.push(
@@ -145,49 +154,20 @@ function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
         key={`l${i}`}
         className="sf-lat"
         d={`M${-w} ${y} Q 0 ${y + sag} ${w} ${y}`}
-        style={{ strokeWidth: weight }}
+        style={{ strokeWidth: weight, strokeDasharray: dash }}
       />,
     )
-
-    /* Crosshatch on the shadow side only: a second, shorter arc riding the
-     * same curve. Doubling the line count on one side is how a plate darkens
-     * a region without reaching for a darker ink. */
-    if (lit > 0.54) {
-      const k = (lit - 0.54) / 0.46
-      const x0 = w - w * k * 1.9
-      out.push(
-        <path
-          key={`x${i}`}
-          className="sf-lat sf-lat--shade"
-          d={`M${x0} ${y + 1.5} Q ${(x0 + w) / 2} ${y + 1.5 + sag * 0.55} ${w} ${y + 1.5}`}
-          style={{ strokeWidth: weight * 0.75 }}
-        />,
-      )
-    }
   }
   return out
 }
 
-/* The large body: a giant, banded, with one storm. No rings — the small one
- * carries those, and two ringed bodies on one page is a motif, not a sky. */
+/* The large body: a giant, banded. No rings — the small one carries those,
+ * and two ringed bodies on one page is a motif rather than a sky. */
 function Giant({ r }) {
   return (
     <g className="sf-planet">
       <circle className="dfill" cx="0" cy="0" r={r} />
       {latitudes(r, { n: 46, tilt: 0.26, band: 3 })}
-      {/* the storm: its own nested contours, which is how an engraver draws a
-        * feature sitting on an already-hatched ground */}
-      {[1, 0.74, 0.5, 0.28].map((f, i) => (
-        <ellipse
-          key={i}
-          className="sf-storm"
-          cx={r * 0.3}
-          cy={r * 0.2}
-          rx={r * 0.2 * f}
-          ry={r * 0.095 * f}
-          transform={`rotate(-7 ${r * 0.3} ${r * 0.2})`}
-        />
-      ))}
       <circle className="sf-limb" cx="0" cy="0" r={r} />
     </g>
   )
@@ -225,79 +205,6 @@ function Ringed({ r }) {
 
       {/* ring, near half — drawn over the globe, because it is in front */}
       <g transform={`rotate(${RING_TILT})`}>{half(true)}</g>
-    </g>
-  )
-}
-
-/* A big rock, after ROCK: a heavy irregular edge and craters drawn as closed
- * loops with the shadow hatched inside them. Deliberately looser than the
- * ship — nothing out here is drawn with a straightedge. */
-const ROCK_R = [1, 0.93, 1.05, 0.88, 0.98, 1.07, 0.91, 1.01, 0.94, 1.06, 0.9, 0.97]
-/* Six, not sixteen. At this size a crater has to be worth drawing twice —
- * once as a rim and once as the shadow inside the bowl — and anything small
- * enough to skip that reads as a speck of dirt. */
-const ROCK_CRATERS = [
-  [-0.3, -0.28, 0.3, 0.2, -14],
-  [0.32, -0.08, 0.24, 0.18, 8],
-  [-0.08, 0.36, 0.33, 0.22, -4],
-  [0.42, 0.38, 0.19, 0.14, 20],
-  [-0.54, 0.12, 0.17, 0.13, -28],
-  [0.1, -0.52, 0.16, 0.11, 6],
-]
-
-function BigRock({ s = 1 }) {
-  const R = 38 * s
-  const n = ROCK_R.length
-
-  // a closed, smoothed, deliberately uneven edge
-  const pts = ROCK_R.map((f, i) => {
-    const a = (i / n) * Math.PI * 2
-    return [Math.cos(a) * R * f, Math.sin(a) * R * f]
-  })
-  const mid0 = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]
-  let d = `M${mid0[0].toFixed(2)} ${mid0[1].toFixed(2)}`
-  for (let i = 1; i <= n; i += 1) {
-    const p = pts[i % n]
-    const q = pts[(i + 1) % n]
-    const mx = (p[0] + q[0]) / 2
-    const my = (p[1] + q[1]) / 2
-    d += ` Q ${p[0].toFixed(2)} ${p[1].toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)}`
-  }
-  d += ' Z'
-
-  return (
-    <g className="sf-bigrock sf-tumble">
-      <path className="dfill" d={d} />
-      {/* body shading: hatching that follows the form, heavier at the bottom */}
-      {Array.from({ length: 12 }).map((_, i) => {
-        const y = -R * 0.84 + (R * 1.68 * i) / 11
-        const w = Math.sqrt(Math.max(0, R * R - y * y)) * 0.9
-        const lit = (y + R) / (2 * R)
-        if (lit < 0.44) return null
-        return (
-          <path
-            key={`h${i}`}
-            className="sf-rock-hatch"
-            d={`M${-w * (lit - 0.34)} ${y} Q 0 ${y + w * 0.2} ${w} ${y}`}
-            style={{ strokeWidth: 0.35 + lit * 0.65 }}
-          />
-        )
-      })}
-      {ROCK_CRATERS.map(([cx, cy, rx, ry, rot], i) => (
-        <g key={`c${i}`} transform={`rotate(${rot} ${cx * R} ${cy * R})`}>
-          <ellipse className="sf-crater" cx={cx * R} cy={cy * R} rx={rx * R} ry={ry * R} />
-          {/* the shadow inside the bowl, on the side away from the light */}
-          <path
-            className="sf-crater-shade"
-            d={`M${(cx - rx * 0.9) * R} ${cy * R} A ${rx * 0.9 * R} ${ry * 0.9 * R} 0 0 0 ${(cx + rx * 0.9) * R} ${cy * R}`}
-          />
-          <path
-            className="sf-crater-shade"
-            d={`M${(cx - rx * 0.6) * R} ${(cy + ry * 0.22) * R} A ${rx * 0.6 * R} ${ry * 0.6 * R} 0 0 0 ${(cx + rx * 0.6) * R} ${(cy + ry * 0.22) * R}`}
-          />
-        </g>
-      ))}
-      <path className="sf-rock-edge sf-rock-edge--heavy" d={d} />
     </g>
   )
 }
@@ -346,23 +253,6 @@ function Marks({ list, offset }) {
               height={box}
             >
               {m.t === 'giant' ? <Giant r={R} /> : <Ringed r={R} />}
-            </svg>
-          )
-        }
-
-        if (m.t === 'bigrock') {
-          const box = 98 * m.s
-          return (
-            <svg
-              key={key}
-              className="sf-rock sf-rock--big"
-              x={`${m.x}%`}
-              y={m.y - box / 2}
-              viewBox={`${-box / 2} ${-box / 2} ${box} ${box}`}
-              width={box}
-              height={box}
-            >
-              <BigRock s={m.s} />
             </svg>
           )
         }
