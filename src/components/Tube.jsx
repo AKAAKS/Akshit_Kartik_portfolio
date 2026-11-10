@@ -1,3 +1,5 @@
+import { RcsQuad, EngineBell } from './Externals.jsx'
+
 /* Cylinder drawing primitives.
  *
  * A ring around a tube seen side-on is an ELLIPSE, not a circle, and drawing
@@ -50,7 +52,23 @@ export function TubeCap({ edge = 'top' }) {
           <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 0 999 ${mid}`} />
           <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 1 999 ${mid}`} />
         </svg>
+        {/* Attitude control, where it actually lives: on the hull at the
+          * ends of the pressurized volume, firing fore and aft. */}
+        <span className="quad quad--l"><RcsQuad /></span>
+        <span className="quad quad--r"><RcsQuad /></span>
       </div>
+
+      {/* The aft end. The page used to simply stop here; a craft ends in an
+        * engine. */}
+      {edge === 'bottom' && (
+        <div className="aft">
+          <EngineBell />
+          <p className="aft-label">
+            <span className="al-tag">SPS</span>
+            <span className="al-name">SERVICE PROPULSION</span>
+          </p>
+        </div>
+      )}
     </div>
   )
 }

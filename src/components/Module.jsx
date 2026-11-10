@@ -9,6 +9,8 @@
 
 const WALL = { D: 'DECK', O: 'OVHD', P: 'PORT', S: 'STBD' }
 
+import HullFurniture from './Furniture.jsx'
+
 export function Module({ mod, lead, children }) {
   return (
     <section
@@ -17,6 +19,11 @@ export function Module({ mod, lead, children }) {
       aria-labelledby={`${mod.id}-h`}
     >
       <div className="tube module-inner">
+        {/* Fittings in the hull margin. The seed comes off the module id so
+          * each one is laid out differently and the hull does not repeat
+          * itself down the page. */}
+        <HullFurniture seed={mod.id.charCodeAt(0)} side="left" />
+        <HullFurniture seed={mod.id.charCodeAt(1)} side="right" />
         <Placard mod={mod} />
         <div className="module-body">
           {lead && <p className="module-lead">{lead}</p>}

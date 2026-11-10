@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { timeline } from '../data/content.js'
 import { Placard } from './Module.jsx'
+import { SolarArray } from './Externals.jsx'
 
 /* The centrifuge — the career spine as a spin-gravity ring, seen from the side.
  *
@@ -277,6 +278,14 @@ export default function Centrifuge({ mod }) {
               ))}
             </ol>
           </div>
+
+          {/* Arrays. They hang in the tilted space but outside the rotating
+            * ring, because a real array tracks the sun and does not spin with
+            * the wheel - and because a spinning array would be unreadable.
+            * They reach into the gutters, which is the emptiest part of the
+            * page and exactly where a craft this size puts its wings. */}
+          <div className="wing wing--l" aria-hidden="true"><SolarArray flip /></div>
+          <div className="wing wing--r" aria-hidden="true"><SolarArray /></div>
 
           {/* The read position. It lives in the tilted space but outside the
             * rotating ring, so it holds still at the front while the ring

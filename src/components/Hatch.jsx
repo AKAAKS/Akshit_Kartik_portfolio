@@ -14,7 +14,15 @@
  * is a second SVG at natural size, centred.
  *
  * `from` and `into` decide which of three this is: an ordinary hatch, the
- * airlock out to the truss, or the way back in. */
+ * airlock out to the truss, or the way back in.
+ *
+ * The side-on view can only ever show the coupling as a step in the hull -
+ * seen from the side, a flange is a line and a lug is nothing. So the
+ * hardware itself is carried by a three-quarter detail view beside it,
+ * lettered and tied back by a leader, the way a drawing blows up a part it
+ * cannot show in the main projection. Sides alternate down the page. */
+
+import Coupling from './Coupling.jsx'
 
 const W = 1000 // silhouette viewBox width; maps to the tube's full width
 const H = 190
@@ -159,6 +167,17 @@ export default function Hatch({ from, into, index, total }) {
             {eva ? (exiting ? 'airlock' : 'ingress') : `${index} of ${total}`}
           </span>
         </p>
+
+        {/* ---- the coupling itself, at three quarters ---- */}
+        <div className="conn-view" data-side={index % 2 ? 'left' : 'right'}>
+          <span className="cv-leader" />
+          <Coupling />
+          <p className="cv-label">
+            <span className="cv-tag">DETAIL {String.fromCharCode(64 + index)}</span>
+            <span className="cv-name">{eva ? 'EVA HATCH' : 'CBM COUPLING'}</span>
+            <span className="cv-scale">2:1</span>
+          </p>
+        </div>
 
         {/* ---- a drawn callout, the way a diagram labels its parts ---- */}
         <p className="conn-callout" aria-hidden="true">

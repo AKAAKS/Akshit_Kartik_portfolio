@@ -29,6 +29,19 @@
   --mark: #5457A8;         /* accent at border weight, for plotted emphasis */
 
   /* ---- rules. Hairlines do the structural work; there are no shadows ---- */
+  /* Line weights for drawn hardware.
+   *
+   * The reference sheets this is drawn from are crisp near-black engineering
+   * drawings. At --rule's 0.13 alpha, dense line art turns to grey mush, so
+   * drawn parts get their own near-black scale. Body text, racks and page
+   * rules keep the quiet values: the craft is the drawn thing, the content
+   * stays calm. Three weights is what a real drawing uses - object line,
+   * internal structure, and the far side of a form.
+   */
+  --draw: rgba(15, 17, 19, 0.84);     /* object outlines */
+  --draw-mid: rgba(15, 17, 19, 0.54); /* internal structure, splines, rims */
+  --draw-far: rgba(15, 17, 19, 0.26); /* far side, hidden and minor detail */
+
   --rule: rgba(15, 17, 19, 0.13);
   --rule-hard: rgba(15, 17, 19, 0.32);
   --fill: rgba(15, 17, 19, 0.025);

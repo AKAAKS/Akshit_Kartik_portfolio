@@ -55,10 +55,6 @@ main { position: relative; z-index: 1; }
   background-image:
     repeating-linear-gradient(to bottom, var(--rule-hard) 0 8px, transparent 8px 30px),
     repeating-linear-gradient(to bottom, var(--rule-hard) 0 8px, transparent 8px 30px),
-    repeating-linear-gradient(45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(-45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(-45deg, rgba(15,17,19,0.05) 0 1px, transparent 1px 14px),
     linear-gradient(
       to right,
       rgba(15, 17, 19, 0.075) 0%,
@@ -68,18 +64,10 @@ main { position: relative; z-index: 1; }
       rgba(15, 17, 19, 0.022) 96%,
       rgba(15, 17, 19, 0.075) 100%
     );
-  background-size:
-    1px 100%, 1px 100%,
-    68px 100%, 68px 100%,
-    68px 100%, 68px 100%,
-    100% 100%;
+  background-size: 1px 100%, 1px 100%, 100% 100%;
   /* all of this sits inside --hull, so content never covers it and it
    * never flickers in and out as racks scroll past */
-  background-position:
-    5% 0, 95% 0,
-    left top, left top,
-    right top, right top,
-    0 0;
+  background-position: 5% 0, 95% 0, 0 0;
   background-repeat: no-repeat;
   border-left: 1px solid var(--rule-hard);
   border-right: 1px solid var(--rule-hard);
@@ -233,7 +221,7 @@ main { position: relative; z-index: 1; }
   position: relative;
   max-width: var(--page);
   margin: 0 auto;
-  height: 190px;
+  height: 262px;
 }
 
 .conn-hull {
@@ -289,6 +277,111 @@ main { position: relative; z-index: 1; }
 }
 .hatch-plate .hp-desig { color: var(--accent); }
 .hatch-plate .hp-sep { opacity: 0.5; }
+
+/* ---- the drawing layer -------------------------------------------------
+ *
+ * Shared by every piece of authored line art. Strokes are non-scaling so a
+ * drawing keeps its weight whatever size it is rendered at, and joins are
+ * round so fine teeth do not spike. .dfill is the occluder: a paper-filled
+ * shape with no stroke, which is what lets near parts hide far ones and
+ * stops the whole thing reading as a wireframe. */
+.d1, .d2, .d3 {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Deliberately NOT vector-effect: non-scaling-stroke. The hull silhouette
+ * needs it because it is stretched non-uniformly to the page width, but
+ * these drawings are only ever scaled uniformly, so it would buy nothing
+ * and it is recomputed per element per paint - across the couplings, the
+ * furniture, the arrays and the engine that is a few thousand elements of
+ * pure waste. Widths are pre-divided by the ~0.87 render scale instead. */
+.d1 { stroke: var(--draw); stroke-width: 1.25; }
+.d2 { stroke: var(--draw-mid); stroke-width: 0.97; }
+.d3 { stroke: var(--draw-far); stroke-width: 0.8; }
+.dfill { fill: var(--paper); stroke: none; }
+
+/* ---- the three-quarter detail view -------------------------------------
+ *
+ * The craft is drawn side-on throughout, and side-on a flange collapses to a
+ * line - all the depth that makes a coupling worth drawing is lost. So the
+ * coupling is blown up the way an engineering drawing does it: a detail view
+ * at three quarters, cornered off, scaled, lettered, and tied back to the
+ * place it was taken from by a leader. The convention is what lets the two
+ * projections sit on one page without fighting. */
+.conn-view {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 232px;
+  padding: 10px 10px 0;
+}
+.conn-view[data-side='left'] { left: 5%; }
+.conn-view[data-side='right'] { right: 5%; }
+
+/* corner brackets rather than a full box: it marks the view off without
+ * boxing the drawing in */
+.conn-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid)),
+    linear-gradient(var(--draw-mid), var(--draw-mid));
+  background-size: 15px 1px, 1px 15px, 15px 1px, 1px 15px,
+                   15px 1px, 1px 15px, 15px 1px, 1px 15px;
+  background-position:
+    left top, left top, right top, right top,
+    left bottom, left bottom, right bottom, right bottom;
+  background-repeat: no-repeat;
+}
+
+.coupling { display: block; overflow: visible; }
+
+/* the leader back to the hatch the detail was taken from */
+.cv-leader {
+  position: absolute;
+  top: 50%;
+  height: 1px;
+  background: var(--draw-far);
+  pointer-events: none;
+}
+.conn-view[data-side='left'] .cv-leader { left: 100%; width: 94px; }
+.conn-view[data-side='right'] .cv-leader { right: 100%; width: 94px; }
+.cv-leader::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--draw-mid);
+}
+.conn-view[data-side='left'] .cv-leader::after { right: -2px; }
+.conn-view[data-side='right'] .cv-leader::after { left: -2px; }
+
+.cv-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding-top: 5px;
+  border-top: 1px solid var(--draw-far);
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+.cv-label .cv-tag { color: var(--accent); }
+.cv-label .cv-scale { margin-left: auto; opacity: 0.7; }
 
 /* ---- a drawn callout, the way a diagram labels its parts ---- */
 .conn-callout {
@@ -916,6 +1009,7 @@ main { position: relative; z-index: 1; }
   .rack { grid-template-columns: 56px 1fr; }
   .station-mod { flex: 0 0 auto; }
   .connector { height: 150px; }
+  .conn-view { display: none; }
 }
 
 @media (max-width: 560px) {
@@ -1055,4 +1149,102 @@ main { position: relative; z-index: 1; }
     font-size: 8pt;
     word-break: break-all;
   }
+}
+
+
+/* ================================================= external hardware
+ *
+ * Arrays, thrusters and the main engine. All drawn on the shared .d1/.d2/.d3
+ * line scale, so the outside of the craft matches the drawing inside it.
+ */
+
+/* ---- arrays on the centrifuge hub ----
+ *
+ * Placed from the ring's own radius rather than a fixed offset, so the wings
+ * stay attached as the ring scales with the viewport. The projected
+ * silhouette runs about 1.22x the layout radius - perspective magnifies the
+ * near half - which is the number that puts the root on the rim and not
+ * floating off it. */
+.wing {
+  position: absolute;
+  top: 50%;
+  margin-top: -59px;
+  pointer-events: none;
+}
+.wing--r { left: 50%; margin-left: calc(var(--ring-r) * 1.09); }
+.wing--l { right: 50%; margin-right: calc(var(--ring-r) * 1.09); }
+.array--flip { transform: scaleX(-1); }
+
+/* ---- thruster quads on the end caps ---- */
+.quad {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 0;
+  pointer-events: none;
+}
+.quad--l { left: -27px; }
+.quad--r { right: -27px; }
+
+/* ---- the aft end ---- */
+.aft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -6px;
+  padding-bottom: 54px;
+}
+.bell { display: block; }
+.aft-label {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+.aft-label .al-tag { color: var(--accent); }
+
+/* Narrow screens: the gutters are gone, so the wings have nowhere to go and
+ * the quads would hang off the hull. The engine still reads, so it stays. */
+@media (max-width: 1280px) {
+  .wing { display: none; }
+}
+@media (max-width: 860px) {
+  .quad { display: none; }
+  .aft { padding-bottom: 32px; }
+}
+
+@media print {
+  .wing, .quad, .aft { display: none; }
+}
+
+
+/* ---- hull furniture ----
+ *
+ * Lives in the --hull margin, inboard of the racks, so drawn hardware never
+ * ends up behind text. Spread down the module's height rather than clustered,
+ * which is how a real wall is fitted out. */
+.furniture {
+  position: absolute;
+  top: 54px;
+  bottom: 54px;
+  width: var(--hull);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  pointer-events: none;
+}
+.furniture--left { left: 0; }
+.furniture--right { right: 0; }
+.furniture--right .fx { transform: scaleX(-1); }
+.fx { line-height: 0; }
+
+@media (max-width: 1024px) {
+  .furniture { display: none; }
+}
+@media print {
+  .furniture { display: none; }
 }
