@@ -221,9 +221,13 @@ export default function Centrifuge({ mod }) {
       <div className="module-inner">
         <Placard mod={mod} note="External · spin gravity" />
         <div className="module-body" style={{ paddingBottom: 0 }}>
-          <p className="module-lead" style={{ marginBottom: 0 }}>
-            Roles, publications and projects in order, January 2024 to now. Drag to
-            spin; it stops at both ends. Each gondola links to its detail.
+          <p className="module-lead module-lead--wide" style={{ marginBottom: 0 }}>
+            Roles, publications and projects in order, January 2024 to now. Drag
+            the handrail above or below the gondolas to spin the ring — the
+            gondolas themselves are links, so clicking one opens its detail
+            rather than turning the wheel. Rotation is clamped at both ends
+            instead of wrapping, so the oldest entry and the newest are each a
+            hard stop and the run always reads in order.
           </p>
         </div>
       </div>

@@ -19,12 +19,16 @@ const SHOULDER = 150 // where the cone stops flaring and the hull begins
  * guessed the half-width with a fudge factor and the rings floated off the
  * surface, which is exactly what they looked like. These are the real
  * control points and the real Bezier. */
-/* The first control point sat so far along the chord that the tangents at
- * both ends pointed almost the same way, and the "curve" rendered as a
- * straight taper. Pulled back toward the apex it is steep at the tip and
- * shallow at the shoulder - the capsule profile a command module has. */
-const CPX = W / 2 - 118
-const CPY = SHOULDER * 0.74
+/* Which side of the chord the control point falls on decides whether the
+ * cone reads as a trumpet or as a bullet. Inboard of the chord the surface
+ * is concave and flares out at the end like a horn; outboard it is convex -
+ * it swells away from the apex and then runs parallel into the hull, which
+ * is the ogive a bullet has.
+ *
+ * Keeping CPX near zero puts the tangent at the shoulder almost vertical, so
+ * the nose meets the cylinder smoothly instead of arriving at an angle. */
+const CPX = 26
+const CPY = SHOULDER * 0.26
 const bezX = (t) => {
   const m = 1 - t
   return m * m * (W / 2 - TIP) + 2 * m * t * CPX // the end point's x is 0

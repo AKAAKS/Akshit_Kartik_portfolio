@@ -30,13 +30,16 @@ const Y_CONV = 230
 const Y_THR = 268
 const Y_EXIT = 560
 
-/* Control point of the bell's quadratic. The tangent at the throat points at
- * it and the tangent at the exit comes from it, so this one pair of numbers
- * sets both how hard the nozzle flares and how straight it runs afterwards.
- * Pulled down the axis from the first attempt, which flared so early the bell
- * came out domed instead of conical. */
-const CX = THROAT + 96
-const CY = Y_THR + 162
+/* Control point of the bell's quadratic, and the only thing that decides
+ * whether the nozzle is a cone or a bell.
+ *
+ * Outboard of the throat-to-exit chord the wall is convex: it swells away
+ * from the throat and then runs nearly parallel to the axis at the exit,
+ * which is the hemispherical bell a real nozzle has and the bullet end this
+ * one should have. Keeping CX close to EXIT holds that exit tangent near
+ * vertical. Inboard of the chord it would be a straight cone. */
+const CX = THROAT + 142
+const CY = Y_THR + 84
 
 /* One continuous profile, chamber lip to nozzle exit. Everything else on the
  * engine is this curve transformed. */
@@ -173,22 +176,6 @@ export default function Engine({ width = 480 }) {
       aria-hidden="true"
       focusable="false"
     >
-      {/* ---- feed lines, behind everything ---- */}
-      {[-1, 1].map((s) => (
-        <g key={s}>
-          <path
-            className="d3"
-            d={`M${s * 176} ${Y_INJ} C ${s * 232} ${Y_CHAM}, ${s * 236} ${Y_THR}, ${s * 212} ${Y_EXIT - 10}`}
-            fill="none"
-          />
-          <path
-            className="d3"
-            d={`M${s * 182} ${Y_INJ} C ${s * 240} ${Y_CHAM}, ${s * 244} ${Y_THR}, ${s * 220} ${Y_EXIT - 10}`}
-            fill="none"
-          />
-        </g>
-      ))}
-
       {/* ---- thrust mount ring: what the hull bolts to ---- */}
       <Band y1={Y_RING} y2={Y_RING2} r={TOP_R} />
       <Ring y={Y_RING} r={TOP_R * 0.82} cls="d3" />

@@ -410,6 +410,10 @@ main { position: relative; z-index: 1; }
   margin: 0 0 16px;
   max-width: var(--measure);
 }
+/* The timeline's lead is the only text on the page with a plate behind it
+ * and no racks under it, so a measure-width paragraph leaves most of the
+ * plate empty and reads as misaligned. It runs the plate's own width. */
+.module-lead--wide { max-width: none; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; }
 
