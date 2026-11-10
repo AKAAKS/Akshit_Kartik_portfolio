@@ -106,24 +106,13 @@ const BANDS = buildBands()
  *
  * Every arc bows the same way because the body is seen from slightly above
  * its equator, so the near side of each latitude circle sits lower on the
- * page.
+ * page. The lines span the full width of the disc and stay solid end to end:
+ * they are the form.
  *
- * TWO sets of line, doing two different jobs:
- *
- *  - the latitudes themselves span the full width of the disc and stay SOLID
- *    end to end. They are the form, and breaking them up cost the body its
- *    roundness.
- *  - the crosshatch rides the same curves on the shadow side only, spanning
- *    part of the width. That set begins solid where the shadow begins and
- *    breaks progressively into dashes, then into dots with a lot of paper
- *    between, so the shaded side fades out rather than clotting into a dark
- *    mass at the bottom.
- *
- * Doubling the line count on one side is how a plate darkens a region
- * without reaching for a darker ink; letting that second set dissolve is
- * what keeps it from becoming a blot. */
-const SHADE = 0.54
-
+ * The roundness is NOT carried by the lines. It comes from the same trick
+ * the hull uses to read as a cylinder — a flat ink gradient falling off
+ * toward the edge, at the hull's own strength. Crosshatching the shadow was
+ * the engraver's answer and it was heavier and rougher than this one. */
 function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
   const out = []
   for (let i = 1; i < n; i += 1) {
@@ -138,9 +127,8 @@ function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
     const sag = w * tilt
     const lit = (y + r) / (2 * r) // 0 at the top, 1 at the bottom
 
-    /* The spread between the lightest and heaviest line IS the modelling. An
-     * early pass ran 0.4 to 1.2 and the body collapsed into even grey; an
-     * engraving needs its darkest line several times its lightest. */
+    /* The spread between lightest and heaviest line is still doing work: an
+     * early pass ran 0.4 to 1.2 and the body collapsed into even grey. */
     let weight = 0.45 + lit * 1.75
 
     /* Banding, for a giant: clusters of heavy line with quieter gaps, not
@@ -158,41 +146,40 @@ function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
         style={{ strokeWidth: weight }}
       />,
     )
-
-    if (lit > SHADE) {
-      const k = (lit - SHADE) / (1 - SHADE)
-      /* The run has to OPEN at a readable length, or its solid beginning is
-       * a few invisible stubs and the whole set looks dashed from the start. */
-      const x0 = w - w * (0.34 + k * 1.52)
-
-      /* Solid at the start of the run, then dashes that shorten as their
-       * gaps widen. Round caps are what turn the end of that run into dots
-       * rather than into little bars. */
-      const len = Math.max(0.45, 6 * (1 - k * k))
-      const gap = 2.2 + 17 * k * k
-
-      out.push(
-        <path
-          key={`x${i}`}
-          className="sf-lat sf-lat--shade"
-          d={`M${x0} ${y + 1.5} Q ${(x0 + w) / 2} ${y + 1.5 + sag * 0.55} ${w} ${y + 1.5}`}
-          style={{
-            strokeWidth: weight * 0.75,
-            strokeDasharray: k > 0.14 ? `${len.toFixed(2)} ${gap.toFixed(2)}` : undefined,
-          }}
-        />,
-      )
-    }
   }
   return out
 }
 
+/* The sphere's shading, as one flat gradient.
+ *
+ * Lifted from .tube, which darkens toward both edges to read as a cylinder.
+ * A sphere darkens toward its whole limb instead of two sides, so the same
+ * falloff goes radial, and the centre is offset up and left to put the light
+ * somewhere rather than nowhere. Alphas match the hull's: this is modelling,
+ * not a shadow, and anything stronger turns the body back into a sticker. */
+function Shade({ r, uid }) {
+  return (
+    <>
+      <defs>
+        <radialGradient id={`sg${uid}`} cx="36%" cy="31%" r="72%">
+          <stop offset="0%" stopColor="#0F1113" stopOpacity="0" />
+          <stop offset="58%" stopColor="#0F1113" stopOpacity="0.022" />
+          <stop offset="88%" stopColor="#0F1113" stopOpacity="0.075" />
+          <stop offset="100%" stopColor="#0F1113" stopOpacity="0.14" />
+        </radialGradient>
+      </defs>
+      <circle cx="0" cy="0" r={r} fill={`url(#sg${uid})`} />
+    </>
+  )
+}
+
 /* The large body: a giant, banded. No rings — the small one carries those,
  * and two ringed bodies on one page is a motif rather than a sky. */
-function Giant({ r }) {
+function Giant({ r, uid }) {
   return (
     <g className="sf-planet">
       <circle className="dfill" cx="0" cy="0" r={r} />
+      <Shade r={r} uid={uid} />
       {latitudes(r, { n: 46, tilt: 0.26, band: 3 })}
       <circle className="sf-limb" cx="0" cy="0" r={r} />
     </g>
@@ -210,7 +197,7 @@ const RINGS = [
 ]
 const RING_TILT = -17
 
-function Ringed({ r }) {
+function Ringed({ r, uid }) {
   const ry = (rx) => rx * 0.26
   const arc = (rx, front) => `M${-rx} 0 A ${rx} ${ry(rx)} 0 0 ${front ? 0 : 1} ${rx} 0`
   const half = (front) =>
@@ -226,6 +213,7 @@ function Ringed({ r }) {
 
       {/* the globe, on paper so it occludes the far half cleanly */}
       <circle className="dfill" cx="0" cy="0" r={r} />
+      <Shade r={r} uid={uid} />
       {latitudes(r, { n: 26, tilt: 0.3, band: 2 })}
       <circle className="sf-limb" cx="0" cy="0" r={r} />
 
@@ -278,7 +266,7 @@ function Marks({ list, offset }) {
               width={box}
               height={box}
             >
-              {m.t === 'giant' ? <Giant r={R} /> : <Ringed r={R} />}
+              {m.t === 'giant' ? <Giant r={R} uid={key} /> : <Ringed r={R} uid={key} />}
             </svg>
           )
         }

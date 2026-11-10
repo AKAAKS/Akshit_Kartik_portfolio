@@ -108,7 +108,6 @@
  * page out-draws the ship, and the ship is the subject. */
 .sf-planet { opacity: 0.85; }
 .sf-lat { fill: none; stroke: var(--draw-mid); stroke-linecap: round; }
-.sf-lat--shade { stroke: var(--draw); }
 .sf-limb { fill: none; stroke: var(--draw); stroke-width: 1.4; }
 .sf-ring-line { fill: none; stroke: var(--draw); stroke-width: 1.15; }
 
