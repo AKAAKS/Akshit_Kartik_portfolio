@@ -17,13 +17,13 @@ function Handrail({ h = 124 }) {
     <svg width="26" height={h} viewBox={`0 0 26 ${h}`} aria-hidden="true" focusable="false">
       {[10, h - 10].map((y) => (
         <g key={y}>
-          <rect className="dfill" x="2" y={y - 7} width="9" height="14" />
+          <rect className="dfill tz-eva-fill" x="2" y={y - 7} width="9" height="14" />
           <rect className="d2" x="2" y={y - 7} width="9" height="14" fill="none" />
           <line className="d3" x1="11" y1={y} x2="16" y2={y} />
         </g>
       ))}
-      <line className="d2" x1="14" y1="10" x2="14" y2={h - 10} />
-      <line className="d2" x1="19" y1="10" x2="19" y2={h - 10} />
+      <line className="d2 tz-eva" x1="14" y1="10" x2="14" y2={h - 10} />
+      <line className="d2 tz-eva" x1="19" y1="10" x2="19" y2={h - 10} />
       <path className="d2" d={`M14 10 A 2.5 2.5 0 0 1 19 10`} fill="none" />
       <path className="d2" d={`M14 ${h - 10} A 2.5 2.5 0 0 0 19 ${h - 10}`} fill="none" />
     </svg>
@@ -34,7 +34,7 @@ function Handrail({ h = 124 }) {
 function Grille() {
   return (
     <svg width="36" height="50" viewBox="0 0 36 50" aria-hidden="true" focusable="false">
-      <rect className="dfill" x="2" y="2" width="32" height="46" rx="3" />
+      <rect className="dfill tz-elec" x="2" y="2" width="32" height="46" rx="3" />
       <rect className="d2" x="2" y="2" width="32" height="46" rx="3" fill="none" />
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
         <line key={i} className="d3" x1="7" y1={9 + i * 5.5} x2="29" y2={9 + i * 5.5} />
@@ -51,7 +51,7 @@ function Grille() {
 function Panel() {
   return (
     <svg width="34" height="46" viewBox="0 0 34 46" aria-hidden="true" focusable="false">
-      <rect className="dfill" x="2" y="2" width="30" height="42" rx="2" />
+      <rect className="dfill tz-elec" x="2" y="2" width="30" height="42" rx="2" />
       <rect className="d2" x="2" y="2" width="30" height="42" rx="2" fill="none" />
       <rect className="d3" x="6" y="6" width="22" height="9" fill="none" />
       {[0, 1, 2, 3].map((r) =>

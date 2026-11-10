@@ -138,7 +138,7 @@ export function RcsQuad({ size = 54 }) {
       focusable="false"
     >
       {/* mounting pad */}
-      <rect className="dfill" x={c - 11} y={c - 11} width="22" height="22" />
+      <rect className="dfill tz-mech" x={c - 11} y={c - 11} width="22" height="22" />
       <rect className="d1" x={c - 11} y={c - 11} width="22" height="22" fill="none" />
       <line className="d3" x1={c - 7} y1={c - 7} x2={c + 7} y2={c - 7} />
       <line className="d3" x1={c - 7} y1={c + 7} x2={c + 7} y2={c + 7} />

@@ -32,12 +32,12 @@ function Ring({ y, r, cls = 'd2' }) {
 
 /* A cylinder. Filled so it occludes whatever is behind it, with the far wall
  * drawn inside as a light arc — that pair is what reads as hollow. */
-function Can({ y1, y2, r, cls = 'd1', shade = true }) {
+function Can({ y1, y2, r, cls = 'd1', shade = true, tz }) {
   const ry = e(r)
   return (
     <>
       <path
-        className="dfill"
+        className={tz ? `dfill ${tz}` : 'dfill'}
         d={`M${-r} ${y1} L${-r} ${y2} A ${r} ${ry} 0 0 0 ${r} ${y2} L${r} ${y1} Z`}
       />
       {shade &&
@@ -189,13 +189,13 @@ export default function Dock({ eva = false }) {
       <Bosses y={30} r={210} n={11} />
 
       {/* the bolted flange stack */}
-      <Can y1={42} y2={48} r={248} shade={false} />
-      <Can y1={48} y2={54} r={228} shade={false} />
-      <Can y1={54} y2={61} r={248} shade={false} />
+      <Can y1={42} y2={48} r={248} shade={false} tz="tz-struct" />
+      <Can y1={48} y2={54} r={228} shade={false} tz="tz-struct" />
+      <Can y1={54} y2={61} r={248} shade={false} tz="tz-struct" />
       <Teeth y={61} r={248} n={60} len={6} />
 
       {/* splined drive band */}
-      <Can y1={61} y2={92} r={205} />
+      <Can y1={61} y2={92} r={205} tz="tz-mech" />
       <Teeth y={68} r={205} n={84} len={5} />
       <Teeth y={85} r={205} n={84} len={5} />
 
@@ -226,7 +226,7 @@ export default function Dock({ eva = false }) {
 
       {/* handrails, because every surface a crew touches has one */}
       {[-1, 1].map((s) => (
-        <g key={s} className="dk-rail">
+        <g key={s} className="dk-rail tz-eva">
           <line x1={s * 236} y1="112" x2={s * 236} y2="144" />
           <line x1={s * 228} y1="112" x2={s * 244} y2="112" />
           <line x1={s * 228} y1="144" x2={s * 244} y2="144" />

@@ -95,7 +95,22 @@ function buildBand() {
  * Surface is flat shapes clipped to the disc - bands for a giant, maria for a
  * rocky body. Deliberately low contrast: at this opacity the eye reads them
  * as surface rather than as pattern. */
-const GIANT = ['#6E7C93', '#93A0B1', '#64738C', '#A2ADBC', '#6B7A91', '#8D9AAC']
+/* Wider apart in hue than the first pass, which sat in such a narrow band of
+ * slate that the banding read as noise rather than as a surface. */
+const GIANT = ['#55678A', '#A3B2C6', '#495B80', '#BCC8D6', '#5F7094', '#8C9DB5']
+
+/* Craters, as fractions of the radius: x, y, size. Hand-placed rather than
+ * random - a real surface has a few big basins and a scatter of small ones,
+ * and an even sprinkle of equal circles is what makes a moon look like a golf
+ * ball. */
+const CRATERS = [
+  [-0.30, -0.26, 0.21], [0.27, 0.11, 0.17], [-0.08, 0.40, 0.14],
+  [0.44, -0.38, 0.11], [-0.55, 0.14, 0.10], [0.12, -0.52, 0.09],
+  [-0.22, 0.04, 0.08], [0.58, 0.22, 0.07], [-0.44, -0.54, 0.06],
+  [0.33, 0.49, 0.06], [0.02, 0.16, 0.05], [-0.62, -0.22, 0.05],
+  [0.20, -0.18, 0.045], [-0.14, -0.66, 0.04], [0.50, -0.08, 0.04],
+  [-0.36, 0.56, 0.035],
+]
 
 function Body({ r, kind, uid }) {
   const giant = kind === 'giant'
@@ -115,18 +130,25 @@ function Body({ r, kind, uid }) {
     })
     // one storm, the asymmetry that stops it reading as wallpaper
     surface.push(
-      <ellipse key="storm" cx={r * 0.28} cy={r * 0.14} rx={r * 0.21} ry={r * 0.1} fill="#5C6B85" />,
+      <ellipse key="storm" cx={r * 0.28} cy={r * 0.14} rx={r * 0.21} ry={r * 0.1} fill="#44557A" />,
     )
   } else {
-    const maria = [
-      [-0.3, -0.26, 0.3, 0.22],
-      [0.26, 0.1, 0.26, 0.19],
-      [-0.1, 0.38, 0.22, 0.14],
-      [0.42, -0.4, 0.16, 0.12],
-    ]
-    maria.forEach(([cx, cy, rx, ry], i) => {
+    /* Each crater is two ellipses: a floor, and a rim offset AWAY from the
+     * light. The offset is the whole trick - it is what makes a flat disc
+     * read as a dish rather than as a spot. Light is upper left, matching the
+     * gradient below, so the rim shadow falls lower right. */
+    CRATERS.forEach(([fx, fy, fs], i) => {
+      const cx = fx * r
+      const cy = fy * r
+      const rad = fs * r
+      // foreshorten toward the limb, so craters near the edge flatten
+      const d = Math.min(1, Math.hypot(fx, fy))
+      const sq = Math.sqrt(Math.max(0.12, 1 - d * d))
       surface.push(
-        <ellipse key={`m${i}`} cx={cx * r} cy={cy * r} rx={rx * r} ry={ry * r} fill="#71767E" />,
+        <g key={`c${i}`}>
+          <ellipse cx={cx + rad * 0.14} cy={cy + rad * 0.14} rx={rad} ry={rad * sq} fill="#5F646C" />
+          <ellipse cx={cx - rad * 0.08} cy={cy - rad * 0.08} rx={rad * 0.86} ry={rad * 0.86 * sq} fill="#969BA3" />
+        </g>,
       )
     })
   }

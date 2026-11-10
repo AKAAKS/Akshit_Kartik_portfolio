@@ -25,36 +25,60 @@
 }
 .hz { display: none; }
 
-:root[data-tint='1'] {
-  --tz-pv: rgba(46, 49, 120, 0.13);
-  --tz-pv-frame: rgba(96, 104, 126, 0.14);
-  --tz-copper: rgba(132, 92, 72, 0.13);
-  --tz-glass: rgba(58, 110, 126, 0.13);
-  --tz-hazard: rgba(188, 142, 24, 0.22);
+/* =============================================================================
+ *  COVERAGE, not strength.
+ *
+ *  The levels used to change how STRONG the wash was. They now change how MUCH
+ *  of the ship carries one, because the strength question is settled: every
+ *  ink below is laid at the same --tz-amt whatever the level, and that amount
+ *  is the one that was chosen.
+ *
+ *    1  the outside only: what is obviously not bare metal
+ *    2  + the parts a crew touches and the parts that move
+ *    3  + structure and avionics
+ *
+ *  Inks are by SYSTEM, which is the discipline that keeps this from being
+ *  decoration: a part is coloured because of what it is, and two parts that
+ *  share an ink share a job.
+ * ========================================================================== */
+:root[data-tint] {
+  --tz-amt: 13%;
+
+  --ti-pv: #2E3178;      /* photovoltaic */
+  --ti-glass: #3A6E7E;   /* glazing */
+  --ti-therm: #845C48;   /* fired metal, hot structure */
+  --ti-hazard: #BC8E18;  /* hazard decal */
+  --ti-eva: #B8901C;     /* crew interface: handrails, EVA aids */
+  --ti-mech: #6E5566;    /* mechanism: drives, pumps, latches */
+  --ti-struct: #4A5A6B;  /* primary structure, flanges */
+  --ti-elec: #3F6B57;    /* avionics and electrical */
 }
 
-:root[data-tint='2'] {
-  --tz-pv: rgba(46, 49, 120, 0.26);
-  --tz-pv-frame: rgba(96, 104, 126, 0.26);
-  --tz-copper: rgba(132, 92, 72, 0.26);
-  --tz-glass: rgba(58, 110, 126, 0.24);
-  --tz-hazard: rgba(188, 142, 24, 0.44);
-}
+/* The washes land on .dfill, which is the opaque paper occluder every drawn
+ * part sits on. Mixing INTO paper rather than laying rgba over it keeps the
+ * occluding — an alpha fill here would let the linework behind show through
+ * and the part would stop reading as solid. */
 
-:root[data-tint='3'] {
-  --tz-pv: rgba(46, 49, 120, 0.44);
-  --tz-pv-frame: rgba(96, 104, 126, 0.42);
-  --tz-copper: rgba(132, 92, 72, 0.44);
-  --tz-glass: rgba(58, 110, 126, 0.4);
-  --tz-hazard: rgba(188, 142, 24, 0.72);
-}
-
-:root[data-tint] .pv { fill: var(--tz-pv); }
-:root[data-tint] .pv-frame { fill: var(--tz-pv-frame); }
-:root[data-tint] .glass { fill: var(--tz-glass); }
-:root[data-tint] .eng-tint { fill: var(--tz-copper); }
+/* ---- tier A: level 1 and up -------------------------------------------- */
+:root[data-tint] .pv { fill: color-mix(in srgb, transparent, var(--ti-pv) var(--tz-amt)); }
+:root[data-tint] .pv-frame { fill: color-mix(in srgb, transparent, var(--ti-struct) 14%); }
+:root[data-tint] .glass { fill: color-mix(in srgb, transparent, var(--ti-glass) var(--tz-amt)); }
+:root[data-tint] .eng-tint { fill: color-mix(in srgb, transparent, var(--ti-therm) var(--tz-amt)); }
 :root[data-tint] .hz { display: block; }
-:root[data-tint] .hz-bar { fill: var(--tz-hazard); }
+:root[data-tint] .hz-bar { fill: color-mix(in srgb, transparent, var(--ti-hazard) 22%); }
+
+/* ---- tier B: level 2 and up. Crew interfaces, and anything that moves --- */
+:root[data-tint='2'] .tz-eva,
+:root[data-tint='3'] .tz-eva { stroke: var(--ti-eva); opacity: 0.85; }
+:root[data-tint='2'] .tz-eva-fill,
+:root[data-tint='3'] .tz-eva-fill { fill: color-mix(in srgb, var(--paper), var(--ti-eva) 26%); }
+:root[data-tint='2'] .tz-mech,
+:root[data-tint='3'] .tz-mech { fill: color-mix(in srgb, var(--paper), var(--ti-mech) var(--tz-amt)); }
+
+/* ---- tier C: level 3. Structure and avionics --------------------------- */
+:root[data-tint='3'] .tz-struct { fill: color-mix(in srgb, var(--paper), var(--ti-struct) var(--tz-amt)); }
+:root[data-tint='3'] .tz-elec { fill: color-mix(in srgb, var(--paper), var(--ti-elec) var(--tz-amt)); }
+:root[data-tint='3'] .tz-therm { fill: color-mix(in srgb, var(--paper), var(--ti-therm) var(--tz-amt)); }
 
 /* =============================================================================
  *  THE SKY

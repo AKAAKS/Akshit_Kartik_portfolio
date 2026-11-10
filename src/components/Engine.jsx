@@ -70,12 +70,12 @@ function Ring({ y, r, cls = 'd2' }) {
 }
 
 /* A band: two rings and the wall between them. */
-function Band({ y1, y2, r, cls = 'd1' }) {
+function Band({ y1, y2, r, cls = 'd1', tz }) {
   const ry = r * FLAT
   return (
     <>
       <path
-        className="dfill"
+        className={tz ? `dfill ${tz}` : 'dfill'}
         d={`M${-r} ${y1} L${-r} ${y2} A ${r} ${ry} 0 0 0 ${r} ${y2} L${r} ${y1} Z`}
       />
       <line className={cls} x1={-r} y1={y1} x2={-r} y2={y2} />
@@ -139,7 +139,7 @@ function Pump({ x, y, r = 44, flip = false }) {
         )
       })()}
 
-      <circle className="dfill" cx={x} cy={y} r={r} />
+      <circle className="dfill tz-mech" cx={x} cy={y} r={r} />
       <circle className="d1" cx={x} cy={y} r={r} fill="none" />
       <circle className="d2" cx={x} cy={y} r={r * 0.86} fill="none" />
       {vanes}
@@ -200,7 +200,7 @@ export default function Engine({ width = 480 }) {
       )}
 
       {/* ---- injector dome, bolted ---- */}
-      <Band y1={Y_INJ} y2={Y_INJ2} r={INJ} />
+      <Band y1={Y_INJ} y2={Y_INJ2} r={INJ} tz="tz-therm" />
       {Array.from({ length: 22 }).map((_, i) => {
         const a = (i / 22) * Math.PI * 2
         return (
