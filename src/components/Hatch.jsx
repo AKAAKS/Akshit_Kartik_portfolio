@@ -23,20 +23,36 @@ const W = 1000 // flare viewBox width, stretched to the tube
 const H = 360 // connector height in px; the flare viewBox matches it 1:1
 const NECK = 48 // where the hull has finished necking in
 const CORE = 264 // adapter half-width, in flare viewBox units (52.8% of W)
+const SPIN = 34 // the spindle: 72px of the 1060 measure, halved
 
-export default function Hatch({ from, into, index, total }) {
+/* A connector's two ends are independent. An ordinary one runs out to the
+ * full hull at both; the pair either side of the centrifuge run out to the
+ * hull on one end and down to the SPINDLE on the other, so the ring is
+ * carried on a shaft that is visibly part of the craft instead of being a
+ * wheel parked next to it. */
+
+export default function Hatch({ from, into, index, total, ord = 0, ords = 0 }) {
   const exiting = Boolean(into.external)
   const entering = Boolean(from.external)
   const eva = exiting || entering
 
-  // Arrays on the first connection, then every other one. A wing on every
-  // connector would read as wallpaper; three down the craft reads as power.
-  const wings = index % 2 === 1
+  // Two array installations only, at the second connector and the second
+  // to last, so they bracket the craft. At ship scale they run off both
+  // edges of the screen, which is the point.
+  const wings = ord === 2 || ord === ords - 1
+
+  // Which end of this connector meets the spindle rather than the hull.
+  const topW = entering ? SPIN : W / 2
+  const botW = exiting ? SPIN : W / 2
 
   const l = W / 2 - CORE
   const r = W / 2 + CORE
-  const top = `M0 0 H${W} L${r} ${NECK} H${l} Z`
-  const bot = `M0 ${H} H${W} L${r} ${H - NECK} H${l} Z`
+  const tl = W / 2 - topW
+  const tr = W / 2 + topW
+  const bl = W / 2 - botW
+  const br = W / 2 + botW
+  const top = `M${tl} 0 H${tr} L${r} ${NECK} H${l} Z`
+  const bot = `M${bl} ${H} H${br} L${r} ${H - NECK} H${l} Z`
 
   return (
     <div
@@ -70,17 +86,17 @@ export default function Hatch({ from, into, index, total }) {
           <path className="ch-fill" d={bot} />
           <path className="ch-shade" d={bot} />
 
-          {/* transition rings at full hull width */}
-          <path className="ch-ring-far" d={`M0 0 A ${W / 2} 15 0 0 0 ${W} 0`} />
-          <path className="ch-ring" d={`M0 0 A ${W / 2} 15 0 0 1 ${W} 0`} />
-          <path className="ch-ring-far" d={`M0 ${H} A ${W / 2} 15 0 0 0 ${W} ${H}`} />
-          <path className="ch-ring" d={`M0 ${H} A ${W / 2} 15 0 0 1 ${W} ${H}`} />
+          {/* transition rings, each at whatever width its end actually is */}
+          <path className="ch-ring-far" d={`M${tl} 0 A ${topW} 15 0 0 0 ${tr} 0`} />
+          <path className="ch-ring" d={`M${tl} 0 A ${topW} 15 0 0 1 ${tr} 0`} />
+          <path className="ch-ring-far" d={`M${bl} ${H} A ${botW} 15 0 0 0 ${br} ${H}`} />
+          <path className="ch-ring" d={`M${bl} ${H} A ${botW} 15 0 0 1 ${br} ${H}`} />
 
           {/* the tapers themselves */}
-          <path className="ch-edge" d={`M0 0 L${l} ${NECK}`} />
-          <path className="ch-edge" d={`M${W} 0 L${r} ${NECK}`} />
-          <path className="ch-edge" d={`M0 ${H} L${l} ${H - NECK}`} />
-          <path className="ch-edge" d={`M${W} ${H} L${r} ${H - NECK}`} />
+          <path className="ch-edge" d={`M${tl} 0 L${l} ${NECK}`} />
+          <path className="ch-edge" d={`M${tr} 0 L${r} ${NECK}`} />
+          <path className="ch-edge" d={`M${bl} ${H} L${l} ${H - NECK}`} />
+          <path className="ch-edge" d={`M${br} ${H} L${r} ${H - NECK}`} />
         </svg>
 
         {/* ---- the adapter ---- */}
@@ -109,10 +125,10 @@ export default function Hatch({ from, into, index, total }) {
           <span className="dock-boom dock-boom--l" aria-hidden="true"><Boom /></span>
           <span className="dock-boom dock-boom--r" aria-hidden="true"><Boom /></span>
           <span className="dock-wing dock-wing--l" aria-hidden="true">
-            <SolarArray flip />
+            <SolarArray flip big />
           </span>
           <span className="dock-wing dock-wing--r" aria-hidden="true">
-            <SolarArray />
+            <SolarArray big />
           </span>
         </>
       )}

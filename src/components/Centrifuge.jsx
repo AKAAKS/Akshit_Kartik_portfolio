@@ -209,6 +209,15 @@ export default function Centrifuge({ mod }) {
 
   return (
     <section id={mod.id} className="module module--eva" aria-labelledby={`${mod.id}-h`}>
+      {/* The spindle. It runs the whole height of the section, behind the
+        * heading and the lead, so the shaft the connectors neck down to is
+        * continuous from the module above to the module below and the ring
+        * is visibly carried on it. */}
+      <div className="spindle" aria-hidden="true">
+        <span className="sp-band" />
+        <span className="sp-band sp-band--lo" />
+      </div>
+
       <div className="module-inner">
         <Placard mod={mod} note="External · spin gravity" />
         <div className="module-body" style={{ paddingBottom: 0 }}>

@@ -75,46 +75,43 @@ function AftTaper() {
   )
 }
 
-/* An end cap: a closed section. Both arcs solid, because you are looking at
- * the end of the pressurized volume rather than through it. */
-export function TubeCap({ edge = 'top' }) {
-  const ry = 17
-  const h = ry * 2 + 2
-  const mid = ry + 1
-  const aft = edge === 'bottom'
+/* The tail. Since the nose took over the forward end there is only one cap
+ * left on the craft, and it is this one: the hull closing onto the thrust
+ * structure. */
+export function TubeCap() {
   return (
-    <div className={`cap cap--${edge}`} aria-hidden="true">
+    <div className="cap cap--bottom" aria-hidden="true">
       <div className="tube cap-inner">
-        {aft ? (
-          <AftTaper />
-        ) : (
-          <svg
-            className="rib rib--cap"
-            viewBox={`0 0 1000 ${h}`}
-            preserveAspectRatio="none"
-            focusable="false"
-            style={{ height: `${h}px` }}
-          >
-            <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 0 999 ${mid}`} />
-            <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 1 999 ${mid}`} />
-          </svg>
-        )}
+        <AftTaper />
         {/* Attitude control, where it actually lives: on the hull at the
           * ends of the pressurized volume, firing fore and aft. */}
         <span className="quad quad--l"><RcsQuad /></span>
         <span className="quad quad--r"><RcsQuad /></span>
       </div>
 
-      {/* The engine, bolted to the mount the taper just closed down onto. */}
-      {aft && (
-        <div className="aft">
-          <EngineBell />
-          <p className="aft-label">
-            <span className="al-tag">SPS</span>
-            <span className="al-name">SERVICE PROPULSION</span>
-          </p>
-        </div>
-      )}
+      {/* The engine, bolted to the mount the taper just closed down onto.
+        * One bell alone read as a part rather than as a thrust structure, so
+        * it is now a cluster: the main engine flanked by two verniers set
+        * back on their own mounts, with four RCS quads ringing the cone
+        * above and a propellant feed running down to each. */}
+      <>
+          <span className="quad quad--aft quad--a1"><RcsQuad size={46} /></span>
+          <span className="quad quad--aft quad--a2"><RcsQuad size={46} /></span>
+          <span className="quad quad--aft quad--a3"><RcsQuad size={38} /></span>
+          <span className="quad quad--aft quad--a4"><RcsQuad size={38} /></span>
+
+          <div className="aft">
+            <div className="aft-cluster">
+              <span className="vernier vernier--l"><EngineBell width={104} /></span>
+              <EngineBell />
+              <span className="vernier vernier--r"><EngineBell width={104} /></span>
+            </div>
+            <p className="aft-label">
+              <span className="al-tag">SPS</span>
+              <span className="al-name">SERVICE PROPULSION · 2 VERNIER</span>
+            </p>
+          </div>
+      </>
     </div>
   )
 }

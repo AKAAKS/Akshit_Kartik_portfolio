@@ -103,6 +103,10 @@ main { position: relative; z-index: 1; }
 .rib-back { stroke: var(--draw-far); stroke-width: 1; stroke-dasharray: 3 3; }
 
 /* ---- end caps: the tube closes, so both arcs are solid ---- */
+/* The quads are positioned against the cap, so it has to be the containing
+ * block. Without this they resolve against a distant ancestor and land
+ * thousands of pixels up the page. */
+.cap { position: relative; }
 .cap-inner { padding: 16px 0; }
 .cap--bottom .cap-inner { padding-bottom: 30px; }
 
@@ -215,7 +219,10 @@ main { position: relative; z-index: 1; }
  *
  * The silhouette stretches to the tube's width; the detail cluster must not,
  * or the bolt circle becomes an oval. Hence two SVGs. */
-.hatch { position: relative; }
+/* Arrays at ship scale run off both edges of the screen on purpose. Clipping
+ * here lets them do that without the page gaining a sideways scrollbar.
+ * `clip` rather than `hidden`: it creates no scroll container. */
+.hatch { position: relative; overflow-x: clip; }
 
 .connector {
   position: relative;
@@ -306,7 +313,7 @@ main { position: relative; z-index: 1; }
 .dock-wing {
   position: absolute;
   top: 50%;
-  margin-top: -59px;
+  margin-top: -126px;
   line-height: 0;
   pointer-events: none;
 }
@@ -329,13 +336,14 @@ main { position: relative; z-index: 1; }
 .dock-boom--l { right: calc(50% + 280px); }
 .boom { display: block; width: 100%; height: 100%; }
 
-@media (max-width: 1360px) {
+@media (max-width: 900px) {
   .dock-boom { display: none; }
 }
 
-/* The wings need 530px of hull plus their own reach, less the overlap. Below
- * that the gutters are gone and they would run off the page. */
-@media (max-width: 1360px) {
+/* The wings are allowed to run off the screen, so there is no width at which
+ * they stop fitting - only one below which the gutter is too thin for the
+ * boom to read. */
+@media (max-width: 900px) {
   .dock-wing { display: none; }
 }
 
@@ -1145,6 +1153,36 @@ main { position: relative; z-index: 1; }
   margin-top: -2px;
   padding-bottom: 54px;
 }
+/* The verniers sit lower and behind, as secondary engines on their own
+ * mounts do - set back so the main bell stays the thing you read first. */
+.aft-cluster {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.vernier { position: relative; line-height: 0; }
+.vernier--l { margin: 30px -14px 0 0; }
+.vernier--r { margin: 30px 0 0 -14px; }
+/* A strut back to the mount, so each vernier is carried by the structure
+ * rather than hanging in space beside the main bell. */
+.vernier::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 54px;
+  height: 1px;
+  background: var(--draw-mid);
+}
+.vernier--l::before { right: 12px; transform: rotate(-20deg); transform-origin: right center; }
+.vernier--r::before { left: 12px; transform: rotate(20deg); transform-origin: left center; }
+
+/* Quads ringing the aft cone, two high on the shoulder and two lower in
+ * toward the mount. */
+.quad--aft { top: auto; transform: none; }
+.quad--a1 { left: 16%; top: 38px; }
+.quad--a2 { right: 16%; top: 38px; left: auto; }
+.quad--a3 { left: 33%; top: 86px; }
+.quad--a4 { right: 33%; top: 86px; left: auto; }
 .bell { display: block; }
 .aft-label {
   display: flex;
@@ -1195,4 +1233,161 @@ main { position: relative; z-index: 1; }
 }
 @media print {
   .furniture { display: none; }
+}
+
+
+/* ================================================================= spindle
+ *
+ * The shaft the centrifuge turns on. It runs the full height of the section,
+ * behind the heading and the lead, so the craft is continuous: the connector
+ * above necks down to it, it carries the ring, and the connector below flares
+ * back out to the hull. Before this the ring was a wheel parked beside a ship
+ * it did not touch.
+ *
+ * Same cross-axis shading as the hull, because it is the same cylinder seen
+ * from the same place - just a much smaller one.
+ */
+.spindle {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 72px;
+  margin-left: -36px;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--card);
+  background-image: linear-gradient(
+    to right,
+    rgba(15, 17, 19, 0.12) 0%,
+    rgba(15, 17, 19, 0.03) 22%,
+    rgba(15, 17, 19, 0) 50%,
+    rgba(15, 17, 19, 0.03) 78%,
+    rgba(15, 17, 19, 0.12) 100%
+  );
+  border-left: 1px solid var(--draw);
+  border-right: 1px solid var(--draw);
+}
+/* section bands, so it reads as built rather than as a drawn rectangle */
+.sp-band {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 16%;
+  height: 10px;
+  border-top: 1px solid var(--draw-mid);
+  border-bottom: 1px solid var(--draw-mid);
+  background: var(--paper);
+}
+.sp-band--lo { top: auto; bottom: 16%; }
+
+/* The ring sits on the spindle, not behind it. */
+.module--eva .ring-stage { z-index: 1; }
+
+/* Text over the structure.
+ *
+ * The spindle passes behind the heading and the lead rather than stopping at
+ * them. A paper veil with soft edges sits between the two, so the hardware
+ * greys back where words are and returns at full strength either side - no
+ * box is cut out of the craft. */
+.module--eva .module-inner { position: relative; z-index: 1; }
+.module--eva .module-inner::before {
+  content: '';
+  position: absolute;
+  top: -18px;
+  bottom: -18px;
+  left: 50%;
+  width: 250px;
+  margin-left: -125px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Soft on all four edges: the horizontal falloff is in the gradient, the
+   * vertical one in the mask. Only as wide as the spindle needs - a veil the
+   * width of the text would be the panel we were avoiding. */
+  background: linear-gradient(
+    to right, transparent 0, var(--paper) 46px,
+    var(--paper) calc(100% - 46px), transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(
+    to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+}
+
+@media print {
+  .spindle { display: none; }
+  .module--eva .module-inner::before { display: none; }
+}
+
+
+/* ==================================================================== nose
+ *
+ * The command module. Same split as every other full-width piece: the cone
+ * stretches to the tube so it meets the hull at any width, and the fittings
+ * that must not distort sit over it at natural size.
+ */
+.nose { position: relative; overflow-x: clip; }
+.nose-inner {
+  position: relative;
+  height: 196px;
+  /* the cone's own fill is the hull up here, so the straight-run background
+   * and side borders must come off or a rectangle paints behind it */
+  background: none;
+  border-left: 0;
+  border-right: 0;
+}
+.nose-inner::before,
+.nose-inner::after { display: none; }
+
+.nose-cone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.nose-cone path { vector-effect: non-scaling-stroke; }
+
+/* Windows sit on the cone at the height where it has opened out enough to
+ * carry them - about two thirds down, which is where they are on the real
+ * thing for the same reason. */
+.nose-win {
+  position: absolute;
+  left: 50%;
+  top: 84px;
+  transform: translateX(-50%);
+  overflow: visible;
+}
+
+.nose-plate {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+.nose-plate .np-tag { color: var(--accent); }
+
+/* The dish reaches into the gutter, the way the arrays do further down. */
+.hga-mount {
+  position: absolute;
+  top: 86px;
+  line-height: 0;
+}
+.hga-mount--r { left: calc(50% + var(--page) / 2 - 56px); }
+.hga { display: block; }
+
+@media (max-width: 1180px) {
+  .hga-mount { display: none; }
+}
+@media (max-width: 760px) {
+  .nose-inner { height: 130px; }
+  .nose-win { top: 68px; transform: translateX(-50%) scale(0.7); }
+}
+@media print {
+  .nose { display: none; }
 }

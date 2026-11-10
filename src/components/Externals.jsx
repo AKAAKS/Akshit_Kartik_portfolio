@@ -16,10 +16,13 @@
  * higher on the page than the root — the skew is what puts it in the same 3D
  * scene as the ring instead of pasting a rectangle over it.
  */
-const CX = 9 // cells along the wing, per blanket
-const CY = 3 // cells across
+/* Cell counts per blanket. The big variant is not the small one scaled up -
+ * it carries more cells, because a longer array has more cells, not larger
+ * ones. Stretching nine cells across 760px would read as a fence. */
+const SMALL = { len: 232, h: 118, cx: 9, cy: 3 }
+const BIG = { len: 760, h: 252, cx: 22, cy: 5 }
 
-function Blanket({ x1, x2, y1, y2 }) {
+function Blanket({ x1, x2, y1, y2, CX, CY }) {
   const w = x2 - x1
   const h = y2 - y1
   const out = []
@@ -40,8 +43,10 @@ function Blanket({ x1, x2, y1, y2 }) {
   )
 }
 
-export function SolarArray({ len = 232, h = 118, flip = false }) {
-  const mastX = 54
+export function SolarArray({ big = false, flip = false }) {
+  const { len, h, cx: CX, cy: CY } = big ? BIG : SMALL
+  const k = big ? 2.1 : 1 // fitting sizes scale with the wing, cells do not
+  const mastX = big ? 128 : 54
   const tip = len - 4
   const mid = h / 2
 
@@ -56,41 +61,41 @@ export function SolarArray({ len = 232, h = 118, flip = false }) {
     >
       <g transform={`skewY(-5) translate(0 ${h * 0.08})`}>
         {/* beta gimbal: the joint the whole wing rotates on */}
-        <rect className="dfill" x="2" y={mid - 17} width="30" height="34" />
-        <rect className="d1" x="2" y={mid - 17} width="30" height="34" fill="none" />
-        <ellipse className="d2" cx="17" cy={mid} rx="8" ry="11" fill="none" />
-        <ellipse className="d3" cx="17" cy={mid} rx="3.5" ry="5" fill="none" />
-        <line className="d3" x1="6" y1={mid - 12} x2="6" y2={mid + 12} />
-        <line className="d3" x1="28" y1={mid - 12} x2="28" y2={mid + 12} />
+        <rect className="dfill" x="2" y={mid - 17 * k} width={30 * k} height={34 * k} />
+        <rect className="d1" x="2" y={mid - 17 * k} width={30 * k} height={34 * k} fill="none" />
+        <ellipse className="d2" cx={17 * k} cy={mid} rx={8 * k} ry={11 * k} fill="none" />
+        <ellipse className="d3" cx={17 * k} cy={mid} rx={3.5 * k} ry={5 * k} fill="none" />
+        <line className="d3" x1={6 * k} y1={mid - 12 * k} x2={6 * k} y2={mid + 12 * k} />
+        <line className="d3" x1={28 * k} y1={mid - 12 * k} x2={28 * k} y2={mid + 12 * k} />
 
         {/* lattice mast — a boom is a truss, not a stick */}
-        <line className="d1" x1="32" y1={mid - 9} x2={mastX} y2={mid - 9} />
-        <line className="d1" x1="32" y1={mid + 9} x2={mastX} y2={mid + 9} />
-        {[0, 1, 2, 3].map((k) => {
-          const a = 32 + ((mastX - 32) * k) / 4
-          const b = 32 + ((mastX - 32) * (k + 1)) / 4
+        <line className="d1" x1={32 * k} y1={mid - 9 * k} x2={mastX} y2={mid - 9 * k} />
+        <line className="d1" x1={32 * k} y1={mid + 9 * k} x2={mastX} y2={mid + 9 * k} />
+        {[0, 1, 2, 3, 4, 5].map((j) => {
+          const a = 32 * k + ((mastX - 32 * k) * j) / 6
+          const b = 32 * k + ((mastX - 32 * k) * (j + 1)) / 6
           return (
             <line
-              key={k}
+              key={j}
               className="d3"
               x1={a}
-              y1={k % 2 ? mid + 9 : mid - 9}
+              y1={j % 2 ? mid + 9 * k : mid - 9 * k}
               x2={b}
-              y2={k % 2 ? mid - 9 : mid + 9}
+              y2={j % 2 ? mid - 9 * k : mid + 9 * k}
             />
           )
         })}
 
         {/* the two blankets, and the batten that separates them */}
-        <Blanket x1={mastX} x2={tip} y1={6} y2={mid - 5} />
-        <Blanket x1={mastX} x2={tip} y1={mid + 5} y2={h - 6} />
+        <Blanket x1={mastX} x2={tip} y1={6} y2={mid - 5} CX={CX} CY={CY} />
+        <Blanket x1={mastX} x2={tip} y1={mid + 5} y2={h - 6} CX={CX} CY={CY} />
         <line className="d1" x1={mastX} y1={mid} x2={tip} y2={mid} />
 
         {/* tip batten, with its tensioning fittings */}
         <line className="d1" x1={tip} y1="4" x2={tip} y2={h - 4} />
         <line className="d2" x1={tip + 3} y1="10" x2={tip + 3} y2={h - 10} />
-        <line className="d3" x1={tip} y1={mid - 24} x2={tip + 3} y2={mid - 24} />
-        <line className="d3" x1={tip} y1={mid + 24} x2={tip + 3} y2={mid + 24} />
+        <line className="d3" x1={tip} y1={mid - 24 * k} x2={tip + 3} y2={mid - 24 * k} />
+        <line className="d3" x1={tip} y1={mid + 24 * k} x2={tip + 3} y2={mid + 24 * k} />
       </g>
     </svg>
   )

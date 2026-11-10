@@ -3,6 +3,7 @@ import SpaceField from './components/SpaceField.jsx'
 import StationMap from './components/StationMap.jsx'
 import Hatch from './components/Hatch.jsx'
 import { TubeCap } from './components/Tube.jsx'
+import Nose from './components/Nose.jsx'
 import Intro from './components/Intro.jsx'
 import Centrifuge from './components/Centrifuge.jsx'
 import Publications from './components/Publications.jsx'
@@ -37,7 +38,7 @@ export default function App() {
       <StationMap />
 
       <main>
-        <TubeCap edge="top" />
+        <Nose />
 
         {modules.map((mod, i) => {
           const Section = SECTIONS[mod.id]
@@ -50,6 +51,8 @@ export default function App() {
                   into={mod}
                   index={i + 1}
                   total={modules.length}
+                  ord={i}
+                  ords={modules.length - 1}
                 />
               )}
               <Section mod={mod} />
@@ -57,7 +60,7 @@ export default function App() {
           )
         })}
 
-        <TubeCap edge="bottom" />
+        <TubeCap />
       </main>
     </>
   )
