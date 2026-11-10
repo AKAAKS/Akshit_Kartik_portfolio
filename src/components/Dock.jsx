@@ -160,28 +160,6 @@ function Bellows({ y1, y2, r, n = 8 }) {
   )
 }
 
-/* Utility jumpers bridging the two modules outside the adapter, as on the
- * reference where lines run past the coupling rather than through it. */
-function Jumpers({ y1, y2, r }) {
-  return (
-    <g>
-      {[-1, 1].map((side) =>
-        [0, 1, 2].map((k) => {
-          const x = side * (r + 20 + k * 15)
-          return (
-            <path
-              key={`${side}-${k}`}
-              className="d3"
-              d={`M${x} ${y1} C ${x + side * 22} ${y1 + 60}, ${x + side * 22} ${y2 - 60}, ${x} ${y2}`}
-              fill="none"
-            />
-          )
-        }),
-      )}
-    </g>
-  )
-}
-
 /* ---- the assembly -------------------------------------------------------
  *
  * Read top to bottom: passive collar, neck, the bolted flange stack, the
@@ -190,7 +168,6 @@ function Jumpers({ y1, y2, r }) {
  */
 export const DOCK_W = 560
 export const DOCK_H = 264
-const MAX_R = 280
 
 export default function Dock({ eva = false }) {
   return (
@@ -201,8 +178,6 @@ export default function Dock({ eva = false }) {
       aria-hidden="true"
       focusable="false"
     >
-      <Jumpers y1={-2} y2={DOCK_H + 2} r={MAX_R} />
-
       {/* passive collar */}
       <Can y1={0} y2={12} r={280} shade={false} />
       <Teeth y={0} r={280} n={72} len={9} cls="d2" />

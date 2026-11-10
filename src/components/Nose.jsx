@@ -14,14 +14,34 @@ const H = 196
 const TIP = 34 // half-width at the apex: the same 72px the spindle uses
 const SHOULDER = 150 // where the cone stops flaring and the hull begins
 
+/* The cone's silhouette is one quadratic, so a ring on it has to be
+ * evaluated ON that quadratic - not approximated near it. The first attempt
+ * guessed the half-width with a fudge factor and the rings floated off the
+ * surface, which is exactly what they looked like. These are the real
+ * control points and the real Bezier. */
+/* The first control point sat so far along the chord that the tangents at
+ * both ends pointed almost the same way, and the "curve" rendered as a
+ * straight taper. Pulled back toward the apex it is steep at the tip and
+ * shallow at the shoulder - the capsule profile a command module has. */
+const CPX = W / 2 - 118
+const CPY = SHOULDER * 0.74
+const bezX = (t) => {
+  const m = 1 - t
+  return m * m * (W / 2 - TIP) + 2 * m * t * CPX // the end point's x is 0
+}
+const bezY = (t) => {
+  const m = 1 - t
+  return 2 * m * t * CPY + t * t * SHOULDER
+}
+
 /* ---- the cone ---- */
 function Cone() {
   const l = W / 2 - TIP
   const r = W / 2 + TIP
   // A command module is not a straight cone: it is steep at the apex and
   // shallow at the shoulder. One control point does the whole curve.
-  const left = `M${l} 0 Q ${W / 2 - 300} ${SHOULDER * 0.62} 0 ${SHOULDER}`
-  const right = `M${r} 0 Q ${W / 2 + 300} ${SHOULDER * 0.62} ${W} ${SHOULDER}`
+  const left = `M${l} 0 Q ${CPX} ${CPY} 0 ${SHOULDER}`
+  const right = `M${r} 0 Q ${W - CPX} ${CPY} ${W} ${SHOULDER}`
 
   return (
     <svg
@@ -33,19 +53,17 @@ function Cone() {
     >
       <path
         className="ch-fill"
-        d={`${left} L0 ${H} H${W} L${W} ${SHOULDER} Q ${W / 2 + 300} ${SHOULDER * 0.62} ${r} 0 H${l} Z`}
+        d={`${left} L0 ${H} H${W} L${W} ${SHOULDER} Q ${W - CPX} ${CPY} ${r} 0 H${l} Z`}
       />
       <path
         className="ch-shade"
-        d={`${left} L0 ${H} H${W} L${W} ${SHOULDER} Q ${W / 2 + 300} ${SHOULDER * 0.62} ${r} 0 H${l} Z`}
+        d={`${left} L0 ${H} H${W} L${W} ${SHOULDER} Q ${W - CPX} ${CPY} ${r} 0 H${l} Z`}
       />
 
       {/* section rings down the cone, near arc solid and far arc light */}
-      {[0.3, 0.55, 0.78].map((t) => {
-        // follow the same quadratic the silhouette uses, so a ring always
-        // lands exactly on the edge instead of near it
-        const hw = TIP + (W / 2 - TIP) * (2 * t * (1 - t) * 0.72 + t * t)
-        const y = SHOULDER * t
+      {[0.34, 0.6, 0.82].map((t) => {
+        const hw = W / 2 - bezX(t)
+        const y = bezY(t)
         return (
           <g key={t}>
             <path className="ch-ring-far" d={`M${W / 2 - hw} ${y} A ${hw} 13 0 0 0 ${W / 2 + hw} ${y}`} />

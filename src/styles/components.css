@@ -30,7 +30,6 @@
 .sf-dot { fill: var(--ink-dim); opacity: 0.5; }
 .sf-ring { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.45; }
 .sf-tick line { stroke: var(--ink-dim); stroke-width: 1; opacity: 0.55; }
-.sf-arc { fill: none; stroke: var(--ink); stroke-width: 1; opacity: 0.12; }
 .sf-rock path { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.5; }
 .sf-rock .sf-rock-shade { opacity: 0.28; }
 
@@ -1261,10 +1260,31 @@ main { position: relative; z-index: 1; }
 /* The ring sits on the spindle, not behind it. */
 .module--eva .ring-stage { z-index: 1; }
 
-/* The spindle passes behind the heading and the lead. A veil was tried here
- * to grey it back under the words and read as a block fade rather than as
- * structure fading, so it is gone; the text sits straight over the shaft. */
+/* The spindle passes behind the heading and the lead, so the words need
+ * something to sit on. A fade was tried first and read as a block wiping
+ * across the art rather than as structure receding. A plate is hardware -
+ * the same bolted plate the connector placards use, just bigger - so it
+ * belongs to the craft instead of apologising for covering it. */
 .module--eva .module-inner { position: relative; z-index: 1; }
+.module--eva .module-inner::before {
+  content: '';
+  position: absolute;
+  /* Inset less than the hull margin so the placard line, which runs the
+   * full text measure, sits inside the plate rather than on its border. */
+  left: calc(var(--hull) - 30px);
+  right: calc(var(--hull) - 30px);
+  top: 6px;
+  bottom: 6px;
+  z-index: -1;
+  background-color: var(--card);
+  /* a fastener in each corner */
+  background-image:
+    radial-gradient(circle 2px at 11px 11px, var(--draw-mid) 98%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 11px) 11px, var(--draw-mid) 98%, transparent 100%),
+    radial-gradient(circle 2px at 11px calc(100% - 11px), var(--draw-mid) 98%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 11px) calc(100% - 11px), var(--draw-mid) 98%, transparent 100%);
+  border: 1px solid var(--draw-mid);
+}
 
 @media print {
   .spindle { display: none; }

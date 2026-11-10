@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
  *
  * Drawn, not lit — this is the half of "space" that generated pages get wrong.
  * Marks are printed the way a star atlas prints them: open circles sized by
- * magnitude, plus-ticks for the bright ones, hairline arcs for paths, and the
+ * magnitude, plus-ticks for the bright ones, and the
  * occasional rock in contour. No glow, no twinkle, no gradient, no opacity
  * animation, nothing that pulses.
  *
@@ -60,11 +60,6 @@ function buildBand() {
     marks.push({ t: 'dot', x: x + 0.5 + r() * 0.7, y: y + 3 + r() * 4, s: 1 })
   }
 
-  // paths, drawn as hairline arcs
-  for (let i = 0; i < 3; i += 1) {
-    marks.push({ t: 'arc', y: 150 + r() * (BAND - 300), k: r() > 0.5 ? 1 : -1 })
-  }
-
   // rocks, in contour — deliberately not circles
   for (let i = 0; i < 2; i += 1) {
     marks.push({ t: 'rock', x: 6 + r() * 88, y: r() * BAND })
@@ -87,13 +82,6 @@ function Marks({ offset }) {
 
         if (m.t === 'ring') {
           return <circle key={key} className="sf-ring" cx={`${m.x}%`} cy={m.y} r={m.s} />
-        }
-
-        if (m.t === 'arc') {
-          const dy = 120 * m.k
-          return (
-            <path key={key} className="sf-arc" d={`M -5 ${m.y} Q 500 ${m.y + dy} 2000 ${m.y}`} />
-          )
         }
 
         if (m.t === 'tick') {

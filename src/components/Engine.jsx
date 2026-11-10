@@ -84,18 +84,21 @@ function Band({ y1, y2, r, cls = 'd1' }) {
 
 /* A turbopump: a vaned volute on a bolted flange, one either side. */
 function Pump({ x, y, r = 44, flip = false }) {
+  /* Impeller vanes. These were straight radial spokes, which is why the
+   * pump read as a wheel rather than as a pump - a volute's vanes sweep
+   * back as they go out. Each is a quadratic from the inner radius to the
+   * outer one, trailing by SWEEP radians, with its control point at an
+   * intermediate radius and angle so the curve bows the right way. */
+  const SWEEP = 0.46
   const vanes = []
   for (let i = 0; i < 40; i += 1) {
     const a = (i / 40) * Math.PI * 2
+    const pt = (ang, rad) => [x + Math.cos(ang) * r * rad, y + Math.sin(ang) * r * rad]
+    const [x0, y0] = pt(a, 0.5)
+    const [cx, cy] = pt(a + SWEEP * 0.45, 0.63)
+    const [x1, y1] = pt(a + SWEEP, 0.86)
     vanes.push(
-      <line
-        key={i}
-        className="d3"
-        x1={x + Math.cos(a) * r * 0.5}
-        y1={y + Math.sin(a) * r * 0.5}
-        x2={x + Math.cos(a) * r * 0.86}
-        y2={y + Math.sin(a) * r * 0.86}
-      />,
+      <path key={i} className="d3" d={`M${x0} ${y0} Q ${cx} ${cy} ${x1} ${y1}`} fill="none" />,
     )
   }
   const bolts = []
@@ -115,10 +118,22 @@ function Pump({ x, y, r = 44, flip = false }) {
   const s = flip ? -1 : 1
   return (
     <g>
-      {/* Bracket back to the chamber. It runs inboard - toward the axis -
-        * because that is the only thing there is to mount to. */}
-      <rect className="dfill" x={flip ? x - r - 38 : x + r - 8} y={y - 11} width="46" height="22" />
-      <rect className="d2" x={flip ? x - r - 38 : x + r - 8} y={y - 11} width="46" height="22" fill="none" />
+      {/* Mounting arm back to the chamber, inboard toward the axis. A
+        * cast arm is waisted, not a rectangle, so its edges are curves that
+        * pinch toward the middle of the span. */}
+      {(() => {
+        const dir = flip ? -1 : 1
+        const x0 = x + dir * (r - 6)
+        const x1 = x + dir * (r + 40)
+        const mx = (x0 + x1) / 2
+        const arm = `M${x0} ${y - 13} Q ${mx} ${y - 6} ${x1} ${y - 10} L${x1} ${y + 10} Q ${mx} ${y + 6} ${x0} ${y + 13} Z`
+        return (
+          <>
+            <path className="dfill" d={arm} />
+            <path className="d2" d={arm} fill="none" />
+          </>
+        )
+      })()}
 
       <circle className="dfill" cx={x} cy={y} r={r} />
       <circle className="d1" cx={x} cy={y} r={r} fill="none" />
@@ -128,8 +143,12 @@ function Pump({ x, y, r = 44, flip = false }) {
       <circle className="d1" cx={x} cy={y} r={r * 0.22} fill="none" />
       <circle className="d3" cx={x} cy={y} r={r * 0.1} fill="none" />
       {bolts}
-      {/* drive shaft out to the side */}
-      <line className="d2" x1={x} y1={y} x2={x + s * r * 1.5} y2={y + r * 0.5} />
+      {/* drive take-off, curving away from the housing */}
+      <path
+        className="d2"
+        d={`M${x} ${y} Q ${x + s * r * 1.0} ${y + r * 0.1} ${x + s * r * 1.5} ${y + r * 0.52}`}
+        fill="none"
+      />
     </g>
   )
 }
@@ -176,16 +195,20 @@ export default function Engine({ width = 480 }) {
 
       {/* struts from the mount down to the injector */}
       {[-1, 1].map((s) =>
-        [0, 1].map((k) => (
-          <line
-            key={`${s}-${k}`}
-            className={k ? 'd3' : 'd1'}
-            x1={s * (TOP_R - 14 - k * 9)}
-            y1={Y_RING2}
-            x2={s * (INJ - 10 - k * 7)}
-            y2={Y_INJ}
-          />
-        )),
+        [0, 1].map((k) => {
+          const x0 = s * (TOP_R - 14 - k * 9)
+          const x1 = s * (INJ - 10 - k * 7)
+          // bowed slightly outboard, the way a real thrust strut is formed
+          const cx = s * (Math.abs(x0) * 0.46 + Math.abs(x1) * 0.54 + 10)
+          return (
+            <path
+              key={`${s}-${k}`}
+              className={k ? 'd3' : 'd1'}
+              d={`M${x0} ${Y_RING2} Q ${cx} ${(Y_RING2 + Y_INJ) / 2} ${x1} ${Y_INJ}`}
+              fill="none"
+            />
+          )
+        }),
       )}
 
       {/* ---- injector dome, bolted ---- */}
