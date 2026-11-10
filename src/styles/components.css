@@ -1384,6 +1384,14 @@ main { position: relative; z-index: 1; }
  * and side borders must come off - otherwise a full-width block paints behind
  * the taper and the craft looks like it ends in a rectangle. */
 .cap--bottom .cap-inner {
+  /* .cap-inner carries `padding: 16px 0` for the straight run of hull a cap
+   * used to need. This one has no straight run: the taper's own top edge is
+   * the full hull width and its own fill is the hull. With the background
+   * and borders stripped (below), that leftover 16px was a transparent band
+   * between the last module and the taper - the star field showed through it
+   * and the tail read as detached from the craft. The cone starts where the
+   * hull stops. */
+  padding-top: 0;
   padding-bottom: 0;
   background: none;
   border-left: 0;
