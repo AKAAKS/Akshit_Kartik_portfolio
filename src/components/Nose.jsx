@@ -76,8 +76,13 @@ function Cone() {
         )
       })}
 
-      <path className="ch-edge" d={left} />
-      <path className="ch-edge" d={right} />
+      {/* The silhouette runs to the BOTTOM of the viewBox, not to the
+        * shoulder. The fill always did — `L0 ${H}` is in it — so stopping the
+        * stroke at SHOULDER left the last stretch of hull filled but not
+        * outlined, and the hull's own border only starts on the module below.
+        * That was a visible gap in the outline down both sides. */}
+      <path className="ch-edge" d={`${left} L0 ${H}`} />
+      <path className="ch-edge" d={`${right} L${W} ${H}`} />
 
       {/* the shoulder, where the cone becomes the pressurized hull */}
       <path className="ch-ring-far" d={`M0 ${SHOULDER} A ${W / 2} 15 0 0 0 ${W} ${SHOULDER}`} />

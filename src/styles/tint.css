@@ -264,3 +264,26 @@
 /* The chain has to clear the bolts, and the centrifuge chip rides 9px up out
  * of the chain, so the panel needs that much headroom at the top. */
 .station-chain { padding-top: 5px; }
+
+/* =============================================================================
+ *  RING STEPS — clear of the rim
+ *
+ *  They were pinned to the page measure at the ring's vertical centre, which
+ *  is exactly where the rim ellipse is at its widest. The clearance that was
+ *  measured when they were placed was clearance from the GONDOLAS (309..1212);
+ *  the rim itself runs 233..1288, essentially the measure, so the buttons sat
+ *  on it and cut a hole in it.
+ *
+ *  Moving them outward does not survive every width: --ring-r is capped at
+ *  434px, so above about 1200px the rim stops growing while the measure does
+ *  not, and below it the rim fills the window. There is no column of clear
+ *  space at the sides at every width.
+ *
+ *  Dropping them below the rim does survive, because the rim's vertical
+ *  extent is bounded by --ring-r: half its height is almost exactly
+ *  0.2 * --ring-r, so the offset tracks the ring at every size.
+ * ========================================================================== */
+.ring-step {
+  top: calc(50% + var(--ring-r) * 0.202 + 32px);
+  transform: none;
+}
