@@ -65,7 +65,71 @@ function buildBand() {
     marks.push({ t: 'rock', x: 6 + r() * 88, y: r() * BAND })
   }
 
+  /* SPIKE: bodies.
+   *
+   * Drawn as an atlas plate, not as scenery: a limb in contour, latitude
+   * circles, a hatched night side, a designation and a scale bar. Cropped at
+   * a page edge the way a plate crops a body too big for the sheet — which is
+   * also what keeps it from reading as a sticker floating in the gutter.
+   *
+   * px x, not percent, because a body that is meant to be half off the edge
+   * has to stay half off the edge at every width. */
+  marks.push({ t: 'body', px: -118, y: BAND * 0.26, r: 212, phase: 0.6, desig: 'B-1', scale: '2 410 km' })
+  marks.push({ t: 'body', x: 84, y: BAND * 0.72, r: 58, phase: 0.34, desig: 'B-2', scale: '680 km' })
+
+  /* A transfer arc with range ticks. The one piece of plotted geometry out
+   * here, so it is the one thing drawn in the accent rather than in ink. */
+  marks.push({ t: 'traj', y: BAND * 0.46 })
+
   return marks
+}
+
+/* A body. Everything is derived from r so one function draws both. */
+function Body({ r, phase, desig, scale }) {
+  const lat = [-0.66, -0.36, 0, 0.36, 0.66]
+  const term = r * (phase * 2 - 1)
+  return (
+    <>
+      {/* the tint wash, under everything */}
+      <circle className="sf-body" cx="0" cy="0" r={r} />
+
+      {/* night side: hatched between the limb and the terminator */}
+      <path
+        className="sf-night"
+        d={`M0 ${-r} A ${r} ${r} 0 0 1 0 ${r} A ${Math.abs(term)} ${r} 0 0 ${term > 0 ? 1 : 0} 0 ${-r} Z`}
+      />
+
+      {/* latitude circles, seen from the body's own plane */}
+      {lat.map((f) => {
+        const y = f * r
+        const w = Math.sqrt(r * r - y * y)
+        return (
+          <path
+            key={f}
+            className="sf-lat"
+            d={`M${-w} ${y} A ${w} ${w * 0.3} 0 0 0 ${w} ${y}`}
+            fill="none"
+          />
+        )
+      })}
+
+      {/* the terminator itself, and the limb last so it sits over everything */}
+      <path
+        className="sf-term"
+        d={`M0 ${-r} A ${Math.abs(term)} ${r} 0 0 ${term > 0 ? 1 : 0} 0 ${r}`}
+        fill="none"
+      />
+      <circle className="sf-limb" cx="0" cy="0" r={r} fill="none" />
+
+      {/* plate furniture: designation, and a bar that says how big it is */}
+      <g className="sf-plate" transform={`translate(0 ${r + 20})`}>
+        <line className="sf-bar" x1={-r * 0.32} y1="0" x2={r * 0.32} y2="0" />
+        <line className="sf-bar" x1={-r * 0.32} y1="-4" x2={-r * 0.32} y2="4" />
+        <line className="sf-bar" x1={r * 0.32} y1="-4" x2={r * 0.32} y2="4" />
+        <text className="sf-txt" x="0" y="16" textAnchor="middle">{desig} · {scale}</text>
+      </g>
+    </>
+  )
 }
 
 const BAND_MARKS = buildBand()
@@ -95,8 +159,52 @@ function Marks({ offset }) {
           )
         }
 
+        if (m.t === 'body') {
+          const R = m.r
+          const box = R * 2 + 90
+          return (
+            <svg
+              key={key}
+              className="sf-bodysvg"
+              x={m.px !== undefined ? m.px : `${m.x}%`}
+              y={m.y - box / 2}
+              viewBox={`${-box / 2} ${-box / 2} ${box} ${box}`}
+              width={box}
+              height={box}
+            >
+              <Body r={R} phase={m.phase} desig={m.desig} scale={m.scale} />
+            </svg>
+          )
+        }
+
+        if (m.t === 'traj') {
+          /* Stretched to the page: an arc and a straight tick survive a
+           * non-uniform scale, which is why the ticks are drawn vertical. */
+          return (
+            <svg
+              key={key}
+              className="sf-traj"
+              x="0"
+              y={m.y}
+              width="100%"
+              height="260"
+              viewBox="0 0 1000 260"
+              preserveAspectRatio="none"
+            >
+              <path className="sf-arc" d="M -20 240 Q 420 -90 1020 110" fill="none" />
+              {[0.18, 0.36, 0.54, 0.72, 0.9].map((t) => {
+                const u = 1 - t
+                const x = u * u * -20 + 2 * u * t * 420 + t * t * 1020
+                const y = u * u * 240 + 2 * u * t * -90 + t * t * 110
+                return <line key={t} className="sf-tick2" x1={x} y1={y - 6} x2={x} y2={y + 6} />
+              })}
+            </svg>
+          )
+        }
+
         return (
           <svg key={key} className="sf-rock" x={`${m.x}%`} y={m.y - 14} viewBox="-14 -14 28 28" width="28" height="28">
+            <path className="sf-rock-tint" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
             <path d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
             <path className="sf-rock-shade" d="M 3 -9 L 10 -3 L 8 6 L 2 1 Z" />
           </svg>
@@ -135,6 +243,12 @@ export default function SpaceField() {
   return (
     <div className="spacefield" aria-hidden="true">
       <svg className="sf-svg" ref={ref} width="100%" height={BAND * COPIES} focusable="false">
+        {/* SPIKE: the night-side hatch. One definition for every body. */}
+        <defs>
+          <pattern id="sf-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+            <line className="sf-hatchline" x1="0" y1="0" x2="0" y2="7" />
+          </pattern>
+        </defs>
         {Array.from({ length: COPIES }).map((_, i) => (
           <Marks key={i} offset={i * BAND} />
         ))}

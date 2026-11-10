@@ -221,6 +221,12 @@ export default function Engine({ width = 480 }) {
         className="dfill"
         d={`${PROF_L} A ${EXIT} ${EXIT * FLAT} 0 0 1 ${EXIT} ${Y_EXIT} Q ${CX} ${CY} ${THROAT} ${Y_THR} L${CHAM} ${Y_INJ2} Z`}
       />
+      {/* SPIKE: heat tint. A bell that has fired is copper near the throat and
+       * straw at the exit; one flat wash is the printed version of that. */}
+      <path
+        className="eng-tint"
+        d={`${PROF_L} A ${EXIT} ${EXIT * FLAT} 0 0 1 ${EXIT} ${Y_EXIT} Q ${CX} ${CY} ${THROAT} ${Y_THR} L${CHAM} ${Y_INJ2} Z`}
+      />
 
       {/* the tube bundle */}
       {cs.map((c, i) => (
@@ -252,6 +258,23 @@ export default function Engine({ width = 480 }) {
         d={`M${-EXIT + 12} ${Y_EXIT} A ${EXIT - 12} ${(EXIT - 12) * FLAT} 0 0 0 ${EXIT - 12} ${Y_EXIT}`}
         fill="none"
       />
+
+      {/* SPIKE: hazard decal on the thrust structure. Diagonal bars between
+        * the two mount rings, clipped to that band. */}
+      <g className="hz">
+        <clipPath id="hz-clip">
+          <rect x={-TOP_R} y={Y_RING} width={TOP_R * 2} height={Y_RING2 - Y_RING} />
+        </clipPath>
+        <g clipPath="url(#hz-clip)">
+          {Array.from({ length: 40 }).map((_, i) => (
+            <path
+              key={i}
+              className="hz-bar"
+              d={`M${-TOP_R + i * 12} ${Y_RING2} l10 0 l10 ${-(Y_RING2 - Y_RING)} l-10 0 Z`}
+            />
+          ))}
+        </g>
+      </g>
 
       {/* ---- turbopumps ---- */}
       <Pump x={-148} y={62} />

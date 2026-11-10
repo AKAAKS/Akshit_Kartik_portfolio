@@ -37,7 +37,10 @@ function Blanket({ x1, x2, y1, y2, CX, CY }) {
   return (
     <g>
       <rect className="dfill" x={x1} y={y1} width={w} height={h} />
-      {out}
+      {/* SPIKE: the photovoltaic wash. Under the cell grid, inside the frame
+       * line - a fill, never a stroke, so the blanket stays drawn. */}
+      <rect className="pv" x={x1} y={y1} width={w} height={h} />
+      <g className="pv-grid">{out}</g>
       <rect className="d2" x={x1} y={y1} width={w} height={h} fill="none" />
     </g>
   )
@@ -62,6 +65,7 @@ export function SolarArray({ big = false, flip = false }) {
       <g transform={`skewY(-5) translate(0 ${h * 0.08})`}>
         {/* beta gimbal: the joint the whole wing rotates on */}
         <rect className="dfill" x="2" y={mid - 17 * k} width={30 * k} height={34 * k} />
+        <rect className="pv-frame" x="2" y={mid - 17 * k} width={30 * k} height={34 * k} />
         <rect className="d1" x="2" y={mid - 17 * k} width={30 * k} height={34 * k} fill="none" />
         <ellipse className="d2" cx={17 * k} cy={mid} rx={8 * k} ry={11 * k} fill="none" />
         <ellipse className="d3" cx={17 * k} cy={mid} rx={3.5 * k} ry={5 * k} fill="none" />
@@ -116,6 +120,7 @@ function Bell({ x, y, r, dir }) {
   return (
     <>
       <path className="dfill" d={p} />
+      <path className="eng-tint" d={p} />
       <path className="d1" d={p} fill="none" />
     </>
   )

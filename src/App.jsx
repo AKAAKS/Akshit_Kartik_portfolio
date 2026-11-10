@@ -11,6 +11,7 @@ import Experience from './components/Experience.jsx'
 import Projects from './components/Projects.jsx'
 import Skills from './components/Skills.jsx'
 import Contact from './components/Contact.jsx'
+import SpikeTint from './components/SpikeTint.jsx' // SPIKE
 
 /* The craft, seen from outside, running down the middle of the page.
  *
@@ -34,6 +35,7 @@ export default function App() {
     <>
       <a className="skip" href="#intro">Skip to content</a>
 
+      <SpikeTint />{/* SPIKE */}
       <SpaceField />
       <StationMap />
 
