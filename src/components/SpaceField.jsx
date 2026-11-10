@@ -108,45 +108,46 @@ const BANDS = buildBands()
  * its equator, so the near side of each latitude circle sits lower on the
  * page.
  *
- * The field FADES rather than darkening. It begins as solid line at the top,
- * and past a threshold each arc breaks into dashes that shorten while their
- * gaps open, until the last of them are dots with a lot of paper between.
- * The spacing opens the same way. An earlier pass did the engraver's usual
- * thing and piled crosshatch into the shadow, which ended the body in a
- * clotted dark mass instead of letting it fall away into the page. */
-const FADE = 0.4
+ * TWO sets of line, doing two different jobs:
+ *
+ *  - the latitudes themselves span the full width of the disc and stay SOLID
+ *    end to end. They are the form, and breaking them up cost the body its
+ *    roundness.
+ *  - the crosshatch rides the same curves on the shadow side only, spanning
+ *    part of the width. That set begins solid where the shadow begins and
+ *    breaks progressively into dashes, then into dots with a lot of paper
+ *    between, so the shaded side fades out rather than clotting into a dark
+ *    mass at the bottom.
+ *
+ * Doubling the line count on one side is how a plate darkens a region
+ * without reaching for a darker ink; letting that second set dissolve is
+ * what keeps it from becoming a blot. */
+const SHADE = 0.54
 
-function latitudes(r, { n = 42, tilt = 0.24, band = 0 } = {}) {
+function latitudes(r, { n = 46, tilt = 0.24, band = 0 } = {}) {
   const out = []
   for (let i = 1; i < n; i += 1) {
-    /* Lines sit tight at the top and spread as they go down, so the field
-     * thins by count as well as by weight. */
+    /* Spacing tightens toward the bottom. An even spread reads as a grille;
+     * the squeeze is what an engraver does to darken a region. */
     const u = i / n
-    const y = -r * 0.995 + 2 * r * 0.995 * Math.pow(u, 1.35)
+    const biased = u + 0.2 * u * (1 - u)
+    const y = -r * 0.995 + 2 * r * 0.995 * biased
     const w = Math.sqrt(Math.max(0, r * r - y * y))
     if (w < r * 0.05) continue
 
     const sag = w * tilt
     const lit = (y + r) / (2 * r) // 0 at the top, 1 at the bottom
 
-    // heaviest where it is solid, lightening as it breaks up
-    let weight = 1.45 - lit * 0.75
+    /* The spread between the lightest and heaviest line IS the modelling. An
+     * early pass ran 0.4 to 1.2 and the body collapsed into even grey; an
+     * engraving needs its darkest line several times its lightest. */
+    let weight = 0.45 + lit * 1.75
 
-    /* Banding, for a giant: clusters of heavier line with quieter gaps
-     * between them, rather than one even field of hatch. */
+    /* Banding, for a giant: clusters of heavy line with quieter gaps, not
+     * one even field of hatch. */
     if (band) {
       const b = Math.sin((y / r) * band * Math.PI)
-      weight *= 0.62 + 0.55 * (b * b)
-    }
-
-    /* Solid until FADE, then dashes that shorten as their gaps widen. Round
-     * caps are what turn the short end of that run into dots. */
-    let dash
-    if (lit > FADE) {
-      const k = (lit - FADE) / (1 - FADE)
-      const len = Math.max(0.45, 6 * (1 - k * k))
-      const gap = 2.2 + 17 * k * k
-      dash = `${len.toFixed(2)} ${gap.toFixed(2)}`
+      weight *= 0.45 + 1.0 * (b * b)
     }
 
     out.push(
@@ -154,9 +155,34 @@ function latitudes(r, { n = 42, tilt = 0.24, band = 0 } = {}) {
         key={`l${i}`}
         className="sf-lat"
         d={`M${-w} ${y} Q 0 ${y + sag} ${w} ${y}`}
-        style={{ strokeWidth: weight, strokeDasharray: dash }}
+        style={{ strokeWidth: weight }}
       />,
     )
+
+    if (lit > SHADE) {
+      const k = (lit - SHADE) / (1 - SHADE)
+      /* The run has to OPEN at a readable length, or its solid beginning is
+       * a few invisible stubs and the whole set looks dashed from the start. */
+      const x0 = w - w * (0.34 + k * 1.52)
+
+      /* Solid at the start of the run, then dashes that shorten as their
+       * gaps widen. Round caps are what turn the end of that run into dots
+       * rather than into little bars. */
+      const len = Math.max(0.45, 6 * (1 - k * k))
+      const gap = 2.2 + 17 * k * k
+
+      out.push(
+        <path
+          key={`x${i}`}
+          className="sf-lat sf-lat--shade"
+          d={`M${x0} ${y + 1.5} Q ${(x0 + w) / 2} ${y + 1.5 + sag * 0.55} ${w} ${y + 1.5}`}
+          style={{
+            strokeWidth: weight * 0.75,
+            strokeDasharray: k > 0.14 ? `${len.toFixed(2)} ${gap.toFixed(2)}` : undefined,
+          }}
+        />,
+      )
+    }
   }
   return out
 }

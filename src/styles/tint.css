@@ -107,7 +107,8 @@
 /* Bodies. Held under full strength because a body at full ink on a white
  * page out-draws the ship, and the ship is the subject. */
 .sf-planet { opacity: 0.85; }
-.sf-lat { fill: none; stroke: var(--draw); stroke-linecap: round; }
+.sf-lat { fill: none; stroke: var(--draw-mid); stroke-linecap: round; }
+.sf-lat--shade { stroke: var(--draw); }
 .sf-limb { fill: none; stroke: var(--draw); stroke-width: 1.4; }
 .sf-ring-line { fill: none; stroke: var(--draw); stroke-width: 1.15; }
 
@@ -201,7 +202,10 @@
 }
 
 .station {
-  background-color: var(--sunk);
+  /* Barely off paper. At full --sunk the bar read as a grey band across the
+   * top of the page; the two surfaces only need to differ enough to be two
+   * surfaces, and the glass panel over it supplies the brighter one. */
+  background-color: color-mix(in srgb, var(--paper) 55%, var(--sunk));
   border-bottom: 1px solid var(--rule-hard);
 }
 
@@ -251,9 +255,11 @@
 }
 
 /* It is glass, so it takes the same ink the viewports do — but only once a
- * tint level is on, like every other wash on the ship. */
+ * tint level is on, like every other wash on the ship. Kept to a few percent
+ * on purpose: the panel has to stay the BRIGHTER of the two surfaces, and at
+ * 7% the wash pulled it under the plate and the relief read backwards. */
 :root[data-tint] .station-scroll {
-  background-color: color-mix(in srgb, var(--card), var(--ti-glass) 7%);
+  background-color: color-mix(in srgb, var(--card), var(--ti-glass) 4%);
 }
 
 /* The chain has to clear the bolts, and the centrifuge chip rides 9px up out
