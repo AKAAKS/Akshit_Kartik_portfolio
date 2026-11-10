@@ -115,60 +115,6 @@ function Windows() {
   )
 }
 
-/* ---- high-gain antenna ----
- *
- * A dish on a gimballed boom, reaching into the gutter the way the arrays do.
- * Drawn as an ellipse seen off-axis, with its rim, radial ribs and a feed
- * horn on a tripod.
- */
-export function Antenna() {
-  const RX = 54
-  const RY = 76
-  return (
-    <svg
-      className="hga"
-      viewBox="-20 -96 200 192"
-      width="200"
-      height="192"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {/* boom out from the hull, with its gimbal */}
-      <line className="d1" x1="0" y1="0" x2="66" y2="0" />
-      <line className="d3" x1="0" y1="-4" x2="66" y2="-4" />
-      <rect className="dfill" x="60" y="-16" width="22" height="32" />
-      <rect className="d1" x="60" y="-16" width="22" height="32" fill="none" />
-      <circle className="d2" cx="71" cy="0" r="7" fill="none" />
-
-      {/* the dish */}
-      <ellipse className="dfill" cx={82 + RX} cy="0" rx={RX} ry={RY} />
-      <ellipse className="d1" cx={82 + RX} cy="0" rx={RX} ry={RY} fill="none" />
-      <ellipse className="d3" cx={82 + RX} cy="0" rx={RX * 0.66} ry={RY * 0.66} fill="none" />
-      <ellipse className="d3" cx={82 + RX} cy="0" rx={RX * 0.33} ry={RY * 0.33} fill="none" />
-      {/* radial ribs */}
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-        const a = (i / 8) * Math.PI * 2
-        return (
-          <line
-            key={i}
-            className="d3"
-            x1={82 + RX}
-            y1="0"
-            x2={82 + RX + RX * Math.cos(a)}
-            y2={RY * Math.sin(a)}
-          />
-        )
-      })}
-      {/* feed horn on its tripod */}
-      <line className="d2" x1={82 + RX} y1={-RY * 0.7} x2={102 + RX} y2="0" />
-      <line className="d2" x1={82 + RX} y1={RY * 0.7} x2={102 + RX} y2="0" />
-      <line className="d2" x1={82 + RX} y1="0" x2={102 + RX} y2="0" />
-      <rect className="dfill" x={100 + RX} y="-7" width="14" height="14" />
-      <rect className="d1" x={100 + RX} y="-7" width="14" height="14" fill="none" />
-    </svg>
-  )
-}
-
 export default function Nose() {
   return (
     <div className="nose" aria-hidden="true">
@@ -180,9 +126,6 @@ export default function Nose() {
           <span className="np-name">COMMAND MODULE</span>
         </p>
       </div>
-      <span className="hga-mount hga-mount--r">
-        <Antenna />
-      </span>
     </div>
   )
 }

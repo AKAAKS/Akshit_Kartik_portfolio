@@ -1153,29 +1153,6 @@ main { position: relative; z-index: 1; }
   margin-top: -2px;
   padding-bottom: 54px;
 }
-/* The verniers sit lower and behind, as secondary engines on their own
- * mounts do - set back so the main bell stays the thing you read first. */
-.aft-cluster {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-.vernier { position: relative; line-height: 0; }
-.vernier--l { margin: 30px -14px 0 0; }
-.vernier--r { margin: 30px 0 0 -14px; }
-/* A strut back to the mount, so each vernier is carried by the structure
- * rather than hanging in space beside the main bell. */
-.vernier::before {
-  content: '';
-  position: absolute;
-  top: 6px;
-  width: 54px;
-  height: 1px;
-  background: var(--draw-mid);
-}
-.vernier--l::before { right: 12px; transform: rotate(-20deg); transform-origin: right center; }
-.vernier--r::before { left: 12px; transform: rotate(20deg); transform-origin: left center; }
-
 /* Quads ringing the aft cone, two high on the shoulder and two lower in
  * toward the mount. */
 .quad--aft { top: auto; transform: none; }
@@ -1183,7 +1160,7 @@ main { position: relative; z-index: 1; }
 .quad--a2 { right: 16%; top: 38px; left: auto; }
 .quad--a3 { left: 33%; top: 86px; }
 .quad--a4 { right: 33%; top: 86px; left: auto; }
-.bell { display: block; }
+.engine { display: block; }
 .aft-label {
   display: flex;
   gap: 8px;
@@ -1284,38 +1261,13 @@ main { position: relative; z-index: 1; }
 /* The ring sits on the spindle, not behind it. */
 .module--eva .ring-stage { z-index: 1; }
 
-/* Text over the structure.
- *
- * The spindle passes behind the heading and the lead rather than stopping at
- * them. A paper veil with soft edges sits between the two, so the hardware
- * greys back where words are and returns at full strength either side - no
- * box is cut out of the craft. */
+/* The spindle passes behind the heading and the lead. A veil was tried here
+ * to grey it back under the words and read as a block fade rather than as
+ * structure fading, so it is gone; the text sits straight over the shaft. */
 .module--eva .module-inner { position: relative; z-index: 1; }
-.module--eva .module-inner::before {
-  content: '';
-  position: absolute;
-  top: -18px;
-  bottom: -18px;
-  left: 50%;
-  width: 250px;
-  margin-left: -125px;
-  z-index: -1;
-  opacity: 0.9;
-  /* Soft on all four edges: the horizontal falloff is in the gradient, the
-   * vertical one in the mask. Only as wide as the spindle needs - a veil the
-   * width of the text would be the panel we were avoiding. */
-  background: linear-gradient(
-    to right, transparent 0, var(--paper) 46px,
-    var(--paper) calc(100% - 46px), transparent 100%);
-  -webkit-mask-image: linear-gradient(
-    to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
-  mask-image: linear-gradient(
-    to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
-}
 
 @media print {
   .spindle { display: none; }
-  .module--eva .module-inner::before { display: none; }
 }
 
 
@@ -1372,18 +1324,6 @@ main { position: relative; z-index: 1; }
 }
 .nose-plate .np-tag { color: var(--accent); }
 
-/* The dish reaches into the gutter, the way the arrays do further down. */
-.hga-mount {
-  position: absolute;
-  top: 86px;
-  line-height: 0;
-}
-.hga-mount--r { left: calc(50% + var(--page) / 2 - 56px); }
-.hga { display: block; }
-
-@media (max-width: 1180px) {
-  .hga-mount { display: none; }
-}
 @media (max-width: 760px) {
   .nose-inner { height: 130px; }
   .nose-win { top: 68px; transform: translateX(-50%) scale(0.7); }

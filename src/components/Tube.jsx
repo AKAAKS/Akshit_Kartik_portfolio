@@ -1,4 +1,5 @@
-import { RcsQuad, EngineBell } from './Externals.jsx'
+import { RcsQuad } from './Externals.jsx'
+import Engine from './Engine.jsx'
 
 /* Cylinder drawing primitives.
  *
@@ -40,7 +41,11 @@ export function Rib({ ry = 15, back = true }) {
  * the mount and the bell bolts straight onto it. Stretched to the tube's
  * width like every other full-width piece; the mount half-width is set so it
  * lands exactly on the bell's injector. */
-const MOUNT = 32 // half-width of the engine mount, in viewBox units
+/* Half-width of the engine mount, in the flare's viewBox units. Set from the
+ * engine's own thrust-mount ring: 118 of its 532 viewBox units rendered at
+ * 480px is a 106px half-width, which is 100 of the 1000 units this taper is
+ * stretched across. The hull necks onto the ring it actually bolts to. */
+const MOUNT = 100
 
 function AftTaper() {
   const H = 116
@@ -89,28 +94,21 @@ export function TubeCap() {
         <span className="quad quad--r"><RcsQuad /></span>
       </div>
 
-      {/* The engine, bolted to the mount the taper just closed down onto.
-        * One bell alone read as a part rather than as a thrust structure, so
-        * it is now a cluster: the main engine flanked by two verniers set
-        * back on their own mounts, with four RCS quads ringing the cone
-        * above and a propellant feed running down to each. */}
+      {/* The engine, bolted to the mount ring the taper just closed onto.
+        * Four RCS quads ring the cone above it. */}
       <>
-          <span className="quad quad--aft quad--a1"><RcsQuad size={46} /></span>
-          <span className="quad quad--aft quad--a2"><RcsQuad size={46} /></span>
-          <span className="quad quad--aft quad--a3"><RcsQuad size={38} /></span>
-          <span className="quad quad--aft quad--a4"><RcsQuad size={38} /></span>
+        <span className="quad quad--aft quad--a1"><RcsQuad size={46} /></span>
+        <span className="quad quad--aft quad--a2"><RcsQuad size={46} /></span>
+        <span className="quad quad--aft quad--a3"><RcsQuad size={38} /></span>
+        <span className="quad quad--aft quad--a4"><RcsQuad size={38} /></span>
 
-          <div className="aft">
-            <div className="aft-cluster">
-              <span className="vernier vernier--l"><EngineBell width={104} /></span>
-              <EngineBell />
-              <span className="vernier vernier--r"><EngineBell width={104} /></span>
-            </div>
-            <p className="aft-label">
-              <span className="al-tag">SPS</span>
-              <span className="al-name">SERVICE PROPULSION · 2 VERNIER</span>
-            </p>
-          </div>
+        <div className="aft">
+          <Engine />
+          <p className="aft-label">
+            <span className="al-tag">SPS</span>
+            <span className="al-name">SERVICE PROPULSION</span>
+          </p>
+        </div>
       </>
     </div>
   )
