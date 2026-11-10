@@ -99,8 +99,8 @@ main { position: relative; z-index: 1; }
 /* ---- ribs: a ring around a tube seen side-on is an ellipse ---- */
 .rib { display: block; width: 100%; }
 .rib path { fill: none; vector-effect: non-scaling-stroke; }
-.rib-front { stroke: var(--rule-hard); stroke-width: 1; }
-.rib-back { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; }
+.rib-front { stroke: var(--draw); stroke-width: 1; }
+.rib-back { stroke: var(--draw-far); stroke-width: 1; stroke-dasharray: 3 3; }
 
 /* ---- end caps: the tube closes, so both arcs are solid ---- */
 .cap-inner { padding: 16px 0; }
@@ -221,7 +221,7 @@ main { position: relative; z-index: 1; }
   position: relative;
   max-width: var(--page);
   margin: 0 auto;
-  height: 262px;
+  height: 360px;
 }
 
 .conn-hull {
@@ -236,27 +236,8 @@ main { position: relative; z-index: 1; }
 .ch-shade { fill: url(#hullshade); stroke: none; }
 
 .ch-edge,
-.ch-ring { fill: none; stroke: var(--rule-hard); stroke-width: 1; }
-.ch-ring-far { fill: none; stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; }
-.ch-jumper { fill: none; stroke: var(--rule); stroke-width: 1; }
-
-/* ---- the undistorted detail cluster ---- */
-.conn-detail {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  overflow: visible;
-}
-.cd-hatch { fill: var(--card); stroke: var(--rule-hard); stroke-width: 1.5; }
-.cd-hatch-in { fill: none; stroke: var(--rule); stroke-width: 1; }
-.cd-bolt { fill: var(--ink-dim); }
-
-.cd-target { fill: none; stroke: var(--accent); stroke-width: 1.5; }
-.cd-target circle { fill: none; }
-
-.cd-grapple { fill: none; stroke: var(--rule-hard); stroke-width: 1; }
-.cd-handrail { fill: none; stroke: var(--rule-hard); stroke-width: 1.5; }
+.ch-ring { fill: none; stroke: var(--draw); stroke-width: 1; }
+.ch-ring-far { fill: none; stroke: var(--draw-far); stroke-width: 1; stroke-dasharray: 3 3; }
 
 /* ---- placard: a plate bolted on, which is also why it reads over art ---- */
 .hatch-plate {
@@ -301,87 +282,62 @@ main { position: relative; z-index: 1; }
 .d3 { stroke: var(--draw-far); stroke-width: 0.8; }
 .dfill { fill: var(--paper); stroke: none; }
 
-/* ---- the three-quarter detail view -------------------------------------
+/* ---- the adapter ----
  *
- * The craft is drawn side-on throughout, and side-on a flange collapses to a
- * line - all the depth that makes a coupling worth drawing is lost. So the
- * coupling is blown up the way an engineering drawing does it: a detail view
- * at three quarters, cornered off, scaled, lettered, and tied back to the
- * place it was taken from by a leader. The convention is what lets the two
- * projections sit on one page without fighting. */
-.conn-view {
+ * Width is a percentage of the tube, not a pixel count, so the flare's tapers
+ * land on its rim at every page width - both are the same fraction. Scaled
+ * uniformly, so nothing in it distorts. */
+.dock-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 52.8%;
+  overflow: visible;
+}
+.dk-target { fill: none; stroke: var(--accent); stroke-width: 1.6; }
+.dk-rail { fill: none; stroke: var(--draw-mid); stroke-width: 1.4; }
+.dk-eva { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 4 4; }
+
+/* ---- arrays, on the first connection and every other one after ----
+ *
+ * Positioned off the page measure so they sit just outboard of the hull and
+ * reach into the gutters, which is the emptiest part of the page. */
+.dock-wing {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  width: 232px;
-  padding: 10px 10px 0;
-}
-.conn-view[data-side='left'] { left: 5%; }
-.conn-view[data-side='right'] { right: 5%; }
-
-/* corner brackets rather than a full box: it marks the view off without
- * boxing the drawing in */
-.conn-view::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+  margin-top: -59px;
+  line-height: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid)),
-    linear-gradient(var(--draw-mid), var(--draw-mid));
-  background-size: 15px 1px, 1px 15px, 15px 1px, 1px 15px,
-                   15px 1px, 1px 15px, 15px 1px, 1px 15px;
-  background-position:
-    left top, left top, right top, right top,
-    left bottom, left bottom, right bottom, right bottom;
-  background-repeat: no-repeat;
 }
+.dock-wing--r { left: calc(50% + var(--page) / 2 - 46px); }
+.dock-wing--l { right: calc(50% + var(--page) / 2 - 46px); }
+.array--flip { transform: scaleX(-1); }
 
-.coupling { display: block; overflow: visible; }
-
-/* the leader back to the hatch the detail was taken from */
-.cv-leader {
+/* The truss carrying each wing out to the gutter. It spans from the adapter's
+ * widest rim - 280 of the 1060 measure, so 52.8%/2 either side of centre - to
+ * the gimbal at the array's root. */
+.dock-boom {
   position: absolute;
   top: 50%;
-  height: 1px;
-  background: var(--draw-far);
-  pointer-events: none;
+  margin-top: -28px;
+  width: calc(var(--page) / 2 - 46px - 280px);
+  height: 56px;
+  line-height: 0;
 }
-.conn-view[data-side='left'] .cv-leader { left: 100%; width: 94px; }
-.conn-view[data-side='right'] .cv-leader { right: 100%; width: 94px; }
-.cv-leader::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--draw-mid);
-}
-.conn-view[data-side='left'] .cv-leader::after { right: -2px; }
-.conn-view[data-side='right'] .cv-leader::after { left: -2px; }
+.dock-boom--r { left: calc(50% + 280px); }
+.dock-boom--l { right: calc(50% + 280px); }
+.boom { display: block; width: 100%; height: 100%; }
 
-.cv-label {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 6px 0 0;
-  padding-top: 5px;
-  border-top: 1px solid var(--draw-far);
-  font-family: var(--f-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.04em;
-  color: var(--ink-dim);
-  white-space: nowrap;
+@media (max-width: 1360px) {
+  .dock-boom { display: none; }
 }
-.cv-label .cv-tag { color: var(--accent); }
-.cv-label .cv-scale { margin-left: auto; opacity: 0.7; }
+
+/* The wings need 530px of hull plus their own reach, less the overlap. Below
+ * that the gutters are gone and they would run off the page. */
+@media (max-width: 1360px) {
+  .dock-wing { display: none; }
+}
 
 /* ---- a drawn callout, the way a diagram labels its parts ---- */
 .conn-callout {
@@ -409,7 +365,6 @@ main { position: relative; z-index: 1; }
 
 /* going outside: an airlock, so the seals are broken lines */
 .hatch--eva .ch-ring { stroke-dasharray: 4 4; }
-.hatch--eva .cd-hatch { stroke-dasharray: 3 3; }
 
 /* ================================================================= a module
  * The module is a segment of the tube. The cylinder work lives on .tube,
@@ -675,27 +630,41 @@ main { position: relative; z-index: 1; }
  * bay. The grab target is a separate 24px band straddling each rail, because
  * a pipe that thin in perspective is impossible to hit; the visible rails take
  * no pointer events so the two never fight. */
-.rail,
-.rail-grip {
+/* A handrail, built as a polygonal cylinder.
+ *
+ * Each segment stands upright and faces outward - rotateY to its bearing,
+ * then pushed out to the rim - so the ring of them has real thickness in the
+ * direction the camera is looking. The chord of one segment at 48 sides is
+ * 2*sin(pi/48) = 0.1308 of the radius; the extra 1.5px closes the seams.
+ *
+ * The highlight line down the middle is what makes it read as round rather
+ * than as a flat band. */
+.rail-seg {
   position: absolute;
   left: 50%;
   top: 50%;
-  border-radius: 50%;
+  width: calc(var(--ring-r) * 0.1308 + 1.5px);
+  height: 10px;
+  margin-left: calc((var(--ring-r) * 0.1308 + 1.5px) / -2);
+  background: var(--paper);
+  border-top: 1px solid var(--draw);
+  border-bottom: 1px solid var(--draw);
   box-sizing: border-box;
+  cursor: grab;
+  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
 }
-
-.rail {
-  width: calc(var(--rr) * 2);
-  height: calc(var(--rr) * 2);
-  margin: calc(var(--rr) * -1) 0 0 calc(var(--rr) * -1);
-  border: 1px solid var(--rule-hard);
-  pointer-events: none;
+.rail-seg::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  height: 1px;
+  background: var(--draw-far);
 }
-.rail-o { --rr: calc(var(--ring-r) + 3.5px); border-color: var(--ink-dim); }
-.rail-i { --rr: calc(var(--ring-r) - 3.5px); }
-
-.rail-top { transform: translateY(calc(var(--rail-y) * -1)) rotateX(90deg); }
-.rail-bot { transform: translateY(var(--rail-y)) rotateX(90deg); }
+.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 5px); }
+.rail-seg--bot { margin-top: calc(var(--rail-y) - 5px); }
+.ring-stage.spinning .rail-seg { cursor: grabbing; }
 
 .stanchion {
   position: absolute;
@@ -707,17 +676,6 @@ main { position: relative; z-index: 1; }
   background: var(--rule-hard);
   transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
 }
-
-/* outer radius r+12, 24px band, so the grip straddles the rail it serves */
-.rail-grip {
-  width: calc(var(--ring-r) * 2 + 24px);
-  height: calc(var(--ring-r) * 2 + 24px);
-  margin: calc((var(--ring-r) + 12px) * -1) 0 0 calc((var(--ring-r) + 12px) * -1);
-  border: 24px solid transparent;
-  cursor: grab;
-}
-.rail-grip-top { transform: translateY(calc(var(--rail-y) * -1)) rotateX(90deg); }
-.rail-grip-bot { transform: translateY(var(--rail-y)) rotateX(90deg); }
 
 /* spokes. A bar lying along +X, pushed out to mid-radius and turned to point
  * radially, so it runs from the hub to the rim in the ring's own plane. */
@@ -997,8 +955,7 @@ main { position: relative; z-index: 1; }
   /* Only the rails offer a grab. The gondolas are links and keep the
    * pointer cursor, which is the whole point: what you can drag and what
    * you can click are told apart before you press, not after. */
-  .ring-stage.spinning,
-  .ring-stage.spinning .rail-grip { cursor: grabbing; }
+  .ring-stage.spinning { cursor: grabbing; }
 }
 
 /* ---------------------------------------------------------- narrow screens */
@@ -1009,7 +966,6 @@ main { position: relative; z-index: 1; }
   .rack { grid-template-columns: 56px 1fr; }
   .station-mod { flex: 0 0 auto; }
   .connector { height: 150px; }
-  .conn-view { display: none; }
 }
 
 @media (max-width: 560px) {
@@ -1024,7 +980,7 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
-  .rail, .rail-grip, .stanchion,
+  .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
@@ -1056,7 +1012,7 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
-  .rail, .rail-grip, .stanchion,
+  .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
   .gondola {
@@ -1093,7 +1049,7 @@ main { position: relative; z-index: 1; }
 
   .station, .hatch, .cap, .spacefield, .skip,
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
-  .rail, .rail-grip, .stanchion,
+  .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
 
   .module, .module--eva { background: none; }
@@ -1158,23 +1114,6 @@ main { position: relative; z-index: 1; }
  * line scale, so the outside of the craft matches the drawing inside it.
  */
 
-/* ---- arrays on the centrifuge hub ----
- *
- * Placed from the ring's own radius rather than a fixed offset, so the wings
- * stay attached as the ring scales with the viewport. The projected
- * silhouette runs about 1.22x the layout radius - perspective magnifies the
- * near half - which is the number that puts the root on the rim and not
- * floating off it. */
-.wing {
-  position: absolute;
-  top: 50%;
-  margin-top: -59px;
-  pointer-events: none;
-}
-.wing--r { left: 50%; margin-left: calc(var(--ring-r) * 1.09); }
-.wing--l { right: 50%; margin-right: calc(var(--ring-r) * 1.09); }
-.array--flip { transform: scaleX(-1); }
-
 /* ---- thruster quads on the end caps ---- */
 .quad {
   position: absolute;
@@ -1183,15 +1122,27 @@ main { position: relative; z-index: 1; }
   line-height: 0;
   pointer-events: none;
 }
-.quad--l { left: -27px; }
-.quad--r { right: -27px; }
+.quad--l { left: -27px; top: 24px; transform: none; }
+.quad--r { right: -27px; top: 24px; transform: none; }
 
 /* ---- the aft end ---- */
+.aft-taper { display: block; width: 100%; height: 116px; }
+/* The cone's own fill is the hull here, so the straight-run hull background
+ * and side borders must come off - otherwise a full-width block paints behind
+ * the taper and the craft looks like it ends in a rectangle. */
+.cap--bottom .cap-inner {
+  padding-bottom: 0;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+}
+.cap--bottom .cap-inner::before,
+.cap--bottom .cap-inner::after { display: none; }
 .aft {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: -6px;
+  margin-top: -2px;
   padding-bottom: 54px;
 }
 .bell { display: block; }
@@ -1208,9 +1159,6 @@ main { position: relative; z-index: 1; }
 
 /* Narrow screens: the gutters are gone, so the wings have nowhere to go and
  * the quads would hang off the hull. The engine still reads, so it stays. */
-@media (max-width: 1280px) {
-  .wing { display: none; }
-}
 @media (max-width: 860px) {
   .quad { display: none; }
   .aft { padding-bottom: 32px; }

@@ -1,44 +1,42 @@
-/* The connector between two modules.
+/* The connection between two modules.
  *
- * On the station you do not cross a line from one module to the next, you
- * pass through a docking adapter: a narrower barrel bolted between two
- * pressure hulls, ringed with fasteners, strung with utility jumpers, and
- * placarded. Nothing here carries content, so it is the one place on the page
- * that can be dense.
+ * Three pieces, split by what may and may not be distorted:
  *
- * Geometry is split deliberately. The silhouette stretches to whatever the
- * tube's width is, so it is drawn in a viewBox with preserveAspectRatio="none"
- * and non-scaling strokes — lines and arcs survive that, and an arc stretched
- * wider is exactly the ellipse we want. The detail cluster must NOT stretch,
- * or the bolt circle turns into an oval and the target goes lopsided, so it
- * is a second SVG at natural size, centred.
+ *  1. The flare — the hull necking in from full width to the adapter and back
+ *     out. It must reach the tube's edges at whatever width the page is, so it
+ *     is drawn with preserveAspectRatio="none". Straight tapers and wide
+ *     shallow arcs survive that; detail would not.
+ *  2. The adapter itself (Dock), sized as a percentage of the tube and scaled
+ *     uniformly, so its flanges, teeth and lugs keep their proportions. Being
+ *     a percentage is also what keeps the flare's tapers landing exactly on
+ *     its rim at every page width — both are the same fraction of the tube.
+ *  3. The placard, on a solid plate so it stays legible over the hardware.
  *
  * `from` and `into` decide which of three this is: an ordinary hatch, the
  * airlock out to the truss, or the way back in.
- *
- * The side-on view can only ever show the coupling as a step in the hull -
- * seen from the side, a flange is a line and a lug is nothing. So the
- * hardware itself is carried by a three-quarter detail view beside it,
- * lettered and tied back by a leader, the way a drawing blows up a part it
- * cannot show in the main projection. Sides alternate down the page. */
+ */
 
-import Coupling from './Coupling.jsx'
+import Dock from './Dock.jsx'
+import { SolarArray, Boom } from './Externals.jsx'
 
-const W = 1000 // silhouette viewBox width; maps to the tube's full width
-const H = 190
-const BARREL = 300 // half-width of the narrow section, in viewBox units
+const W = 1000 // flare viewBox width, stretched to the tube
+const H = 360 // connector height in px; the flare viewBox matches it 1:1
+const NECK = 48 // where the hull has finished necking in
+const CORE = 264 // adapter half-width, in flare viewBox units (52.8% of W)
 
 export default function Hatch({ from, into, index, total }) {
   const exiting = Boolean(into.external)
   const entering = Boolean(from.external)
   const eva = exiting || entering
 
-  const l = W / 2 - BARREL // left edge of the barrel
-  const r = W / 2 + BARREL
-  const yA = 32             // where the wide hull stops
-  const yB = 62             // where the barrel starts
-  const yC = H - 62
-  const yD = H - 32
+  // Arrays on the first connection, then every other one. A wing on every
+  // connector would read as wallpaper; three down the craft reads as power.
+  const wings = index % 2 === 1
+
+  const l = W / 2 - CORE
+  const r = W / 2 + CORE
+  const top = `M0 0 H${W} L${r} ${NECK} H${l} Z`
+  const bot = `M0 ${H} H${W} L${r} ${H - NECK} H${l} Z`
 
   return (
     <div
@@ -46,7 +44,7 @@ export default function Hatch({ from, into, index, total }) {
       data-cap={exiting ? 'exit' : entering ? 'enter' : undefined}
     >
       <div className="connector">
-        {/* ---- silhouette: stretches with the tube ---- */}
+        {/* ---- the hull flare: stretches with the tube ---- */}
         <svg
           className="conn-hull"
           viewBox={`0 0 ${W} ${H}`}
@@ -54,10 +52,6 @@ export default function Hatch({ from, into, index, total }) {
           aria-hidden="true"
           focusable="false"
         >
-          {/* The hull's own fill, carried through the connector. Without it
-            * the tube would go transparent here and the star field would
-            * show straight through the pressure vessel. Same cross-axis
-            * shading as the straight runs, so the hull reads continuous. */}
           <defs>
             <linearGradient id="hullshade" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="rgba(15,17,19,0.075)" />
@@ -68,97 +62,31 @@ export default function Hatch({ from, into, index, total }) {
               <stop offset="100%" stopColor="rgba(15,17,19,0.075)" />
             </linearGradient>
           </defs>
-          <path
-            className="ch-fill"
-            d={`M0 0 H${W} V${yA} L${r} ${yB} V${yC} L${W} ${yD} V${H} H0 V${yD} L${l} ${yC} V${yB} L0 ${yA} Z`}
-          />
-          <path
-            className="ch-shade"
-            d={`M0 0 H${W} V${yA} L${r} ${yB} V${yC} L${W} ${yD} V${H} H0 V${yD} L${l} ${yC} V${yB} L0 ${yA} Z`}
-          />
 
-          {/* hull stepping in to the adapter and back out */}
-          <path className="ch-edge" d={`M0 0 V${yA} L${l} ${yB} V${yC} L0 ${yD} V${H}`} />
-          <path className="ch-edge" d={`M${W} 0 V${yA} L${r} ${yB} V${yC} L${W} ${yD} V${H}`} />
+          {/* the hull's own fill, carried through so the pressure vessel does
+            * not go transparent and show the star field */}
+          <path className="ch-fill" d={top} />
+          <path className="ch-shade" d={top} />
+          <path className="ch-fill" d={bot} />
+          <path className="ch-shade" d={bot} />
 
-          {/* transition rings, near arc solid and far arc light */}
-          <path className="ch-ring-far" d={`M0 ${yA} A ${W / 2} 15 0 0 0 ${W} ${yA}`} />
-          <path className="ch-ring" d={`M0 ${yA} A ${W / 2} 15 0 0 1 ${W} ${yA}`} />
-          <path className="ch-ring-far" d={`M0 ${yD} A ${W / 2} 15 0 0 0 ${W} ${yD}`} />
-          <path className="ch-ring" d={`M0 ${yD} A ${W / 2} 15 0 0 1 ${W} ${yD}`} />
+          {/* transition rings at full hull width */}
+          <path className="ch-ring-far" d={`M0 0 A ${W / 2} 15 0 0 0 ${W} 0`} />
+          <path className="ch-ring" d={`M0 0 A ${W / 2} 15 0 0 1 ${W} 0`} />
+          <path className="ch-ring-far" d={`M0 ${H} A ${W / 2} 15 0 0 0 ${W} ${H}`} />
+          <path className="ch-ring" d={`M0 ${H} A ${W / 2} 15 0 0 1 ${W} ${H}`} />
 
-          {/* the barrel's own rings */}
-          <path className="ch-ring-far" d={`M${l} ${yB} A ${BARREL} 11 0 0 0 ${r} ${yB}`} />
-          <path className="ch-ring" d={`M${l} ${yB} A ${BARREL} 11 0 0 1 ${r} ${yB}`} />
-          <path className="ch-ring-far" d={`M${l} ${yC} A ${BARREL} 11 0 0 0 ${r} ${yC}`} />
-          <path className="ch-ring" d={`M${l} ${yC} A ${BARREL} 11 0 0 1 ${r} ${yC}`} />
-
-          {/* utility jumpers bridging the two modules outside the barrel */}
-          {[-1, 1].map((side) =>
-            [0, 1, 2].map((k) => {
-              const x = W / 2 + side * (BARREL + 52 + k * 26)
-              return (
-                <path
-                  key={`${side}-${k}`}
-                  className="ch-jumper"
-                  d={`M${x} ${yA - 4} C ${x + side * 16} ${yB + 14}, ${x + side * 16} ${yC - 14}, ${x} ${yD + 4}`}
-                />
-              )
-            }),
-          )}
+          {/* the tapers themselves */}
+          <path className="ch-edge" d={`M0 0 L${l} ${NECK}`} />
+          <path className="ch-edge" d={`M${W} 0 L${r} ${NECK}`} />
+          <path className="ch-edge" d={`M0 ${H} L${l} ${H - NECK}`} />
+          <path className="ch-edge" d={`M${W} ${H} L${r} ${H - NECK}`} />
         </svg>
 
-        {/* ---- detail cluster: must not stretch ---- */}
-        <svg
-          className="conn-detail"
-          viewBox="-150 -56 300 112"
-          width="300"
-          height="112"
-          aria-hidden="true"
-          focusable="false"
-        >
-          {/* the hatch opening */}
-          <ellipse className="cd-hatch" cx="0" cy="0" rx="62" ry="23" />
-          <ellipse className="cd-hatch-in" cx="0" cy="0" rx="50" ry="17" />
+        {/* ---- the adapter ---- */}
+        <Dock eva={eva} />
 
-          {/* bolt circle around the rim */}
-          {Array.from({ length: 24 }).map((_, i) => {
-            const a = (i / 24) * Math.PI * 2
-            return (
-              <circle
-                key={i}
-                className="cd-bolt"
-                cx={Math.cos(a) * 70}
-                cy={Math.sin(a) * 26}
-                r="1.6"
-              />
-            )
-          })}
-
-          {/* docking target: cross in a circle, in the one accent colour */}
-          <g className="cd-target">
-            <circle cx="0" cy="0" r="9" />
-            <line x1="-14" y1="0" x2="14" y2="0" />
-            <line x1="0" y1="-7" x2="0" y2="7" />
-          </g>
-
-          {/* grapple fixture, off to one side */}
-          <g className="cd-grapple">
-            <rect x="94" y="-13" width="26" height="26" />
-            <line x1="100" y1="0" x2="114" y2="0" />
-            <line x1="107" y1="-7" x2="107" y2="7" />
-          </g>
-
-          {/* a handrail on the adapter, because every real surface has one */}
-          <g className="cd-handrail">
-            <line x1="-120" y1="-10" x2="-120" y2="10" />
-            <line x1="-124" y1="-10" x2="-116" y2="-10" />
-            <line x1="-124" y1="10" x2="-116" y2="10" />
-          </g>
-        </svg>
-
-        {/* ---- placard. Solid backing so it stays legible over the hardware,
-          * which is also what a real bolted-on placard looks like. ---- */}
+        {/* ---- placard ---- */}
         <p className="hatch-plate">
           <span className="hp-desig">{into.desig}</span>
           <span className="hp-sep">/</span>
@@ -168,23 +96,26 @@ export default function Hatch({ from, into, index, total }) {
           </span>
         </p>
 
-        {/* ---- the coupling itself, at three quarters ---- */}
-        <div className="conn-view" data-side={index % 2 ? 'left' : 'right'}>
-          <span className="cv-leader" />
-          <Coupling />
-          <p className="cv-label">
-            <span className="cv-tag">DETAIL {String.fromCharCode(64 + index)}</span>
-            <span className="cv-name">{eva ? 'EVA HATCH' : 'CBM COUPLING'}</span>
-            <span className="cv-scale">2:1</span>
-          </p>
-        </div>
-
-        {/* ---- a drawn callout, the way a diagram labels its parts ---- */}
         <p className="conn-callout" aria-hidden="true">
           <span className="cc-leader" />
           <span className="cc-text">CBM ⌀ 50 IN</span>
         </p>
       </div>
+
+      {/* Arrays live out here on the hatch, not inside .connector, so they can
+        * reach past the hull into the gutters. */}
+      {wings && (
+        <>
+          <span className="dock-boom dock-boom--l" aria-hidden="true"><Boom /></span>
+          <span className="dock-boom dock-boom--r" aria-hidden="true"><Boom /></span>
+          <span className="dock-wing dock-wing--l" aria-hidden="true">
+            <SolarArray flip />
+          </span>
+          <span className="dock-wing dock-wing--r" aria-hidden="true">
+            <SolarArray />
+          </span>
+        </>
+      )}
     </div>
   )
 }

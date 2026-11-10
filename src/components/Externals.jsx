@@ -210,3 +210,43 @@ export function EngineBell({ width = 236 }) {
     </svg>
   )
 }
+
+/* ---- array boom --------------------------------------------------------
+ *
+ * The span between the adapter's rim and the array's gimbal. Without it the
+ * wings hang in the gutter attached to nothing, because the hull has necked
+ * in by the height they mount at.
+ *
+ * Stretched to whatever the gap is: a lattice is straight lines, and straight
+ * lines survive a non-uniform scale. The bays get wider on a wider page,
+ * which is what a longer truss looks like anyway.
+ */
+export function Boom() {
+  const BAYS = 7
+  const W = 210
+  const step = W / BAYS
+  return (
+    <svg
+      className="boom"
+      viewBox={`0 0 ${W} 56`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <line className="d2" x1="0" y1="16" x2={W} y2="16" />
+      <line className="d2" x1="0" y1="40" x2={W} y2="40" />
+      {Array.from({ length: BAYS }).map((_, i) => (
+        <g key={i}>
+          <line
+            className="d3"
+            x1={i * step}
+            y1={i % 2 ? 40 : 16}
+            x2={(i + 1) * step}
+            y2={i % 2 ? 16 : 40}
+          />
+          <line className="d3" x1={(i + 1) * step} y1="16" x2={(i + 1) * step} y2="40" />
+        </g>
+      ))}
+    </svg>
+  )
+}

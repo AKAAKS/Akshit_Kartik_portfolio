@@ -33,34 +33,80 @@ export function Rib({ ry = 15, back = true }) {
   )
 }
 
+/* The aft taper: the hull closing down onto the engine mount.
+ *
+ * The craft used to stop at a flat cap with an engine floating below it. A
+ * vehicle ends in a thrust structure, so the pressurized volume necks down to
+ * the mount and the bell bolts straight onto it. Stretched to the tube's
+ * width like every other full-width piece; the mount half-width is set so it
+ * lands exactly on the bell's injector. */
+const MOUNT = 32 // half-width of the engine mount, in viewBox units
+
+function AftTaper() {
+  const H = 116
+  const l = 500 - MOUNT
+  const r = 500 + MOUNT
+  return (
+    <svg
+      className="aft-taper"
+      viewBox={`0 0 1000 ${H}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path className="ch-fill" d={`M0 0 H1000 L${r} ${H} H${l} Z`} />
+      <path className="ch-shade" d={`M0 0 H1000 L${r} ${H} H${l} Z`} />
+      {/* section rings down the cone, each a near arc and a far arc */}
+      {[0.3, 0.6, 0.85].map((t) => {
+        const y = H * t
+        const hw = 500 - (500 - MOUNT) * t
+        return (
+          <g key={t}>
+            <path className="ch-ring-far" d={`M${500 - hw} ${y} A ${hw} 13 0 0 0 ${500 + hw} ${y}`} />
+            <path className="ch-ring" d={`M${500 - hw} ${y} A ${hw} 13 0 0 1 ${500 + hw} ${y}`} />
+          </g>
+        )
+      })}
+      <path className="ch-edge" d={`M0 0 L${l} ${H}`} />
+      <path className="ch-edge" d={`M1000 0 L${r} ${H}`} />
+      <path className="ch-ring-far" d={`M0 0 A 500 15 0 0 0 1000 0`} />
+      <path className="ch-ring" d={`M0 0 A 500 15 0 0 1 1000 0`} />
+    </svg>
+  )
+}
+
 /* An end cap: a closed section. Both arcs solid, because you are looking at
  * the end of the pressurized volume rather than through it. */
 export function TubeCap({ edge = 'top' }) {
   const ry = 17
   const h = ry * 2 + 2
   const mid = ry + 1
+  const aft = edge === 'bottom'
   return (
     <div className={`cap cap--${edge}`} aria-hidden="true">
       <div className="tube cap-inner">
-        <svg
-          className="rib rib--cap"
-          viewBox={`0 0 1000 ${h}`}
-          preserveAspectRatio="none"
-          focusable="false"
-          style={{ height: `${h}px` }}
-        >
-          <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 0 999 ${mid}`} />
-          <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 1 999 ${mid}`} />
-        </svg>
+        {aft ? (
+          <AftTaper />
+        ) : (
+          <svg
+            className="rib rib--cap"
+            viewBox={`0 0 1000 ${h}`}
+            preserveAspectRatio="none"
+            focusable="false"
+            style={{ height: `${h}px` }}
+          >
+            <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 0 999 ${mid}`} />
+            <path className="rib-front" d={`M1 ${mid} A 500 ${ry} 0 0 1 999 ${mid}`} />
+          </svg>
+        )}
         {/* Attitude control, where it actually lives: on the hull at the
           * ends of the pressurized volume, firing fore and aft. */}
         <span className="quad quad--l"><RcsQuad /></span>
         <span className="quad quad--r"><RcsQuad /></span>
       </div>
 
-      {/* The aft end. The page used to simply stop here; a craft ends in an
-        * engine. */}
-      {edge === 'bottom' && (
+      {/* The engine, bolted to the mount the taper just closed down onto. */}
+      {aft && (
         <div className="aft">
           <EngineBell />
           <p className="aft-label">

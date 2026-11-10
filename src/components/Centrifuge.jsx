@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { timeline } from '../data/content.js'
 import { Placard } from './Module.jsx'
-import { SolarArray } from './Externals.jsx'
 
 /* The centrifuge — the career spine as a spin-gravity ring, seen from the side.
  *
@@ -34,6 +33,15 @@ const WHEEL = 0.25
 const TILT_FAR = 21         // degrees above the ring's plane, on approach
 const TILT_NEAR = 4         // once the section is settled in view
 const TILT_STILL = 9        // the one angle used when motion is unwanted
+
+/* The handrails were flat discs laid into the ring's plane with
+ * rotateX(90deg). Seen from 4-21 degrees above that plane a flat circle is,
+ * geometrically, a line - which is why no border width ever made them
+ * visible. A tube needs thickness perpendicular to the plane, so each rail is
+ * built as a ring of outward-facing segments: a polygonal cylinder, solid
+ * from any angle. At 48 segments the facets are invisible. */
+const RAIL_N = 48
+const RAIL_A = Array.from({ length: RAIL_N }, (_, i) => (i * 360) / RAIL_N)
 
 const clamp = (v) => Math.min(MAX, Math.max(MIN, v))
 const indexFor = (theta) => Math.min(N - 1, Math.max(0, Math.round(-theta / STEP)))
@@ -126,9 +134,10 @@ export default function Centrifuge({ mod }) {
 
     const onDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return
-      // The rails are the only handle. Everything else on the ring is either
-      // a link or scenery, and a press anywhere else must stay a plain click.
-      if (!(e.target.closest && e.target.closest('.rail-grip'))) return
+      // The rail segments are the only handle, and they are also the only
+      // thing drawn as a rail - so what you can grab is exactly what you see.
+      // Everything else on the ring stays a plain click.
+      if (!(e.target.closest && e.target.closest('.rail-seg'))) return
       down = true
       moved = false
       startX = e.clientX
@@ -224,21 +233,21 @@ export default function Centrifuge({ mod }) {
             <div className="rim rim-hub" />
             <div className="rim rim-bolts" />
 
-            {/* The handrails, above and below the gondolas. These are the
-              * drag handle: a wide invisible grip band sits on each one, and
-              * they are the only part of the ring with a grab cursor. */}
-            <div className="rail rail-top rail-o" />
-            <div className="rail rail-top rail-i" />
-            <div className="rail rail-bot rail-o" />
-            <div className="rail rail-bot rail-i" />
+            {/* The handrails, above and below the gondolas. The segments are
+              * themselves the drag handle - the thing you can see is the
+              * thing you can grab - so there is no separate invisible band
+              * to drift out of register with them. */}
+            {RAIL_A.map((a) => (
+              <div className="rail-seg rail-seg--top" key={`rt-${a}`} style={{ '--a': a }} />
+            ))}
+            {RAIL_A.map((a) => (
+              <div className="rail-seg rail-seg--bot" key={`rb-${a}`} style={{ '--a': a }} />
+            ))}
 
             {/* posts tying the two rails together, one per gondola bay */}
             {timeline.map((n, i) => (
               <div className="stanchion" key={`p-${n.seg}`} style={{ '--a': i * STEP }} />
             ))}
-
-            <div className="rail-grip rail-grip-top" />
-            <div className="rail-grip rail-grip-bot" />
 
             {timeline.map((n, i) => (
               <div className="strut" key={`s-${n.seg}`} style={{ '--a': i * STEP }} />
@@ -278,14 +287,6 @@ export default function Centrifuge({ mod }) {
               ))}
             </ol>
           </div>
-
-          {/* Arrays. They hang in the tilted space but outside the rotating
-            * ring, because a real array tracks the sun and does not spin with
-            * the wheel - and because a spinning array would be unreadable.
-            * They reach into the gutters, which is the emptiest part of the
-            * page and exactly where a craft this size puts its wings. */}
-          <div className="wing wing--l" aria-hidden="true"><SolarArray flip /></div>
-          <div className="wing wing--r" aria-hidden="true"><SolarArray /></div>
 
           {/* The read position. It lives in the tilted space but outside the
             * rotating ring, so it holds still at the front while the ring
