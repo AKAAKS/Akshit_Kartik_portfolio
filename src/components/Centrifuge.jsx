@@ -222,12 +222,17 @@ export default function Centrifuge({ mod }) {
         <Placard mod={mod} note="External · spin gravity" />
         <div className="module-body" style={{ paddingBottom: 0 }}>
           <p className="module-lead module-lead--wide" style={{ marginBottom: 0 }}>
-            Roles, publications and projects in order, January 2024 to now. Drag
-            the handrail above or below the gondolas to spin the ring — the
-            gondolas themselves are links, so clicking one opens its detail
-            rather than turning the wheel. Rotation is clamped at both ends
-            instead of wrapping, so the oldest entry and the newest are each a
-            hard stop and the run always reads in order.
+            Roles, publications and projects in order, January 2024 to now.{' '}
+            <span className="tl-ring">
+              Drag the handrail above or below the gondolas to spin the ring —
+              the gondolas themselves are links, so clicking one opens its
+              detail rather than turning the wheel. Rotation is clamped at both
+              ends instead of wrapping, so the oldest entry and the newest are
+              each a hard stop and the run always reads in order.
+            </span>
+            <span className="tl-list">
+              Each entry below links to its detail, oldest first.
+            </span>
           </p>
         </div>
       </div>
@@ -316,7 +321,8 @@ export default function Centrifuge({ mod }) {
           onClick={() => rotateTo(current - 1)}
           disabled={current === 0}
         >
-          ← earlier
+          <span className="rs-arrow">←</span>
+          <span className="rs-word">earlier</span>
         </button>
         <button
           type="button"
@@ -324,7 +330,8 @@ export default function Centrifuge({ mod }) {
           onClick={() => rotateTo(current + 1)}
           disabled={current === N - 1}
         >
-          later →
+          <span className="rs-arrow">→</span>
+          <span className="rs-word">later</span>
         </button>
       </div>
 

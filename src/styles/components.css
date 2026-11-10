@@ -414,6 +414,11 @@ main { position: relative; z-index: 1; }
  * and no racks under it, so a measure-width paragraph leaves most of the
  * plate empty and reads as misaligned. It runs the plate's own width. */
 .module-lead--wide { max-width: none; }
+/* The lead describes an interaction that only exists while the ring is a
+ * ring. Wherever it falls back to a list - narrow screens, reduced motion,
+ * print - the drag instruction is not just redundant, it is wrong, so the
+ * two readings swap with the layout rather than one covering both. */
+.tl-list { display: none; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; }
 
@@ -959,18 +964,32 @@ main { position: relative; z-index: 1; }
   top: 50%;
   z-index: 3;
   transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 62px;
+  box-sizing: border-box;
   background: var(--card);
   border: 1px solid var(--rule-hard);
-  padding: 13px 11px;
+  padding: 12px 6px;
   cursor: pointer;
   color: inherit;
-  font-family: var(--f-mono);
-  font-size: var(--t1);
-  line-height: 1.1;
-  white-space: nowrap;
+  line-height: 1;
 }
-.ring-step--prev { left: var(--gut); }
-.ring-step--next { right: var(--gut); }
+.ring-step .rs-arrow { font-family: var(--f-mono); font-size: var(--t3); }
+.ring-step .rs-word {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-dim);
+}
+.ring-step:disabled .rs-word { color: inherit; }
+/* Pinned to the page measure, not the window, so they hold their place next
+ * to the ring instead of drifting out to the edges as the window widens. The
+ * max() is the floor: once the measure is wider than the window there is no
+ * margin left to sit in, and without it they would be pushed off-screen. */
+.ring-step--prev { left: max(var(--gut), calc(50% - var(--page) / 2)); }
+.ring-step--next { right: max(var(--gut), calc(50% - var(--page) / 2)); }
 .ring-step:hover:not(:disabled) { border-color: var(--ink); }
 .ring-step:disabled {
   color: var(--ink-dim);
@@ -1006,6 +1025,12 @@ main { position: relative; z-index: 1; }
   .tube { border-left: 0; border-right: 0; background-image: none; }
   .tube::before, .tube::after { display: none; }
   .rack { grid-template-columns: 56px 1fr; }
+  /* The chain stops sharing the width out and takes its natural size, so the
+   * scroller has something to scroll. The SLOT has to be released too: it
+   * carries flex: 1 1 auto and min-width: 0 for the desktop layout, and while
+   * that holds it squeezes the module below its own label however the module
+   * is set, which is what put every name on top of its neighbour. */
+  .station-slot { flex: 0 0 auto; min-width: auto; }
   .station-mod { flex: 0 0 auto; }
   .connector { height: 150px; }
 }
@@ -1022,6 +1047,9 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .ring-stage { --gk: 1; }
+  .spindle { display: none; }
+  .tl-ring { display: none; }
+  .tl-list { display: inline; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
   .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
@@ -1055,6 +1083,9 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .ring-stage { --gk: 1; }
+  .spindle { display: none; }
+  .tl-ring { display: none; }
+  .tl-list { display: inline; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
   .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
@@ -1110,6 +1141,9 @@ main { position: relative; z-index: 1; }
   .ring-stage { height: auto; perspective: none; }
   .ring-tilt, .ring { position: static; transform: none; }
   .ring-stage { --gk: 1; }
+  .spindle { display: none; }
+  .tl-ring { display: none; }
+  .tl-list { display: inline; }
   .gondolas { position: static; }
   .gondola {
     position: static;
@@ -1187,7 +1221,13 @@ main { position: relative; z-index: 1; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: -2px;
+  /* Same measure as .tube. The engine is sized as a fraction of its parent
+   * so it can meet the hull's aft taper, but the taper lives inside .tube
+   * and is bounded by --page while .aft is a sibling that was not - so the
+   * two agreed only at widths where the window happened to be the measure. */
+  max-width: var(--page);
+  margin: -2px auto 0;
+  width: 100%;
   padding-bottom: 54px;
 }
 /* Quads ringing the aft cone, two high on the shoulder and two lower in
@@ -1197,7 +1237,14 @@ main { position: relative; z-index: 1; }
 .quad--a2 { right: 16%; top: 38px; left: auto; }
 .quad--a3 { left: 33%; top: 86px; }
 .quad--a4 { right: 33%; top: 86px; left: auto; }
-.engine { display: block; }
+/* The engine is sized as a FRACTION OF THE HULL, not in pixels, because the
+ * hull's aft taper closes onto its mount ring and the two have to agree at
+ * every width. The taper puts that mount at 100 of its 1000 stretched units,
+ * so 0.1 of the hull; the ring is 118 of the engine's own 532, so 0.2218 of
+ * the engine. Equating them gives 0.1 / 0.2218 = 45.09% and the joint holds
+ * at any screen size. A fixed 480px overflowed a phone by 90px and, worse,
+ * pulled the mount ring away from the taper everywhere except 1060px. */
+.engine { display: block; width: 45.09%; height: auto; }
 .aft-label {
   display: flex;
   gap: 8px;
