@@ -23,14 +23,14 @@ const VB_TOP = -18
 const ENGINE_H = 520 // the engine svg's own viewBox height
 const Y_EXIT = 442 // the bell's exit plane
 const EXIT_R = 190 // exit half-width
-const PLUME = 300 // how far the plume runs below the exit plane
+const PLUME = 330 // how far the plume runs below the exit plane
 
 /* The plume's own frame. A vacuum plume ends up wider than the bell that
  * threw it, so it cannot share the engine's +/-266 viewBox - the envelope
  * simply fell outside it and never drew. This frame is wider in the same
  * proportion that .lo-plume is wider than .engine in CSS, which keeps one
  * unit the same size in both and keeps x=0 on the same centreline. */
-const PL_HALF = 420
+const PL_HALF = 320
 
 function rng(seed) {
   let s = seed
@@ -47,9 +47,11 @@ function rng(seed) {
  * that pinching - it is also what puts the shock diamonds where they belong,
  * since a diamond sits at each neck. */
 function halfWidth(t) {
-  const flare = EXIT_R * (1 + 1.05 * Math.pow(t, 0.68))
-  const neck = 1 - 0.15 * Math.cos(t * Math.PI * 4.6)
-  return flare * neck
+  /* A clean conical flare. The first pass scalloped this with a cosine to
+   * suggest the barrel shocks, and it read as a wobble in the outline rather
+   * than as structure. The shock lattice below carries that rhythm properly,
+   * so the envelope's only job is to be the edge of the flow. */
+  return EXIT_R * (1 + 0.42 * Math.pow(t, 0.55))
 }
 
 function envelope() {
@@ -73,25 +75,46 @@ function envelope() {
 /* The shock diamonds: lens shapes on the axis, one at each neck, getting
  * shorter and fainter as the flow loses energy. Drawn as two arcs meeting at
  * their tips, which is the shape a schlieren photograph actually shows. */
-function diamonds() {
+/* The shock structure, drawn the way a schlieren photograph shows it.
+ *
+ * Not a stack of lens shapes on the axis - that was the first pass and it
+ * read as a row of eyes. What is actually there is a single oblique shock
+ * reflecting back and forth between the plume's edge and its centreline. One
+ * zig-zag, and its mirror image, and the diamonds appear where the two
+ * cross. That is the whole mechanism, and drawing the mechanism rather than
+ * its silhouette is the difference between a diagram and a doodle. */
+const CROSS = 10 // reflections before the flow has lost its structure
+
+function shockLattice() {
+  const side = (sign) => {
+    const pts = []
+    for (let k = 0; k <= CROSS; k += 1) {
+      const t = k / CROSS
+      // even k rides the envelope, odd k touches the axis
+      // well inboard of the envelope: the shock lives in the core flow,
+      // and running it out to the edge made each diamond a flat chevron
+      // the width of the whole plume.
+      const x = k % 2 === 0 ? sign * halfWidth(t) * (0.52 - 0.14 * t) : 0
+      pts.push(`${x.toFixed(1)} ${(Y_EXIT + PLUME * t).toFixed(1)}`)
+    }
+    return `M${pts.join(' L')}`
+  }
+  return [
+    <path key="sr" className="lo-shock" d={side(1)} />,
+    <path key="sl" className="lo-shock" d={side(-1)} />,
+  ]
+}
+
+/* Mach discs: the normal shock sitting at each crossing on the axis. Short,
+ * heavy, and square to the flow - which is exactly what distinguishes them
+ * from the oblique shocks running into them. */
+function machDiscs() {
   const out = []
-  for (let i = 0; i < 5; i += 1) {
-    const t = (i + 0.38) / 5.4
+  for (let k = 1; k < CROSS; k += 2) {
+    const t = k / CROSS
     const y = Y_EXIT + PLUME * t
-    /* A shock diamond sits ON the axis and is narrower than the bell, not
-     * wider: it is the core flow being pinched, not the plume's edge. An
-     * earlier pass scaled these off the envelope and they came out broader
-     * than the exit, which read as more engine rings rather than as flow. */
-    const w = EXIT_R * (0.60 - i * 0.092)
-    const h = 62 * (1 - i * 0.13)
-    out.push(
-      <path
-        key={`d${i}`}
-        className="lo-shock"
-        style={{ animationDelay: `${120 + i * 48}ms` }}
-        d={`M${-w.toFixed(1)} ${y.toFixed(1)} Q 0 ${(y - h).toFixed(1)} ${w.toFixed(1)} ${y.toFixed(1)} Q 0 ${(y + h).toFixed(1)} ${-w.toFixed(1)} ${y.toFixed(1)} Z`}
-      />,
-    )
+    const w = EXIT_R * (0.21 - 0.014 * k)
+    out.push(<path key={`m${k}`} className="lo-disc" d={`M${-w.toFixed(1)} ${y.toFixed(1)} H${w.toFixed(1)}`} />)
   }
   return out
 }
@@ -119,28 +142,6 @@ function stipplePath() {
     d += `M${(x - rad).toFixed(1)} ${y.toFixed(1)}a${a} ${a} 0 1 0 ${(rad * 2).toFixed(2)} 0a${a} ${a} 0 1 0 ${(-rad * 2).toFixed(2)} 0`
   }
   return d
-}
-
-/* Streamlines off the lip: the flow turning the corner as it expands. */
-function streamers() {
-  const out = []
-  for (let i = 0; i < 6; i += 1) {
-    const s = i % 2 === 0 ? 1 : -1
-    const k = Math.floor(i / 2)
-    const t0 = 0.3 + k * 0.26
-    const w0 = halfWidth(0) * (0.82 - k * 0.12)
-    const w1 = halfWidth(t0) * (0.99 - k * 0.05)
-    const y1 = Y_EXIT + PLUME * t0
-    out.push(
-      <path
-        key={`f${i}`}
-        className="lo-stream"
-        style={{ animationDelay: `${180 + k * 70}ms` }}
-        d={`M${s * w0} ${Y_EXIT + 6} Q ${s * w1 * 0.86} ${Y_EXIT + (y1 - Y_EXIT) * 0.46} ${s * w1} ${y1}`}
-      />,
-    )
-  }
-  return out
 }
 
 const ENV = envelope()
@@ -216,24 +217,26 @@ export default function Liftoff() {
 
   return (
     <>
-      {/* The control sits ABOVE the bell, not below it. Below, it was
-        * standing in the exhaust - which looked cluttered and is not where
-        * anyone puts an ignition switch. */}
-      <button
-        type="button"
-        className={`lo-btn${firing ? ' lo-btn--firing' : ''}`}
-        onClick={fire}
-        aria-label="Return to the top of the page"
-      >
-        <span className="lo-lamp" aria-hidden="true" />
-        <span className="lo-tag">SPS</span>
-        <span className="lo-name">{firing ? 'BURN' : 'RETURN TO TOP'}</span>
-      </button>
-
       {/* One stacking context holding the engine and its flow, so the plume
         * is positioned against the bell rather than against the section. */}
       <div className="lo-stack">
         <Engine />
+
+        {/* Beside the bell, down at its skirt. In the flow above the engine
+          * it pushed the hull off its own thrust structure; below it, it
+          * stood in the plume it exists to light. Out here it is clear of
+          * both, and it is where a control on a real thrust structure would
+          * actually be bolted. */}
+        <button
+          type="button"
+          className={`lo-btn${firing ? ' lo-btn--firing' : ''}`}
+          onClick={fire}
+          aria-label="Return to the top of the page"
+        >
+          <span className="lo-lamp" aria-hidden="true" />
+          <span className="lo-arrow" aria-hidden="true">&#9650;</span>
+          <span className="lo-name">{firing ? 'BURN' : 'TOP'}</span>
+        </button>
         <svg
           className={`lo-plume${firing ? ' lo-plume--firing' : ''}`}
           viewBox={`${-PL_HALF} ${VB_TOP} ${PL_HALF * 2} ${ENGINE_H + PLUME}`}
@@ -252,8 +255,8 @@ export default function Liftoff() {
           <g clipPath="url(#lo-wipe)">
             <path className="lo-core" d={ENV.fill} />
             <path className="lo-grain" d={GRAIN} />
-            {streamers()}
-            {diamonds()}
+              {shockLattice()}
+            {machDiscs()}
             <path className="lo-env" d={ENV.r} />
             <path className="lo-env" d={ENV.l} />
           </g>

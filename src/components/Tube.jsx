@@ -103,13 +103,11 @@ export function TubeCap() {
         <span className="quad quad--aft quad--a4"><RcsQuad size={38} /></span>
 
         <div className="aft">
-          {/* Placard and control both sit above the bell, so the exhaust
-            * path below it is clear. */}
+          <Liftoff />
           <p className="aft-label">
             <span className="al-tag">SPS</span>
             <span className="al-name">SERVICE PROPULSION</span>
           </p>
-          <Liftoff />
         </div>
       </>
     </div>

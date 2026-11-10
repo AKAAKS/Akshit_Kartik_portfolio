@@ -324,11 +324,25 @@ main { position: relative; z-index: 1; }
   height: 360px;
 }
 
+/* Bled 1px past its box, top and bottom.
+ *
+ * The layout gap at every one of these junctions measures exactly 0.000 -
+ * the module's paper and this fill genuinely abut. The hairline is a
+ * rasterising artifact: devicePixelRatio is routinely fractional (1.25 on
+ * this machine, 3 on a phone), the junctions land on fractional device
+ * pixels, and two independently antialiased paper edges meeting there each
+ * cover part of that pixel, so the star field behind shows through the
+ * remainder. Nothing can make two abutting edges add up to full coverage;
+ * they have to overlap instead. 1px over a 360px box is 0.3% of stretch,
+ * which is not a visible distortion, and the seam cannot survive it. */
 .conn-hull {
   position: absolute;
-  inset: 0;
+  top: -1px;
+  bottom: -1px;
+  left: 0;
+  right: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% + 2px);
 }
 .conn-hull path { vector-effect: non-scaling-stroke; }
 
@@ -1379,7 +1393,8 @@ main { position: relative; z-index: 1; }
 .quad--r { right: -27px; top: 24px; transform: none; }
 
 /* ---- the aft end ---- */
-.aft-taper { display: block; width: 100%; height: 116px; }
+/* Bled up into the module above it, for the reason .conn-hull explains. */
+.aft-taper { display: block; width: 100%; height: 117px; margin-top: -1px; }
 /* The cone's own fill is the hull here, so the straight-run hull background
  * and side borders must come off - otherwise a full-width block paints behind
  * the taper and the craft looks like it ends in a rectangle. */
@@ -1414,7 +1429,7 @@ main { position: relative; z-index: 1; }
    * engine is sized as a percentage: one viewBox unit is 0.0848% of this
    * box's width, so the plume's 300 units - less the 60 the engine's own box
    * already covers below the exit plane - is about 20% whatever the width. */
-  padding-bottom: calc(18px + 20%);
+  padding-bottom: calc(18px + 23%);
 }
 /* Quads ringing the aft cone, two high on the shoulder and two lower in
  * toward the mount. */
@@ -1432,6 +1447,10 @@ main { position: relative; z-index: 1; }
  * pulled the mount ring away from the taper everywhere except 1060px. */
 .engine { display: block; width: 45.09%; height: auto; }
 .aft-label {
+  position: relative;
+  z-index: 4;
+  background: var(--paper);
+  padding: 0 9px;
   display: flex;
   gap: 8px;
   margin: 10px 0 0;
@@ -1446,7 +1465,7 @@ main { position: relative; z-index: 1; }
  * the quads would hang off the hull. The engine still reads, so it stays. */
 @media (max-width: 860px) {
   .quad { display: none; }
-  .aft { padding-bottom: calc(10px + 20%); }
+  .aft { padding-bottom: calc(10px + 23%); }
 }
 
 @media print {
@@ -1585,7 +1604,7 @@ main { position: relative; z-index: 1; }
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% + 1px);   /* same seam, same reason: bleed into the hull */
 }
 .nose-cone path { vector-effect: non-scaling-stroke; }
 
@@ -1679,7 +1698,24 @@ main { position: relative; z-index: 1; }
 /* Same width and same viewBox x-range as .engine, pinned to the same top
  * edge - so a given x is the same place in both and the plume leaves the
  * bell instead of landing near it. */
-.lo-stack { position: relative; width: 100%; display: flex; justify-content: center; }
+/* Pulled up so the hull's taper actually lands on the engine's mount ring.
+ *
+ * Engine.jsx's viewBox starts at y=-18 while its thrust-mount ring is at
+ * y=0, so the svg carries 18 units of empty space above anything it draws.
+ * The taper's bottom edge was meeting that empty space, not the ring - a
+ * real 14px hole, which is why this junction looked worse than the others
+ * and why the -2px on .aft never closed it.
+ *
+ * In percent because the engine is sized in percent: one viewBox unit is
+ * 45.09%/532 = 0.08476% of this box's width, so 18 of them is 1.526%, at
+ * any width. The +1px is the overlap every other junction now gets. */
+.lo-stack {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: calc(1px - 1.526%);
+}
 .lo-stack .engine { position: relative; z-index: 1; }
 
 .lo-plume {
@@ -1688,9 +1724,9 @@ main { position: relative; z-index: 1; }
   left: 50%;
   transform: translateX(-50%);
   /* .engine is 45.09% across 532 viewBox units; this is 840 units, so it
-   * must be 45.09% * 840/532 for one unit to be the same size in both and
+   * must be 45.09% * 640/532 for one unit to be the same size in both and
    * for x=0 to stay on the same centreline. */
-  width: 71.2%;
+  width: 54.3%;
   height: auto;
   pointer-events: none;
   opacity: 0;
@@ -1702,33 +1738,49 @@ main { position: relative; z-index: 1; }
  * diamonds keep the shape they were drawn and simply arrive in order. */
 .lo-wipe-rect { height: 0; transition: height 30ms linear; }
 .lo-plume--firing .lo-wipe-rect {
-  height: 300px;               /* PLUME, in the engine's own viewBox units */
+  height: 330px;               /* PLUME, in the engine's own viewBox units */
   transition: height 560ms cubic-bezier(0.22, 0.65, 0.3, 1);
 }
 
 .lo-core { fill: rgba(15, 17, 19, 0.022); stroke: none; }
 .lo-env {
   fill: none;
-  stroke: var(--draw-mid);
-  stroke-width: 1.6;
-  stroke-dasharray: 9 7;
+  stroke: var(--draw-far);
+  stroke-width: 1.4;
+  stroke-dasharray: 8 7;
 }
 .lo-grain { fill: var(--draw-mid); stroke: none; }
 .lo-stream { fill: none; stroke: var(--draw-far); stroke-width: 1.5; }
 .lo-shock {
   fill: none;
-  stroke: var(--draw);
-  stroke-width: 2.4;
+  stroke: var(--draw-mid);
+  stroke-width: 1.8;
   stroke-linejoin: round;
+  stroke-linecap: round;
+}
+/* The normal shock is the strongest feature in the plume, so it is the only
+ * part of it drawn on the heavy ink. */
+.lo-disc {
+  fill: none;
+  stroke: var(--draw);
+  stroke-width: 3.4;
+  stroke-linecap: round;
 }
 
-/* ---- the control: a plate on the thrust structure, not a web button ---- */
+/* ---- the control: a plate on the thrust structure, not a web button ----
+ *
+ * Parked against the bell's skirt on the right. The engine is 45.09% of the
+ * stack and centred, so its right edge is at 72.5%; the plate starts just
+ * outboard of that and is sized to fit the margin that is left even at phone
+ * width, which is why the label is three characters and not thirteen. */
 .lo-btn {
+  position: absolute;
+  left: 73.5%;
+  top: 84%;
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-top: 12px;
-  padding: 7px 13px;
+  gap: 6px;
+  padding: 6px 9px;
   font-family: var(--f-mono);
   font-size: 9.5px;
   letter-spacing: 0.06em;
@@ -1738,6 +1790,18 @@ main { position: relative; z-index: 1; }
   box-shadow: 2px 2px 0 0 var(--rule-hard);   /* zero blur: an edge, not a shadow */
   cursor: pointer;
   white-space: nowrap;
+  z-index: 3;
+}
+/* The leader tying the plate to the structure it is bolted to, so it reads
+ * as hardware on the engine rather than a chip floating beside it. */
+.lo-btn::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 14px;
+  height: 1px;
+  background: var(--rule-hard);
 }
 .lo-btn:hover { background: var(--fill); }
 /* Pressed: the plate goes down onto its shadow, the way a real switch does. */
@@ -1748,7 +1812,7 @@ main { position: relative; z-index: 1; }
 }
 .lo-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-.lo-btn .lo-tag { color: var(--accent); }
+.lo-btn .lo-arrow { color: var(--accent); font-size: 7px; line-height: 1; }
 .lo-btn .lo-name { color: var(--ink); }
 
 /* The lamp is the only thing on the craft allowed to light, because it is
@@ -1759,6 +1823,7 @@ main { position: relative; z-index: 1; }
   border: 1px solid var(--rule-hard);
   border-radius: 50%;
   background: transparent;
+  flex: none;
 }
 .lo-btn--firing .lo-lamp {
   background: var(--ti-hazard);
