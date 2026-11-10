@@ -37,7 +37,7 @@ function Blanket({ x1, x2, y1, y2, CX, CY }) {
   return (
     <g>
       <rect className="dfill" x={x1} y={y1} width={w} height={h} />
-      {/* SPIKE: the photovoltaic wash. Under the cell grid, inside the frame
+      {/* The photovoltaic wash. Under the cell grid, inside the frame
        * line - a fill, never a stroke, so the blanket stays drawn. */}
       <rect className="pv" x={x1} y={y1} width={w} height={h} />
       <g className="pv-grid">{out}</g>

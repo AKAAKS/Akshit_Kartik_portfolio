@@ -27,11 +27,54 @@
 .sf-svg { display: block; }  /* deliberately NOT will-change: a 3000px
    promoted layer is enormous, and the parallax is a cheap 2D slide */
 
-.sf-dot { fill: var(--ink-dim); opacity: 0.5; }
-.sf-ring { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.45; }
-.sf-tick line { stroke: var(--ink-dim); stroke-width: 1; opacity: 0.55; }
-.sf-rock path { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.5; }
-.sf-rock .sf-rock-shade { opacity: 0.28; }
+/* The three drift layers stack in the same fixed box. */
+.spacefield > .sf-svg { position: absolute; top: 0; left: 0; right: 0; }
+
+/* Stars. On the craft's own drawing inks rather than --ink-dim at half
+ * opacity, which sat so far back it read as paper grain. */
+.sf-dot { fill: var(--draw-mid); opacity: 0.85; }
+.sf-ring { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.8; }
+.sf-tick line { stroke: var(--draw); stroke-width: 1; opacity: 0.85; }
+
+/* Bodies. The sky is an engraving where the ship is a schematic: solid
+ * latitudes carry the form, and the roundness comes from the same flat ink
+ * gradient .tube uses to read as a cylinder, gone radial. Held under full
+ * strength because a body at full ink out-draws the ship, and the ship is
+ * the subject. */
+.sf-planet { opacity: 0.85; }
+.sf-lat { fill: none; stroke: var(--draw-mid); stroke-linecap: round; }
+.sf-limb { fill: none; stroke: var(--draw); stroke-width: 1.4; }
+.sf-ring-line { fill: none; stroke: var(--draw); stroke-width: 1.15; }
+
+/* Rocks, in contour. A scratchy outline is what separates a hand-drawn rock
+ * from a machined part, and the ship owns machined. */
+.sf-rock .dfill { fill: var(--paper); stroke: none; }
+.sf-rock-edge { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.85; }
+.sf-rock-shade { fill: var(--draw-far); stroke: none; opacity: 0.5; }
+
+/* A transfer arc with range ticks: plotted geometry rather than a body, so
+ * it stays schematic and stays in the accent. Dashed, because a trajectory
+ * is a prediction and a drawing says so by dashing it. */
+.sf-arc { stroke: var(--mark); stroke-width: 1; stroke-dasharray: 7 6; opacity: 0.55; }
+.sf-tick2 { stroke: var(--mark); stroke-width: 1; opacity: 0.55; }
+
+/* Rocks turn. The field drifts with the scroll; this is the only thing on
+ * the page with motion of its own, slow enough to read as tumbling rather
+ * than spinning, and it stops dead for reduced motion.
+ *
+ * The rotation goes on an inner <g>, never on the nested <svg>:
+ * transform-box: fill-box on an <svg> does not give you that svg's own
+ * centre — the transform resolves in the parent's user space — and the rocks
+ * swung clean out of frame. */
+.sf-tumble { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .sf-tumble { animation: sf-tumble 90s linear infinite; }
+  .sf-rock:nth-of-type(even) .sf-tumble { animation-duration: 124s; animation-direction: reverse; }
+}
+@keyframes sf-tumble {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 /* the craft sits in front of the field */
 main { position: relative; z-index: 1; }
@@ -120,17 +163,66 @@ main { position: relative; z-index: 1; }
   height: var(--nav-h);
   display: flex;
   align-items: center;
-  background: var(--paper);
-  border-bottom: 1px solid var(--rule);
+  /* Two surfaces, not one. This is the METAL: a plate bolted to the hull,
+   * barely off paper. At a full --sunk it read as a grey band across the top
+   * of the page; the two only need to differ enough to be two. */
+  background-color: color-mix(in srgb, var(--paper) 55%, var(--sunk));
+  border-bottom: 1px solid var(--rule-hard);
 }
 
+/* the rivet line along the bottom of the plate, and the plate's inner edge */
+.station::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  height: 5px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle 1.6px at 11px 2.5px, var(--draw-mid) 96%, transparent 100%);
+  background-size: 46px 5px;
+  background-repeat: repeat-x;
+  opacity: 0.75;
+}
+.station::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  border-top: 1px solid var(--rule);
+  pointer-events: none;
+}
+
+/* The GLASS: a panel bolted onto the plate and standing proud of it. The
+ * relief is drawn rather than lit — a box-shadow at ZERO blur is a second
+ * edge line, which is how a drawing says a plate stands off a surface.
+ *
+ * It takes the same ink the viewports take, kept to a few percent: the panel
+ * has to stay the BRIGHTER of the two surfaces or the relief reads
+ * backwards. Measured: plate 0.9205, panel 0.9456, paper 0.9634. */
 .station-scroll {
-  width: 100%;
+  position: relative;
+  /* Inset from the window as well as capped at the measure. Without this it
+   * runs edge to edge on a phone and the bar collapses back into one
+   * surface. */
+  width: calc(100% - 24px);
   max-width: var(--page);
   margin: 0 auto;
-  padding: 0 var(--gut);
+  padding: 7px var(--gut);
   overflow-x: auto;
   scrollbar-width: none;
+  background-color: color-mix(in srgb, var(--card), var(--ti-glass) 4%);
+  border: 1px solid var(--rule-hard);
+  box-shadow: 2px 2px 0 0 var(--rule-hard);
+  /* the four bolts holding the panel down */
+  background-image:
+    radial-gradient(circle 2px at 9px 9px, var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 9px) 9px, var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at 9px calc(100% - 9px), var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 9px) calc(100% - 9px), var(--draw-mid) 96%, transparent 100%);
+  background-repeat: no-repeat;
 }
 .station-scroll::-webkit-scrollbar { display: none; }
 
@@ -139,6 +231,8 @@ main { position: relative; z-index: 1; }
   display: flex;
   align-items: center;
   min-height: 46px;
+  /* clear of the panel's bolts, and of the centrifuge chip riding 9px up */
+  padding-top: 5px;
   padding-bottom: 8px;
 }
 
@@ -959,11 +1053,20 @@ main { position: relative; z-index: 1; }
 /* The steps sit at the ring's own left and right rather than in a row under
  * it. The control is then in the direction it acts in - a pair of buttons
  * below the ring makes you read the arrows to work that out. */
+/* Below the rim, not beside it.
+ *
+ * Pinned to the measure at the ring's vertical centre they landed exactly
+ * where the rim ellipse is widest — the rim runs the full measure, so they
+ * sat on it and their opaque backs cut a hole in it. Moving them outward
+ * does not survive every width: --ring-r caps at 434px, so past ~1200px the
+ * rim stops growing while the measure does not, and below that the rim fills
+ * the window. Dropping them below it does survive, because the rim's
+ * vertical extent is bounded by --ring-r — half its height is almost exactly
+ * 0.2 * --ring-r — so the offset tracks the ring at every size. */
 .ring-step {
   position: absolute;
-  top: 50%;
+  top: calc(50% + var(--ring-r) * 0.202 + 32px);
   z-index: 3;
-  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1436,3 +1539,36 @@ main { position: relative; z-index: 1; }
 @media print {
   .nose { display: none; }
 }
+
+/* ======================================================= tint: system inks
+ * Colour on the craft, laid as flat washes inside existing linework. The
+ * line art keeps doing all the structural work on the .d1/.d2/.d3 scale and
+ * a wash never replaces a stroke, which is what keeps the ship a drawing
+ * that has been tinted rather than a rendering.
+ *
+ * Washes that land on .dfill — the opaque paper occluder every drawn part
+ * sits on — mix INTO paper rather than laying rgba over it. An alpha fill
+ * there would let the linework behind show through and the part would stop
+ * reading as solid.
+ *
+ * Which inks go where is in tokens.css, by system. Coverage runs from the
+ * obviously-not-bare-metal outside, through the parts a crew touches and the
+ * parts that move, to structure and avionics.
+ * ====================================================================== */
+
+/* the outside */
+.pv { fill: color-mix(in srgb, transparent, var(--ti-pv) var(--tz-amt)); }
+.pv-frame { fill: color-mix(in srgb, transparent, var(--ti-struct) 14%); }
+.glass { fill: color-mix(in srgb, transparent, var(--ti-glass) var(--tz-amt)); }
+.eng-tint { fill: color-mix(in srgb, transparent, var(--ti-therm) var(--tz-amt)); }
+.hz-bar { fill: color-mix(in srgb, transparent, var(--ti-hazard) 22%); }
+
+/* crew interfaces, and anything that moves */
+.tz-eva { stroke: var(--ti-eva); opacity: 0.85; }
+.tz-eva-fill { fill: color-mix(in srgb, var(--paper), var(--ti-eva) 26%); }
+.tz-mech { fill: color-mix(in srgb, var(--paper), var(--ti-mech) var(--tz-amt)); }
+
+/* structure and avionics */
+.tz-struct { fill: color-mix(in srgb, var(--paper), var(--ti-struct) var(--tz-amt)); }
+.tz-elec { fill: color-mix(in srgb, var(--paper), var(--ti-elec) var(--tz-amt)); }
+.tz-therm { fill: color-mix(in srgb, var(--paper), var(--ti-therm) var(--tz-amt)); }

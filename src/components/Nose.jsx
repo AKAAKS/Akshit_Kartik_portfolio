@@ -126,7 +126,7 @@ function Windows() {
         return (
           <g key={p.x}>
             <path className="dfill" d={frame} />
-            {/* SPIKE: the only glass on the craft */}
+            {/* the only glass on the craft */}
             <path className="glass" d={frame} />
             <path className="d1" d={frame} fill="none" />
             <path

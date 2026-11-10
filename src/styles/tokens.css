@@ -69,7 +69,28 @@
   --step: 26px;            /* vertical rhythm unit */
 
   /* ---- fixed chrome ---- */
-  --nav-h: 72px;           /* the station map; anchors offset by this */
+  --nav-h: 96px;           /* the station map; anchors offset by this. The
+                              bar has to be taller than the glass panel it
+                              carries or no plate is left showing. */
+
+  /* ---- system inks -------------------------------------------------
+   * Colour on the craft is assigned by SYSTEM, never by taste: a part is
+   * coloured because of what it is, and two parts share an ink only if they
+   * share a job. That is the discipline that keeps this from being
+   * decoration, and it is why the handrails on a dock and the handrails in a
+   * rack came out the same yellow without that being decided twice.
+   *
+   * Every one is laid as a flat wash at --tz-amt inside existing linework —
+   * the ship stays a drawing that has been tinted, not a rendering. */
+  --tz-amt: 13%;
+  --ti-pv: #2E3178;      /* photovoltaic */
+  --ti-glass: #3A6E7E;   /* glazing */
+  --ti-therm: #845C48;   /* fired metal, hot structure */
+  --ti-hazard: #BC8E18;  /* hazard decal */
+  --ti-eva: #B8901C;     /* crew interface: handrails, EVA aids */
+  --ti-mech: #6E5566;    /* mechanism: drives, pumps, latches */
+  --ti-struct: #4A5A6B;  /* primary structure, flanges */
+  --ti-elec: #3F6B57;    /* avionics and electrical */
 
   /* ---- timeline geometry, shared by truss and its print fallback ---- */
   --node-w: 144px;

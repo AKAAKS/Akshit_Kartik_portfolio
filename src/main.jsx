@@ -4,7 +4,6 @@ import App from './App.jsx'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/components.css'
-import './styles/tint.css' // SPIKE
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

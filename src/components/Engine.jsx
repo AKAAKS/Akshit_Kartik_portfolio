@@ -221,7 +221,7 @@ export default function Engine({ width = 480 }) {
         className="dfill"
         d={`${PROF_L} A ${EXIT} ${EXIT * FLAT} 0 0 1 ${EXIT} ${Y_EXIT} Q ${CX} ${CY} ${THROAT} ${Y_THR} L${CHAM} ${Y_INJ2} Z`}
       />
-      {/* SPIKE: heat tint. A bell that has fired is copper near the throat and
+      {/* Heat tint. A bell that has fired is copper near the throat and
        * straw at the exit; one flat wash is the printed version of that. */}
       <path
         className="eng-tint"
@@ -259,7 +259,7 @@ export default function Engine({ width = 480 }) {
         fill="none"
       />
 
-      {/* SPIKE: hazard decal on the thrust structure. Diagonal bars between
+      {/* Hazard decal on the thrust structure. Diagonal bars between
         * the two mount rings, clipped to that band. */}
       <g className="hz">
         <clipPath id="hz-clip">
