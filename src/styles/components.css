@@ -575,6 +575,21 @@ main { position: relative; z-index: 1; }
   --gon-w: 180px;
   --gon-h: 86px;
   --gon-d: 48px;
+  /* Supersample factor for the gondolas.
+   *
+   * Perspective MAGNIFIES the near face: at a 2400px perspective and a 434px
+   * radius it is drawn at 2400 / (2400 - 434) = 1.22x. A 3D-transformed
+   * layer is rasterised at its LAYOUT size and the transform is then applied
+   * to that bitmap, so the label was a 180x86 texture blown up 22% - on a 1x
+   * display, with no spare pixels to give. That is the blur, and no font
+   * change can reach it.
+   *
+   * So the box is built --gk times larger and scaled back down inside the 3D
+   * transform. The geometry is identical, but the texture now carries --gk
+   * times the texels and is DOWNsampled to the screen rather than up. Every
+   * length inside a gondola has to carry the same factor for that to hold,
+   * which is why they all read through var(--gk). */
+  --gk: 2;
   --rail-y: 62px;        /* how far the rails sit above and below the boxes */
   --tilt: 16deg;
   position: relative;
@@ -778,11 +793,14 @@ main { position: relative; z-index: 1; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: var(--gon-w);
-  height: var(--gon-h);
-  margin: calc(var(--gon-h) / -2) 0 0 calc(var(--gon-w) / -2);
+  width: calc(var(--gon-w) * var(--gk));
+  height: calc(var(--gon-h) * var(--gk));
+  margin: calc(var(--gon-h) * var(--gk) / -2) 0 0 calc(var(--gon-w) * var(--gk) / -2);
   transform-style: preserve-3d;
-  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
+  /* scale LAST: it applies in the box's own space, so translateZ keeps the
+   * true ring radius and only the oversized box is brought back to size */
+  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r))
+    scale(calc(1 / var(--gk)));
 }
 
 .gon {
@@ -790,62 +808,62 @@ main { position: relative; z-index: 1; }
   left: 50%;
   top: 50%;
   box-sizing: border-box;
-  border: 1px solid var(--rule-hard);
+  border: calc(1px * var(--gk)) solid var(--rule-hard);
   background: var(--card);
 }
 
 /* the two large faces */
 .gon-face,
 .gon-back {
-  width: var(--gon-w);
-  height: var(--gon-h);
-  margin: calc(var(--gon-h) / -2) 0 0 calc(var(--gon-w) / -2);
+  width: calc(var(--gon-w) * var(--gk));
+  height: calc(var(--gon-h) * var(--gk));
+  margin: calc(var(--gon-h) * var(--gk) / -2) 0 0 calc(var(--gon-w) * var(--gk) / -2);
   backface-visibility: hidden;
 }
 .gon-face {
   display: block;
-  padding: 9px 11px;
+  padding: calc(9px * var(--gk)) calc(11px * var(--gk));
   text-decoration: none;
   color: inherit;
   overflow: hidden;
-  transform: translateZ(calc(var(--gon-d) / 2));
+  transform: translateZ(calc(var(--gon-d) * var(--gk) / 2));
 }
 .gon-back {
   background: var(--sunk);
-  transform: rotateY(180deg) translateZ(calc(var(--gon-d) / 2));
+  transform: rotateY(180deg) translateZ(calc(var(--gon-d) * var(--gk) / 2));
 }
 
 /* top and underside */
 .gon-top,
 .gon-bot {
-  width: var(--gon-w);
-  height: var(--gon-d);
-  margin: calc(var(--gon-d) / -2) 0 0 calc(var(--gon-w) / -2);
+  width: calc(var(--gon-w) * var(--gk));
+  height: calc(var(--gon-d) * var(--gk));
+  margin: calc(var(--gon-d) * var(--gk) / -2) 0 0 calc(var(--gon-w) * var(--gk) / -2);
 }
 .gon-top {
   background-color: var(--paper);
   background-image: repeating-linear-gradient(
     to right,
-    var(--rule) 0 1px,
-    transparent 1px 13px
+    var(--rule) 0 calc(1px * var(--gk)),
+    transparent calc(1px * var(--gk)) calc(13px * var(--gk))
   );
-  transform: rotateX(90deg) translateZ(calc(var(--gon-h) / 2));
+  transform: rotateX(90deg) translateZ(calc(var(--gon-h) * var(--gk) / 2));
 }
 .gon-bot {
   background: var(--sunk);
-  transform: rotateX(-90deg) translateZ(calc(var(--gon-h) / 2));
+  transform: rotateX(-90deg) translateZ(calc(var(--gon-h) * var(--gk) / 2));
 }
 
 /* ends */
 .gon-lt,
 .gon-rt {
-  width: var(--gon-d);
-  height: var(--gon-h);
-  margin: calc(var(--gon-h) / -2) 0 0 calc(var(--gon-d) / -2);
+  width: calc(var(--gon-d) * var(--gk));
+  height: calc(var(--gon-h) * var(--gk));
+  margin: calc(var(--gon-h) * var(--gk) / -2) 0 0 calc(var(--gon-d) * var(--gk) / -2);
   background: var(--sunk);
 }
-.gon-lt { transform: rotateY(-90deg) translateZ(calc(var(--gon-w) / 2)); }
-.gon-rt { transform: rotateY(90deg) translateZ(calc(var(--gon-w) / 2)); }
+.gon-lt { transform: rotateY(-90deg) translateZ(calc(var(--gon-w) * var(--gk) / 2)); }
+.gon-rt { transform: rotateY(90deg) translateZ(calc(var(--gon-w) * var(--gk) / 2)); }
 
 .gon-face:hover { border-color: var(--ink); }
 /* Current and key must not both be a blue border: --mark and --accent are
@@ -854,38 +872,38 @@ main { position: relative; z-index: 1; }
  * gets a payload tag in the corner instead. */
 .gondola[data-current="true"] .gon-face {
   border-color: var(--accent);
-  border-width: 2px;
+  border-width: calc(2px * var(--gk));
 }
 .gondola[data-key="true"] .gon-face::after {
   content: '';
   position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
+  top: calc(7px * var(--gk));
+  right: calc(8px * var(--gk));
+  width: calc(6px * var(--gk));
+  height: calc(6px * var(--gk));
   background: var(--mark);
 }
 
 .gon-face .seg {
   display: block;
   font-family: var(--f-mono);
-  font-size: 9px;
+  font-size: calc(9px * var(--gk));
   color: var(--ink-dim);
 }
 .gon-face .w {
   display: block;
   font-family: var(--f-head);
   font-weight: 500;
-  font-size: var(--t2);
+  font-size: calc(var(--t2) * var(--gk));
   line-height: 1.28;
-  margin-top: 3px;
+  margin-top: calc(3px * var(--gk));
 }
 .gon-face .d {
   display: block;
   font-family: var(--f-mono);
-  font-size: 9.5px;
+  font-size: calc(9.5px * var(--gk));
   color: var(--ink-dim);
-  margin-top: 4px;
+  margin-top: calc(4px * var(--gk));
 }
 
 /* ---- the read position, fixed while the ring turns past it ---- */
@@ -928,25 +946,38 @@ main { position: relative; z-index: 1; }
 /* ---- controls: the ring must be operable without a pointer ---- */
 .ring-controls {
   display: flex;
-  align-items: baseline;
   justify-content: center;
-  gap: 20px;
   max-width: var(--page);
   margin: 0 auto;
   padding: 2px var(--gut) var(--step);
 }
-.ring-controls button {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--rule-hard);
+/* The steps sit at the ring's own left and right rather than in a row under
+ * it. The control is then in the direction it acts in - a pair of buttons
+ * below the ring makes you read the arrows to work that out. */
+.ring-step {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  transform: translateY(-50%);
+  background: var(--card);
+  border: 1px solid var(--rule-hard);
+  padding: 13px 11px;
   cursor: pointer;
-  padding: 0;
+  color: inherit;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  line-height: 1.1;
+  white-space: nowrap;
 }
-.ring-controls button:disabled {
+.ring-step--prev { left: var(--gut); }
+.ring-step--next { right: var(--gut); }
+.ring-step:hover:not(:disabled) { border-color: var(--ink); }
+.ring-step:disabled {
   color: var(--ink-dim);
-  border-bottom-color: var(--rule);
+  border-color: var(--rule);
   cursor: default;
 }
+
 .ring-count { text-align: center; }
 .ring-count .rc-now {
   display: block;
@@ -990,7 +1021,8 @@ main { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
+  .ring-stage { --gk: 1; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
   .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
@@ -1022,7 +1054,8 @@ main { position: relative; z-index: 1; }
 @media (max-width: 860px) {
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
+  .ring-stage { --gk: 1; }
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
   .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
   .gondolas { position: static; }
@@ -1059,7 +1092,7 @@ main { position: relative; z-index: 1; }
   body { background: #fff; font-size: 11pt; line-height: 1.45; }
 
   .station, .hatch, .cap, .spacefield, .skip,
-  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-controls, .ring-callout,
+  .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
   .rail-seg, .stanchion,
   .gon-back, .gon-top, .gon-bot, .gon-lt, .gon-rt { display: none; }
 
@@ -1076,6 +1109,7 @@ main { position: relative; z-index: 1; }
 
   .ring-stage { height: auto; perspective: none; }
   .ring-tilt, .ring { position: static; transform: none; }
+  .ring-stage { --gk: 1; }
   .gondolas { position: static; }
   .gondola {
     position: static;
@@ -1304,7 +1338,7 @@ main { position: relative; z-index: 1; }
 .nose { position: relative; overflow-x: clip; }
 .nose-inner {
   position: relative;
-  height: 196px;
+  height: 276px;
   /* the cone's own fill is the hull up here, so the straight-run background
    * and side borders must come off or a rectangle paints behind it */
   background: none;
@@ -1328,7 +1362,7 @@ main { position: relative; z-index: 1; }
 .nose-win {
   position: absolute;
   left: 50%;
-  top: 84px;
+  top: 128px;
   transform: translateX(-50%);
   overflow: visible;
 }

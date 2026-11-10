@@ -17,7 +17,7 @@ const FLAT = 0.18 // how open the engine's own rings are
 
 const EXIT = 190
 const THROAT = 34
-const CHAM = 46
+const CHAM = 54 // the convergent's top, where it meets the injector dome
 const TOP_R = 118 // thrust mount ring: what the hull necks down onto
 const INJ = 72
 
@@ -25,10 +25,11 @@ const Y_RING = 0
 const Y_RING2 = 24
 const Y_INJ = 88
 const Y_INJ2 = 106
-const Y_CHAM = 118
-const Y_CONV = 230
-const Y_THR = 268
-const Y_EXIT = 560
+/* No straight chamber section. The bell converges to the throat directly
+ * under the injector dome, so one shape runs from the bolted dome to the
+ * exit with nothing cylindrical in between. */
+const Y_THR = 150
+const Y_EXIT = 442
 
 /* Control point of the bell's quadratic, and the only thing that decides
  * whether the nozzle is a cone or a bell.
@@ -41,10 +42,10 @@ const Y_EXIT = 560
 const CX = THROAT + 142
 const CY = Y_THR + 84
 
-/* One continuous profile, chamber lip to nozzle exit. Everything else on the
- * engine is this curve transformed. */
-const PROF = `M${CHAM} ${Y_CHAM} L${CHAM} ${Y_CONV} L${THROAT} ${Y_THR} Q ${CX} ${CY} ${EXIT} ${Y_EXIT}`
-const PROF_L = `M${-CHAM} ${Y_CHAM} L${-CHAM} ${Y_CONV} L${-THROAT} ${Y_THR} Q ${-CX} ${CY} ${-EXIT} ${Y_EXIT}`
+/* One continuous profile, injector dome to nozzle exit. Everything else on
+ * the engine is this curve transformed. */
+const PROF = `M${CHAM} ${Y_INJ2} L${THROAT} ${Y_THR} Q ${CX} ${CY} ${EXIT} ${Y_EXIT}`
+const PROF_L = `M${-CHAM} ${Y_INJ2} L${-THROAT} ${Y_THR} Q ${-CX} ${CY} ${-EXIT} ${Y_EXIT}`
 
 /* Radius of the bell at parameter t along the quadratic, so a hoop lands on
  * the silhouette instead of near it. */
@@ -213,12 +214,12 @@ export default function Engine({ width = 480 }) {
           />
         )
       })}
-      <Ring y={Y_INJ2} r={CHAM + 8} cls="d2" />
+      <Ring y={Y_INJ2} r={CHAM} cls="d2" />
 
       {/* ---- the chamber and nozzle as one cooled body ---- */}
       <path
         className="dfill"
-        d={`${PROF_L} A ${EXIT} ${EXIT * FLAT} 0 0 1 ${EXIT} ${Y_EXIT} Q ${CX} ${CY} ${THROAT} ${Y_THR} L${CHAM} ${Y_CONV} L${CHAM} ${Y_CHAM} Z`}
+        d={`${PROF_L} A ${EXIT} ${EXIT * FLAT} 0 0 1 ${EXIT} ${Y_EXIT} Q ${CX} ${CY} ${THROAT} ${Y_THR} L${CHAM} ${Y_INJ2} Z`}
       />
 
       {/* the tube bundle */}
@@ -230,7 +231,6 @@ export default function Engine({ width = 480 }) {
       {hoops.map((t) => (
         <Ring key={t} y={yAt(t)} r={rAt(t)} cls="d2" />
       ))}
-      <Ring y={Y_CONV} r={CHAM} cls="d2" />
 
       {/* the silhouette, drawn last so it sits over the tubes */}
       <path className="d1" d={PROF} fill="none" />

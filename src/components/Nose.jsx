@@ -10,9 +10,9 @@
  */
 
 const W = 1000
-const H = 196
+const H = 276
 const TIP = 34 // half-width at the apex: the same 72px the spindle uses
-const SHOULDER = 150 // where the cone stops flaring and the hull begins
+const SHOULDER = 230 // where the cone stops flaring and the hull begins
 
 /* The cone's silhouette is one quadratic, so a ring on it has to be
  * evaluated ON that quadratic - not approximated near it. The first attempt

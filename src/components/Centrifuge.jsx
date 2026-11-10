@@ -309,6 +309,23 @@ export default function Centrifuge({ mod }) {
             * against the stage. */}
           <span className="ring-index" aria-hidden="true" />
         </div>
+
+        <button
+          type="button"
+          className="ring-step ring-step--prev"
+          onClick={() => rotateTo(current - 1)}
+          disabled={current === 0}
+        >
+          ← earlier
+        </button>
+        <button
+          type="button"
+          className="ring-step ring-step--next"
+          onClick={() => rotateTo(current + 1)}
+          disabled={current === N - 1}
+        >
+          later →
+        </button>
       </div>
 
       <p className="ring-callout" aria-hidden="true">
@@ -317,26 +334,10 @@ export default function Centrifuge({ mod }) {
       </p>
 
       <div className="ring-controls">
-        <button
-          type="button"
-          className="ref"
-          onClick={() => rotateTo(current - 1)}
-          disabled={current === 0}
-        >
-          ← earlier
-        </button>
         <span className="ring-count">
           <span className="rc-now">{timeline[current].date}</span>
           <span className="rc-of">{current + 1} / {N}</span>
         </span>
-        <button
-          type="button"
-          className="ref"
-          onClick={() => rotateTo(current + 1)}
-          disabled={current === N - 1}
-        >
-          later →
-        </button>
       </div>
     </section>
   )
