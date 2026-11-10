@@ -54,6 +54,18 @@ export default function Hatch({ from, into, index, total, ord = 0, ords = 0 }) {
   const top = `M${tl} 0 H${tr} L${r} ${NECK} H${l} Z`
   const bot = `M${bl} ${H} H${br} L${r} ${H - NECK} H${l} Z`
 
+  /* Collars: the hull's paper carried a few units PAST the neck, at the
+   * neck's own width, so it runs under the adapter instead of stopping at
+   * it. The flare and the adapter are two separate SVGs sized two different
+   * ways - one stretched to the page, one a percentage of it - and they were
+   * landing 0.75px apart once both had been rounded to device pixels. That
+   * sliver of backdrop was the hairline across every connector on the page.
+   * Nothing is drawn here: it is fill only, hidden under the adapter, and it
+   * cannot be seen even if the two ever land exactly. */
+  const COLLAR = 4
+  const topCollar = `M${l} ${NECK} H${r} V${NECK + COLLAR} H${l} Z`
+  const botCollar = `M${l} ${H - NECK} H${r} V${H - NECK - COLLAR} H${l} Z`
+
   return (
     <div
       className={`hatch${eva ? ' hatch--eva' : ''}`}
@@ -83,8 +95,10 @@ export default function Hatch({ from, into, index, total, ord = 0, ords = 0 }) {
             * not go transparent and show the star field */}
           <path className="ch-fill" d={top} />
           <path className="ch-shade" d={top} />
+          <path className="ch-fill" d={topCollar} />
           <path className="ch-fill" d={bot} />
           <path className="ch-shade" d={bot} />
+          <path className="ch-fill" d={botCollar} />
 
           {/* transition rings, each at whatever width its end actually is */}
           <path className="ch-ring-far" d={`M${tl} 0 A ${topW} 15 0 0 0 ${tr} 0`} />
