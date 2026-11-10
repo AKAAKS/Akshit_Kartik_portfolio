@@ -464,6 +464,13 @@ main { position: relative; z-index: 1; }
   letter-spacing: 0.04em;
 }
 
+/* A leader line needs somewhere to lead from. At phone width the callout
+ * starts 86px right of centre and the text runs off the edge and wraps, so
+ * the label comes off: there is no room to point at anything. */
+@media (max-width: 760px) {
+  .conn-callout { display: none; }
+}
+
 /* going outside: an airlock, so the seals are broken lines */
 .hatch--eva .ch-ring { stroke-dasharray: 4 4; }
 
@@ -1178,6 +1185,12 @@ main { position: relative; z-index: 1; }
   }
   .gondola[data-key="true"] .gon-face::after { top: 11px; right: 0; }
   .gondola[data-current="true"] .gon-face { border-width: 1px 0 0; border-top-color: var(--accent); }
+  .ring-controls { display: none; }
+  .gondolas {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 2px 14px 14px;
+  }
 }
 
 /* A 600px ring does not fit a phone, and shrinking it makes the gondolas
@@ -1214,6 +1227,21 @@ main { position: relative; z-index: 1; }
   }
   .gondola[data-key="true"] .gon-face::after { top: 11px; right: 0; }
   .gondola[data-current="true"] .gon-face { border-width: 1px 0 0; border-top-color: var(--accent); }
+
+  /* A counter with no controls beside it is just a number on the page. */
+  .ring-controls { display: none; }
+
+  /* Every other section is a pressure hull, and a hull is opaque: that paper
+   * fill is what keeps the star field off the text. The centrifuge has no
+   * hull because on a wide screen it is a ring turning in open space - but
+   * once it collapses to a list, it is reading matter sitting directly on the
+   * sky, and the giant was being read straight through the job titles. So the
+   * list gets the one thing it was missing: something to be printed on. */
+  .gondolas {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 2px 14px 14px;
+  }
 }
 
 /* ------------------------------------------------------------------- print
@@ -1533,8 +1561,14 @@ main { position: relative; z-index: 1; }
 .nose-plate .np-tag { color: var(--accent); }
 
 @media (max-width: 760px) {
-  .nose-inner { height: 130px; }
-  .nose-win { top: 68px; transform: translateX(-50%) scale(0.7); }
+  /* 130px was too short for the fittings it had to carry: the window band
+   * hung 20px out of the cone and into the intro module below, and the
+   * placard - pinned to the bottom of a box that short - landed on top of
+   * the glass. The cone gets enough height for both, and the windows come
+   * down enough that the plate has somewhere to sit. */
+  .nose-inner { height: 168px; }
+  .nose-win { top: 56px; transform: translateX(-50%) scale(0.6); }
+  .nose-plate { bottom: 8px; }
 }
 @media print {
   .nose { display: none; }

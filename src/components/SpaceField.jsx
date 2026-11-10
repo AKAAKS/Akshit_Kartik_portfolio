@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /* What is behind the craft.
  *
@@ -45,7 +45,7 @@ function rng(seed) {
   }
 }
 
-function buildBands() {
+function buildBands(narrow) {
   const r = rng(20260211)
   const far = []
   const mid = []
@@ -85,9 +85,20 @@ function buildBands() {
 
   /* Bodies. The large one crops a page edge, which is why its x is in px and
    * not a percentage — half off the edge has to stay half off the edge at
-   * every width. */
-  mid.push({ t: 'giant', px: -118, y: BAND * 0.26, r: 212 })
-  mid.push({ t: 'ringed', x: 78, y: BAND * 0.76, r: 52 })
+   * every width.
+   *
+   * On a phone the desktop giant is a disaster: 424px of dense latitude
+   * hatching across a 375px viewport, so it stops being a body in the gutter
+   * and becomes wallpaper behind the text. Narrow screens get a much smaller
+   * one pushed almost entirely off the edge, so only a limb shows — which is
+   * what it was ever meant to read as. */
+  if (narrow) {
+    mid.push({ t: 'giant', px: -150, y: BAND * 0.26, r: 104 })
+    mid.push({ t: 'ringed', x: 84, y: BAND * 0.76, r: 30 })
+  } else {
+    mid.push({ t: 'giant', px: -118, y: BAND * 0.26, r: 212 })
+    mid.push({ t: 'ringed', x: 78, y: BAND * 0.76, r: 52 })
+  }
 
   /* A transfer arc with range ticks: plotted geometry rather than a body, so
    * it stays schematic and stays in the accent. */
@@ -96,7 +107,12 @@ function buildBands() {
   return { far, mid, near }
 }
 
-const BANDS = buildBands()
+/* Both fields are built once, at module load. The seeded rng means the star
+ * positions are identical in each; only the bodies differ, so crossing the
+ * breakpoint resizes the planets without the sky jumping. */
+const NARROW_Q = '(max-width: 860px)'
+const BANDS_WIDE = buildBands(false)
+const BANDS_NARROW = buildBands(true)
 
 /* =========================================================================
  *  Engraving
@@ -312,6 +328,17 @@ function Marks({ list, offset }) {
 
 export default function SpaceField() {
   const refs = useRef([])
+  const [narrow, setNarrow] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(NARROW_Q).matches,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia(NARROW_Q)
+    const onChange = () => setNarrow(mq.matches)
+    onChange()
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -338,6 +365,8 @@ export default function SpaceField() {
     }
   }, [])
 
+  const bands = narrow ? BANDS_NARROW : BANDS_WIDE
+
   return (
     <div className="spacefield" aria-hidden="true">
       {LAYERS.map((layer, li) => (
@@ -350,7 +379,7 @@ export default function SpaceField() {
           focusable="false"
         >
           {Array.from({ length: COPIES }).map((_, i) => (
-            <Marks key={i} list={BANDS[layer.key]} offset={i * BAND} />
+            <Marks key={i} list={bands[layer.key]} offset={i * BAND} />
           ))}
         </svg>
       ))}
