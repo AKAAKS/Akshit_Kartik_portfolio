@@ -1410,7 +1410,11 @@ main { position: relative; z-index: 1; }
   max-width: var(--page);
   margin: -2px auto 0;
   width: 100%;
-  padding-bottom: 54px;
+  /* Room below the bell for the plume to run into. A percentage because the
+   * engine is sized as a percentage: one viewBox unit is 0.0848% of this
+   * box's width, so the plume's 300 units - less the 60 the engine's own box
+   * already covers below the exit plane - is about 20% whatever the width. */
+  padding-bottom: calc(18px + 20%);
 }
 /* Quads ringing the aft cone, two high on the shoulder and two lower in
  * toward the mount. */
@@ -1442,7 +1446,7 @@ main { position: relative; z-index: 1; }
  * the quads would hang off the hull. The engine still reads, so it stays. */
 @media (max-width: 860px) {
   .quad { display: none; }
-  .aft { padding-bottom: 32px; }
+  .aft { padding-bottom: calc(10px + 20%); }
 }
 
 @media print {
@@ -1657,3 +1661,114 @@ main { position: relative; z-index: 1; }
 .tz-struct { fill: color-mix(in srgb, var(--paper), var(--ti-struct) var(--tz-amt)); }
 .tz-elec { fill: color-mix(in srgb, var(--paper), var(--ti-elec) var(--tz-amt)); }
 .tz-therm { fill: color-mix(in srgb, var(--paper), var(--ti-therm) var(--tz-amt)); }
+
+
+/* =========================================================== liftoff (SPIKE)
+ *
+ * Throwaway, for judging on a phone. The craft's back-to-top: an engine at
+ * the foot of the page, and firing it returns you to the nose.
+ *
+ * Everything here obeys the two rules the rest of the drawing obeys. The
+ * plume is drawn rather than lit - stipple, shock diamonds, a dashed
+ * envelope, all on the same ink as the linework, no glow and no colour that
+ * is not already on the craft. And nothing shakes: the page moving up is the
+ * ship moving, and faking motion on top of real motion only reads as jitter.
+ */
+.aft { position: relative; }
+
+/* Same width and same viewBox x-range as .engine, pinned to the same top
+ * edge - so a given x is the same place in both and the plume leaves the
+ * bell instead of landing near it. */
+.lo-stack { position: relative; width: 100%; display: flex; justify-content: center; }
+.lo-stack .engine { position: relative; z-index: 1; }
+
+.lo-plume {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  /* .engine is 45.09% across 532 viewBox units; this is 840 units, so it
+   * must be 45.09% * 840/532 for one unit to be the same size in both and
+   * for x=0 to stay on the same centreline. */
+  width: 71.2%;
+  height: auto;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms linear 260ms;
+}
+.lo-plume--firing { opacity: 1; transition: opacity 90ms linear; }
+
+/* The wipe. Growing the rect's height leaves the drawing unscaled, so the
+ * diamonds keep the shape they were drawn and simply arrive in order. */
+.lo-wipe-rect { height: 0; transition: height 30ms linear; }
+.lo-plume--firing .lo-wipe-rect {
+  height: 300px;               /* PLUME, in the engine's own viewBox units */
+  transition: height 560ms cubic-bezier(0.22, 0.65, 0.3, 1);
+}
+
+.lo-core { fill: rgba(15, 17, 19, 0.022); stroke: none; }
+.lo-env {
+  fill: none;
+  stroke: var(--draw-mid);
+  stroke-width: 1.6;
+  stroke-dasharray: 9 7;
+}
+.lo-grain { fill: var(--draw-mid); stroke: none; }
+.lo-stream { fill: none; stroke: var(--draw-far); stroke-width: 1.5; }
+.lo-shock {
+  fill: none;
+  stroke: var(--draw);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+
+/* ---- the control: a plate on the thrust structure, not a web button ---- */
+.lo-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 7px 13px;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  background: var(--card);
+  border: 1px solid var(--rule-hard);
+  box-shadow: 2px 2px 0 0 var(--rule-hard);   /* zero blur: an edge, not a shadow */
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lo-btn:hover { background: var(--fill); }
+/* Pressed: the plate goes down onto its shadow, the way a real switch does. */
+.lo-btn:active,
+.lo-btn--firing {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 var(--rule-hard);
+}
+.lo-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.lo-btn .lo-tag { color: var(--accent); }
+.lo-btn .lo-name { color: var(--ink); }
+
+/* The lamp is the only thing on the craft allowed to light, because it is
+ * the only thing on the craft that is a lamp. */
+.lo-lamp {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--rule-hard);
+  border-radius: 50%;
+  background: transparent;
+}
+.lo-btn--firing .lo-lamp {
+  background: var(--ti-hazard);
+  border-color: var(--ti-hazard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lo-plume { display: none; }
+  .lo-btn, .lo-btn:active { transform: none; }
+}
+@media print {
+  .lo-plume, .lo-btn { display: none; }
+}

@@ -1,5 +1,5 @@
 import { RcsQuad } from './Externals.jsx'
-import Engine from './Engine.jsx'
+import Liftoff from './Liftoff.jsx'
 
 /* Cylinder drawing primitives.
  *
@@ -103,11 +103,13 @@ export function TubeCap() {
         <span className="quad quad--aft quad--a4"><RcsQuad size={38} /></span>
 
         <div className="aft">
-          <Engine />
+          {/* Placard and control both sit above the bell, so the exhaust
+            * path below it is clear. */}
           <p className="aft-label">
             <span className="al-tag">SPS</span>
             <span className="al-name">SERVICE PROPULSION</span>
           </p>
+          <Liftoff />
         </div>
       </>
     </div>
