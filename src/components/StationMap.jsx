@@ -60,7 +60,23 @@ export default function StationMap() {
     const map = mapRef.current
     if (!map || map.scrollWidth <= map.clientWidth) return
     const chip = map.querySelector('[data-active="true"]')
-    if (chip) chip.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+    if (!chip) return
+
+    /* Centred by hand, on one axis of one element.
+     *
+     * scrollIntoView was doing this, and it was the thing making the page
+     * feel locked on a phone. It scrolls EVERY scrollable ancestor, the
+     * document included, and it takes its animation from `scroll-behavior`,
+     * which html sets to smooth. So each time a section boundary went past,
+     * this fired a smooth animated scroll of the whole page against a finger
+     * that was already dragging it - the two fought, and the page stuttered
+     * or snapped back. Setting scrollLeft touches this strip and nothing
+     * else, and `scroll-behavior` does not inherit, so it lands instantly. */
+    const cr = chip.getBoundingClientRect()
+    const mr = map.getBoundingClientRect()
+    const delta = (cr.left + cr.width / 2) - (mr.left + mr.width / 2)
+    const max = map.scrollWidth - map.clientWidth
+    map.scrollLeft = Math.max(0, Math.min(max, map.scrollLeft + delta))
   }, [active])
 
   return (

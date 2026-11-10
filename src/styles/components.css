@@ -1131,10 +1131,53 @@ main { position: relative; z-index: 1; }
 
 /* ---------------------------------------------------------- narrow screens */
 @media (max-width: 760px) {
-  :root { --gut: 16px; --hull: 16px; }
-  .tube { border-left: 0; border-right: 0; background-image: none; }
+  /* The craft used to run full-bleed here - hull borders off, cylinder
+   * shading off, every drawing clipped at the window edge. Full-bleed reads
+   * as a background, not as a ship: there was no edge, so there was no
+   * object. It now sits inset with its sides drawn, and everything on it
+   * comes down a step to fit the narrower hull.
+   *
+   * --ship-gap is the one knob. Everything else here is sized off the hull
+   * it leaves behind, so widening or closing that gap moves the whole craft
+   * together rather than one piece at a time. */
+  :root {
+    --ship-gap: 15px;
+    --gut: 13px;
+    --hull: 14px;
+    --step: 20px;
+    --t1: 10px;
+    --t2: 12px;
+    --t3: 14px;
+    --t4: 16px;
+    --t5: 25px;
+  }
+
+  main { padding: 0 var(--ship-gap); }
+
+  /* The quilting strips and the EVA rails sit at 5% and 95% of the hull,
+   * which at this width is inside the text column rather than outboard of
+   * it. They come off; the drawn edge and its falloff - the two things that
+   * say cylinder - stay, pulled in tight so they clear the type. */
+  .tube {
+    background-image: linear-gradient(
+      to right,
+      rgba(15, 17, 19, 0.075) 0%,
+      rgba(15, 17, 19, 0.022) 3%,
+      rgba(15, 17, 19, 0) 11%,
+      rgba(15, 17, 19, 0) 89%,
+      rgba(15, 17, 19, 0.022) 97%,
+      rgba(15, 17, 19, 0.075) 100%
+    );
+    background-size: 100% 100%;
+    background-position: 0 0;
+  }
   .tube::before, .tube::after { display: none; }
   .rack { grid-template-columns: 56px 1fr; }
+
+  /* The glass panel lines up with the hull it sits above, so the craft has
+   * one width down the whole page instead of the bar being its own object
+   * at its own measure. */
+  .station-scroll { width: calc(100% - var(--ship-gap) * 2); }
   /* The chain stops sharing the width out and takes its natural size, so the
    * scroller has something to scroll. The SLOT has to be released too: it
    * carries flex: 1 1 auto and min-width: 0 for the desktop layout, and while
