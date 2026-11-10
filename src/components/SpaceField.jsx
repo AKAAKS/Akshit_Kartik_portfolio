@@ -67,15 +67,16 @@ function buildBand() {
 
   /* SPIKE: bodies.
    *
-   * Drawn as an atlas plate, not as scenery: a limb in contour, latitude
-   * circles, a hatched night side, a designation and a scale bar. Cropped at
-   * a page edge the way a plate crops a body too big for the sheet — which is
-   * also what keeps it from reading as a sticker floating in the gutter.
+   * These are the one thing on the page that is NOT a drawing. The ship is
+   * the schematic; what it is flying through is real. So a body gets shading,
+   * banding and a soft terminator, and it gets no outline, no latitude
+   * circles, no designation and no scale bar - all of which were turning it
+   * into another diagram.
    *
-   * px x, not percent, because a body that is meant to be half off the edge
-   * has to stay half off the edge at every width. */
-  marks.push({ t: 'body', px: -118, y: BAND * 0.26, r: 212, phase: 0.6, desig: 'B-1', scale: '2 410 km' })
-  marks.push({ t: 'body', x: 84, y: BAND * 0.72, r: 58, phase: 0.34, desig: 'B-2', scale: '680 km' })
+   * px x, not percent, because a body meant to be half off the edge has to
+   * stay half off the edge at every width. */
+  marks.push({ t: 'body', px: -118, y: BAND * 0.26, r: 212, kind: 'giant' })
+  marks.push({ t: 'body', x: 84, y: BAND * 0.72, r: 58, kind: 'rock' })
 
   /* A transfer arc with range ticks. The one piece of plotted geometry out
    * here, so it is the one thing drawn in the accent rather than in ink. */
@@ -84,51 +85,68 @@ function buildBand() {
   return marks
 }
 
-/* A body. Everything is derived from r so one function draws both. */
-function Body({ r, phase, desig, scale }) {
-  const lat = [-0.66, -0.36, 0, 0.36, 0.66]
-  const term = r * (phase * 2 - 1)
+/* A body.
+ *
+ * Shading is one offset radial gradient: lit toward the upper left, falling
+ * off into a darkened limb on the other side. That single gradient is what
+ * makes a flat circle read as a sphere, and it is why these are the only
+ * elements on the site allowed to carry one.
+ *
+ * Surface is flat shapes clipped to the disc - bands for a giant, maria for a
+ * rocky body. Deliberately low contrast: at this opacity the eye reads them
+ * as surface rather than as pattern. */
+const GIANT = ['#6E7C93', '#93A0B1', '#64738C', '#A2ADBC', '#6B7A91', '#8D9AAC']
+
+function Body({ r, kind, uid }) {
+  const giant = kind === 'giant'
+  const base = giant ? '#8794A7' : '#8A8F96'
+
+  const surface = []
+  if (giant) {
+    /* Bands of uneven height, because evenly striped is a beach ball. */
+    const h = [0.18, 0.1, 0.22, 0.13, 0.19, 0.18]
+    let y = -r
+    h.forEach((f, i) => {
+      const hh = f * 2 * r
+      surface.push(
+        <rect key={`b${i}`} x={-r} y={y} width={r * 2} height={hh} fill={GIANT[i % GIANT.length]} />,
+      )
+      y += hh
+    })
+    // one storm, the asymmetry that stops it reading as wallpaper
+    surface.push(
+      <ellipse key="storm" cx={r * 0.28} cy={r * 0.14} rx={r * 0.21} ry={r * 0.1} fill="#5C6B85" />,
+    )
+  } else {
+    const maria = [
+      [-0.3, -0.26, 0.3, 0.22],
+      [0.26, 0.1, 0.26, 0.19],
+      [-0.1, 0.38, 0.22, 0.14],
+      [0.42, -0.4, 0.16, 0.12],
+    ]
+    maria.forEach(([cx, cy, rx, ry], i) => {
+      surface.push(
+        <ellipse key={`m${i}`} cx={cx * r} cy={cy * r} rx={rx * r} ry={ry * r} fill="#71767E" />,
+      )
+    })
+  }
+
   return (
-    <>
-      {/* the tint wash, under everything */}
-      <circle className="sf-body" cx="0" cy="0" r={r} />
-
-      {/* night side: hatched between the limb and the terminator */}
-      <path
-        className="sf-night"
-        d={`M0 ${-r} A ${r} ${r} 0 0 1 0 ${r} A ${Math.abs(term)} ${r} 0 0 ${term > 0 ? 1 : 0} 0 ${-r} Z`}
-      />
-
-      {/* latitude circles, seen from the body's own plane */}
-      {lat.map((f) => {
-        const y = f * r
-        const w = Math.sqrt(r * r - y * y)
-        return (
-          <path
-            key={f}
-            className="sf-lat"
-            d={`M${-w} ${y} A ${w} ${w * 0.3} 0 0 0 ${w} ${y}`}
-            fill="none"
-          />
-        )
-      })}
-
-      {/* the terminator itself, and the limb last so it sits over everything */}
-      <path
-        className="sf-term"
-        d={`M0 ${-r} A ${Math.abs(term)} ${r} 0 0 ${term > 0 ? 1 : 0} 0 ${r}`}
-        fill="none"
-      />
-      <circle className="sf-limb" cx="0" cy="0" r={r} fill="none" />
-
-      {/* plate furniture: designation, and a bar that says how big it is */}
-      <g className="sf-plate" transform={`translate(0 ${r + 20})`}>
-        <line className="sf-bar" x1={-r * 0.32} y1="0" x2={r * 0.32} y2="0" />
-        <line className="sf-bar" x1={-r * 0.32} y1="-4" x2={-r * 0.32} y2="4" />
-        <line className="sf-bar" x1={r * 0.32} y1="-4" x2={r * 0.32} y2="4" />
-        <text className="sf-txt" x="0" y="16" textAnchor="middle">{desig} · {scale}</text>
-      </g>
-    </>
+    <g className="sf-planet">
+      <defs>
+        <clipPath id={`pc${uid}`}>
+          <circle cx="0" cy="0" r={r} />
+        </clipPath>
+        <radialGradient id={`pg${uid}`} cx="33%" cy="29%" r="74%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.3" />
+          <stop offset="44%" stopColor="#FFFFFF" stopOpacity="0" />
+          <stop offset="100%" stopColor="#0A0F16" stopOpacity="0.66" />
+        </radialGradient>
+      </defs>
+      <circle cx="0" cy="0" r={r} fill={base} />
+      <g clipPath={`url(#pc${uid})`}>{surface}</g>
+      <circle cx="0" cy="0" r={r} fill={`url(#pg${uid})`} />
+    </g>
   )
 }
 
@@ -161,7 +179,7 @@ function Marks({ offset }) {
 
         if (m.t === 'body') {
           const R = m.r
-          const box = R * 2 + 90
+          const box = R * 2 + 8
           return (
             <svg
               key={key}
@@ -172,7 +190,7 @@ function Marks({ offset }) {
               width={box}
               height={box}
             >
-              <Body r={R} phase={m.phase} desig={m.desig} scale={m.scale} />
+              <Body r={R} kind={m.kind} uid={key} />
             </svg>
           )
         }
@@ -204,9 +222,9 @@ function Marks({ offset }) {
 
         return (
           <svg key={key} className="sf-rock" x={`${m.x}%`} y={m.y - 14} viewBox="-14 -14 28 28" width="28" height="28">
-            <path className="sf-rock-tint" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
-            <path d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
+            <path className="sf-rock-body" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
             <path className="sf-rock-shade" d="M 3 -9 L 10 -3 L 8 6 L 2 1 Z" />
+            <path className="sf-rock-edge" d="M -9 2 L -5 -7 L 3 -9 L 10 -3 L 8 6 L 0 10 L -7 8 Z" />
           </svg>
         )
       })}
@@ -243,12 +261,6 @@ export default function SpaceField() {
   return (
     <div className="spacefield" aria-hidden="true">
       <svg className="sf-svg" ref={ref} width="100%" height={BAND * COPIES} focusable="false">
-        {/* SPIKE: the night-side hatch. One definition for every body. */}
-        <defs>
-          <pattern id="sf-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
-            <line className="sf-hatchline" x1="0" y1="0" x2="0" y2="7" />
-          </pattern>
-        </defs>
         {Array.from({ length: COPIES }).map((_, i) => (
           <Marks key={i} offset={i * BAND} />
         ))}

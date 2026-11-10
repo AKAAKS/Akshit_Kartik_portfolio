@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 const LEVELS = [0, 1, 2, 3]
 
 export default function SpikeTint() {
-  const [level, setLevel] = useState(2)
+  const [level, setLevel] = useState(1)
 
   useEffect(() => {
     const root = document.documentElement

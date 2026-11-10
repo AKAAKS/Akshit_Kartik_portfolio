@@ -1,133 +1,109 @@
 /* =============================================================================
  *  TINT — SPIKE. THROWAWAY.
  *
- *  Everything in this file is scoped under [data-tint] on <html>. With the
- *  attribute absent the site is byte-for-byte the drawing it was, so the whole
- *  experiment reverts by deleting this file and its import. Nothing else is
- *  allowed to depend on it.
+ *  Scoped under [data-tint] on <html>, so the experiment reverts by deleting
+ *  this file, its import in main.jsx, and SpikeTint.jsx.
  *
- *  The idea being tested: a HAND-TINTED PLATE. The line art keeps doing all
- *  the structural work on the existing .d1/.d2/.d3 scale; colour arrives only
- *  as a flat fill INSIDE the outlines, the way a tinter lays a wash over a
- *  printed engraving. No gradient, no glow, no coloured stroke, and space
- *  itself stays paper — stars stay open circles in ink.
+ *  The idea: a schematic in real space. The SHIP is the drawing — line art on
+ *  the existing .d1/.d2/.d3 scale, with colour arriving only as a flat fill
+ *  inside its outlines, the way a tinter lays a wash over a printed
+ *  engraving. What it flies through is NOT a drawing: bodies are shaded and
+ *  banded, rocks are lit, and neither carries an outline, a latitude circle
+ *  or a label. The background itself stays paper, which is what keeps the
+ *  page a page.
  *
- *  Three levels, so the question "how much colour" can be answered by looking:
- *    1  a wash you half-notice
- *    2  clearly tinted, still obviously a drawing
- *    3  full colour on the parts that earn it
+ *  The substrate is deliberately untouched. Warming it was the first thing
+ *  tried and it was the thing that read wrong, so paper and ink stay exactly
+ *  the cool values tokens.css sets, and the levels only move object colour.
+ *
+ *  Levels: 1 is the intended intensity. 2 and 3 exist only to push past it.
  * ========================================================================== */
 
-/* ---- off by default ----------------------------------------------------
- * Every tintable fill is transparent until a level turns it on. This is what
- * makes level 0 identical to the current site rather than merely similar. */
-.pv, .pv-frame, .glass, .eng-tint, .hz-bar, .sf-body, .sf-rock-tint {
+/* ---- off by default ---------------------------------------------------- */
+.pv, .pv-frame, .glass, .eng-tint {
   fill: transparent;
 }
 .hz { display: none; }
 
-/* =============================================================================
- *  LEVEL 1 — a wash
- * ========================================================================== */
 :root[data-tint='1'] {
-  /* The substrate warms first. This is the part that changes the temperature
-   * of the whole page, including everything that stays monochrome — which is
-   * still most of it. Ink moves off blue-black onto a warm near-black. */
-  --paper: #FCFAF6;
-  --card: #FFFEFB;
-  --sunk: #F2EFE7;
-  --ink: #13110D;
-  --ink-dim: #58544C;
-  --draw: rgba(19, 17, 13, 0.84);
-  --draw-mid: rgba(19, 17, 13, 0.54);
-  --draw-far: rgba(19, 17, 13, 0.26);
-  --rule: rgba(19, 17, 13, 0.13);
-  --rule-hard: rgba(19, 17, 13, 0.32);
-  --fill: rgba(19, 17, 13, 0.025);
-
   --tz-pv: rgba(46, 49, 120, 0.13);
-  --tz-pv-frame: rgba(158, 118, 42, 0.14);
-  --tz-copper: rgba(150, 82, 38, 0.13);
+  --tz-pv-frame: rgba(96, 104, 126, 0.14);
+  --tz-copper: rgba(132, 92, 72, 0.13);
   --tz-glass: rgba(58, 110, 126, 0.13);
   --tz-hazard: rgba(188, 142, 24, 0.22);
-  --tz-body: rgba(150, 110, 62, 0.10);
-  --tz-rock: rgba(150, 110, 62, 0.12);
 }
 
-/* =============================================================================
- *  LEVEL 2 — clearly tinted, still a drawing
- * ========================================================================== */
 :root[data-tint='2'] {
-  --paper: #FAF6EC;
-  --card: #FFFDF7;
-  --sunk: #EFEADC;
-  --ink: #17130B;
-  --ink-dim: #5B564A;
-  --draw: rgba(23, 19, 11, 0.84);
-  --draw-mid: rgba(23, 19, 11, 0.54);
-  --draw-far: rgba(23, 19, 11, 0.26);
-  --rule: rgba(23, 19, 11, 0.14);
-  --rule-hard: rgba(23, 19, 11, 0.32);
-  --fill: rgba(23, 19, 11, 0.03);
-
-  --tz-pv: rgba(46, 49, 120, 0.30);
-  --tz-pv-frame: rgba(158, 118, 42, 0.26);
-  --tz-copper: rgba(150, 82, 38, 0.28);
-  --tz-glass: rgba(58, 110, 126, 0.26);
-  --tz-hazard: rgba(196, 148, 20, 0.52);
-  --tz-body: rgba(150, 110, 62, 0.20);
-  --tz-rock: rgba(150, 110, 62, 0.26);
+  --tz-pv: rgba(46, 49, 120, 0.26);
+  --tz-pv-frame: rgba(96, 104, 126, 0.26);
+  --tz-copper: rgba(132, 92, 72, 0.26);
+  --tz-glass: rgba(58, 110, 126, 0.24);
+  --tz-hazard: rgba(188, 142, 24, 0.44);
 }
 
-/* =============================================================================
- *  LEVEL 3 — full colour where it earns it
- *
- *  The arrays, the bell and the glass go opaque. Note they are still FILLS
- *  behind the same black linework, which is why this reads as a coloured plate
- *  rather than as a render.
- * ========================================================================== */
 :root[data-tint='3'] {
-  --paper: #F6F0DF;
-  --card: #FFFCF2;
-  --sunk: #EAE3CE;
-  --ink: #1B1508;
-  --ink-dim: #5E5744;
-  --draw: rgba(27, 21, 8, 0.86);
-  --draw-mid: rgba(27, 21, 8, 0.56);
-  --draw-far: rgba(27, 21, 8, 0.28);
-  --rule: rgba(27, 21, 8, 0.15);
-  --rule-hard: rgba(27, 21, 8, 0.34);
-  --fill: rgba(27, 21, 8, 0.035);
-
-  --tz-pv: #2E3178;
-  --tz-pv-frame: #9E762A;
-  --tz-copper: #965226;
-  --tz-glass: #3A6E7E;
-  --tz-hazard: #D8A413;
-  --tz-body: rgba(150, 110, 62, 0.34);
-  --tz-rock: rgba(150, 110, 62, 0.42);
+  --tz-pv: rgba(46, 49, 120, 0.44);
+  --tz-pv-frame: rgba(96, 104, 126, 0.42);
+  --tz-copper: rgba(132, 92, 72, 0.44);
+  --tz-glass: rgba(58, 110, 126, 0.4);
+  --tz-hazard: rgba(188, 142, 24, 0.72);
 }
 
-/* =============================================================================
- *  What the tint lands on
- * ========================================================================== */
 :root[data-tint] .pv { fill: var(--tz-pv); }
 :root[data-tint] .pv-frame { fill: var(--tz-pv-frame); }
 :root[data-tint] .glass { fill: var(--tz-glass); }
 :root[data-tint] .eng-tint { fill: var(--tz-copper); }
 :root[data-tint] .hz { display: block; }
 :root[data-tint] .hz-bar { fill: var(--tz-hazard); }
-:root[data-tint] .sf-body { fill: var(--tz-body); }
-:root[data-tint] .sf-rock-tint { fill: var(--tz-rock); }
 
-/* At level 3 the PV is opaque, so the cell grid drawn over it in --draw-far
- * disappears into the dark blue. Real blankets show their cell seams as a
- * LIGHTER line, not a darker one, so the grid inverts rather than being lost. */
-:root[data-tint='3'] .pv-grid line { stroke: rgba(255, 252, 242, 0.34); }
+/* =============================================================================
+ *  THE SKY
+ *
+ *  Not level-gated. None of this is a tint on the ship — it is what is out
+ *  there, and it looks the same whatever the ship is washed with.
+ * ========================================================================== */
 
-/* The planet's night side. Hatched, not shaded — a fill would make it a
- * rendered sphere, which is the thing this theme is built against. */
-:root[data-tint] .sf-night { fill: url(#sf-hatch); }
+/* Darker than the atlas marks were. At --ink-dim and half opacity the field
+ * sat so far back it read as paper grain; these are the craft's own drawing
+ * inks, which is what gives the sky the same density as the ship. */
+.sf-dot { fill: var(--draw-mid); opacity: 0.85; }
+.sf-ring { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.8; }
+.sf-tick line { stroke: var(--draw); stroke-width: 1; opacity: 0.85; }
+
+/* Bodies. The one place on the site with a gradient, and the reason is that a
+ * flat circle cannot read as a sphere without one. Kept well under full
+ * strength: a body at full saturation on a white page reads as a sticker. */
+.sf-planet { opacity: 0.46; }
+
+/* Rocks are lit the same way, in flat facets rather than a gradient, because
+ * at 28px a gradient is just a smudge. The edge stays drawn: it is the one
+ * concession to the sheet, and without it they dissolve into the paper. */
+.sf-rock-body { fill: #8A8F96; stroke: none; opacity: 0.5; }
+.sf-rock-shade { fill: #5E646D; stroke: none; opacity: 0.5; }
+.sf-rock-edge { fill: none; stroke: var(--draw-mid); stroke-width: 1; opacity: 0.8; }
+
+/* A transfer arc with range ticks: plotted geometry, so it stays drawn and
+ * stays in the accent. Dashed, because a trajectory is a prediction. */
+.sf-arc {
+  stroke: var(--mark);
+  stroke-width: 1;
+  stroke-dasharray: 7 6;
+  opacity: 0.55;
+}
+.sf-tick2 { stroke: var(--mark); stroke-width: 1; opacity: 0.55; }
+
+/* Rocks turn. The field already drifts with the scroll; this is the only
+ * thing on the page with motion of its own, slow enough to read as tumbling
+ * rather than spinning, and it stops dead for reduced motion. */
+.sf-rock { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .sf-rock { animation: sf-tumble 90s linear infinite; }
+  .sf-rock:nth-of-type(even) { animation-duration: 124s; animation-direction: reverse; }
+}
+@keyframes sf-tumble {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 /* =============================================================================
  *  SPIKE CONTROL — goes away with the spike
@@ -163,46 +139,3 @@
   border-color: var(--ink);
 }
 @media print { .spike-tint { display: none; } }
-
-/* =============================================================================
- *  SPIKE: what is behind the craft
- *
- *  Bodies are line art, so they are drawn at every level and only their wash
- *  follows the tint. Weights are deliberately below the craft's: the ship is
- *  the drawn subject and the sky is the plate it is printed on.
- * ========================================================================== */
-.sf-limb { stroke: var(--draw-mid); stroke-width: 1.1; }
-.sf-term { stroke: var(--draw-far); stroke-width: 1; }
-.sf-lat { stroke: var(--draw-far); stroke-width: 0.8; }
-.sf-hatchline { stroke: var(--draw-far); stroke-width: 0.7; }
-.sf-bar { stroke: var(--draw-far); stroke-width: 1; }
-.sf-txt {
-  font-family: var(--f-mono);
-  font-size: 10px;
-  fill: var(--ink-dim);
-  letter-spacing: 0.04em;
-}
-
-/* The transfer arc is plotted geometry rather than hardware, so it is the one
- * thing out here drawn in the accent. Dashed, because a trajectory is a
- * prediction and a drawing says so by dashing it. */
-.sf-arc {
-  stroke: var(--mark);
-  stroke-width: 1;
-  stroke-dasharray: 7 6;
-  opacity: 0.5;
-}
-.sf-tick2 { stroke: var(--mark); stroke-width: 1; opacity: 0.5; }
-
-/* Rocks turn. The field already drifts with the scroll; this is the only
- * thing on the page with motion of its own, it is slow enough to read as
- * tumbling rather than spinning, and it stops dead for reduced motion. */
-.sf-rock { transform-box: fill-box; transform-origin: center; }
-@media (prefers-reduced-motion: no-preference) {
-  .sf-rock { animation: sf-tumble 90s linear infinite; }
-  .sf-rock:nth-of-type(even) { animation-duration: 124s; animation-direction: reverse; }
-}
-@keyframes sf-tumble {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
