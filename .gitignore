@@ -4,6 +4,3 @@ dist-ssr
 *.local
 .vite
 .DS_Store
-
-# reference art — kept locally, not published
-inspo

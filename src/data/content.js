@@ -1,227 +1,196 @@
 /* =============================================================================
- *  CONTENT — the single source for the page and for print.
+ *  EDIT THIS FILE. It is the single source of all text and links on the site.
  *
- *  EDIT THIS FILE. Nothing else holds copy.
- *
- *  Sourced from Documents/Career/Resumes/Resume_Intuitive.txt and
- *  Resume_Bloomerang.txt (figures and dates) and Base/Base_resume_latex.txt
- *  (breadth). Nothing here is invented.
- *
- *  House rules, because this is where bloat gets in:
- *    - `desc` and each `detail` is ONE line. Hard cap 16 words.
- *    - No decorative numbers. Every figure is traceable to a repo or a venue.
- *    - Resume swap: drop the PDF in public/ and set profile.resumeUrl.
+ *  To swap your resume: drop your PDF into  public/  and set `resumeUrl`
+ *  (currently "/resume.pdf").
  * ========================================================================== */
 
 export const profile = {
+  // Shown large in the hero
   name: 'Akshit Kartik',
-  title: 'AI & automation engineer · applied ML researcher',
-  tagline: 'I build AI agents, developer tooling, and the interfaces that sit on top of them.',
+  // Short role line under the name
+  title: 'AI & Automation Engineer · Applied ML Researcher',
+  // The "J.A.R.V.I.S. greeting" tagline (one sentence)
+  tagline:
+    'I build AI agents, developer tooling, and the interfaces that sit on top of them.',
+  // Where the "Download Resume" button points (file lives in public/)
   resumeUrl: '/resume.pdf',
+  // Codename shown in the status bar (keep it short/uppercase)
+  codename: 'AKAAKS',
+  // Boot lines that type in before the name resolves (guided-tour intro)
+  boot: ['J.A.R.V.I.S. online', 'loading operator profile', 'rendering interface'],
 }
 
-/* The station. Order here is the order of the page, and the station map reads
- * from it, so moving a module moves both. `external: true` marks a section
- * outside the pressurized volume — the truss is not a module you walk into. */
-export const modules = [
-  { id: 'intro', desig: 'Node 1', hatch: 'Hatch 01', name: 'Intro', element: 'NOD1' },
-  { id: 'timeline', desig: 'Centrifuge', hatch: 'EVA', name: 'Timeline', element: 'CAM', external: true },
-  { id: 'publications', desig: 'Lab B', hatch: 'Hatch 03', name: 'Publications', element: 'LAB2' },
-  { id: 'experience', desig: 'Node 2', hatch: 'Hatch 04', name: 'Experience', element: 'NOD2' },
-  { id: 'projects', desig: 'Lab C', hatch: 'Hatch 05', name: 'Projects', element: 'LAB3' },
-  { id: 'skills', desig: 'Node 3', hatch: 'Hatch 06', name: 'Skills', element: 'NOD3' },
-  { id: 'contact', desig: 'Airlock', hatch: 'Hatch 07', name: 'Contact', element: 'A/L' },
-]
-
-/* --------------------------------------------------------------- publications */
-export const publications = [
-  {
-    bay: 'O1',
-    title: 'AquaTag: a wearable platform for flexible sensor placement in aquatic sensing',
-    venue: 'Proc. ACM IMWUT',
-    year: '2026',
-    authors: 'Co-author',
-    desc: 'Built the IMU-to-video sync tool and the labeling pipeline behind the dataset.',
-    ref: { label: 'doi:10.1145/3831639', url: 'https://dl.acm.org/doi/10.1145/3831639' },
-  },
-  {
-    bay: 'O2',
-    title: 'OmniSch: a multimodal PCB schematic benchmark for diagram reasoning',
-    venue: 'arXiv preprint cs.CV',
-    year: '2026',
-    authors: 'T. Lu, K. Lin, et al. (incl. A. Kartik)',
-    desc: 'Tests whether multimodal models can read schematic symbols, nets and connectivity.',
-    ref: { label: 'arXiv:2604.00270', url: 'https://arxiv.org/abs/2604.00270' },
-  },
-]
-
-/* ----------------------------------------------------------------- experience */
-export const experience = [
-  {
-    bay: 'P1',
-    role: 'Undergraduate Researcher — Sensing Platforms & Diagnostic Tooling',
-    org: 'The Pennsylvania State University',
-    place: 'University Park, PA',
-    from: 'Jan 2025',
-    to: 'May 2026',
-    points: [
-      'Built the Python/PyQt tool researchers use to sync IMU streams against video and label events.',
-      'Debugged timing drift between independently clocked sensor hardware and video capture.',
-      'Built the OpenCV/Pandas pipeline behind an accepted ACM IMWUT 2026 publication.',
-    ],
-  },
-  {
-    bay: 'P2',
-    role: 'Research & Development Intern — Robotics',
-    org: 'Meritus.AI',
-    place: 'Chennai, India',
-    from: 'Jun 2024',
-    to: 'Aug 2024',
-    points: [
-      'Engineered C++ firmware for Arduino and ESP-32: sensor fusion, motor control, pathfinding.',
-      'Deployed YOLO/OpenCV perception onto a constrained AI kit for World Robot Olympiad 2024.',
-    ],
-  },
-  {
-    bay: 'S1',
-    role: 'Learning Assistant',
-    org: 'The Pennsylvania State University',
-    place: 'University Park, PA',
-    from: 'Jan 2024',
-    to: 'Dec 2025',
-    points: [
-      'Lead weekly recitation for 40+ students in a large-scale Java course.',
-      'Review 100+ programming assignments per cycle for correctness and design.',
-    ],
-  },
-]
-
-export const education = {
-  bay: 'D1',
-  school: 'The Pennsylvania State University',
-  place: 'University Park, PA',
-  degree: 'BS Computer Science',
-  minor: 'Minor in Cybersecurity Computational Foundations',
-  gpa: 'GPA 3.56',
-  date: 'May 2026',
+export const about = {
+  // A paragraph or two about you. Keep it punchy.
+  body: [
+    'I’m a developer working across AI agents, automation, and interface design. Lately that has meant a voice assistant that runs my home, a Windows optimization daemon, and applied ML research.',
+    'I like building the whole thing, from the models and signal processing underneath to the UI people actually touch.',
+  ],
+  // Quick "status" stat readouts (edit freely)
+  stats: [
+    { label: 'Focus', value: 'AI · Automation · UI' },
+    { label: 'Status', value: 'Open to opportunities' },
+    { label: 'Publications', value: '2 · 2026' },
+  ],
 }
 
-/* -------------------------------------------------------------------- projects
- * Ordered by what a reader should see first, not by date.
- * `metric` is the headline outcome and leads the card. */
-export const projects = [
-  {
-    bay: 'D1',
-    name: 'Parts Procurement Engine',
-    subtitle: 'B. Braun Medical Inc.',
-    from: 'Aug 2025',
-    to: 'Dec 2025',
-    metric: '100% test-catalog match',
-    desc: 'Production Next.js 15 / React 19 / TypeScript app for a medical-device manufacturer.',
-    detail: 'Replaced a weeks-to-months sourcing workflow; per-part search cut to 1–2 minutes.',
-    note: 'Senior capstone · team of six',
-    tags: ['Next.js 15', 'React 19', 'TypeScript', 'NextAuth', 'OpenAI API'],
-    // Live demo omitted on purpose: its sign-in page exposes test credentials.
-    links: { repo: 'https://github.com/AadhityaT/capstone-ai-website-app' },
-  },
-  {
-    bay: 'D2',
-    name: 'J.A.R.V.I.S.',
-    subtitle: 'Agentic voice & text assistant',
-    from: 'Mar 2026',
-    to: 'Present',
-    metric: '1092 tests',
-    desc: 'Claude tool-use loop exposing ~41 tools behind an always-on WebSocket daemon.',
-    detail: 'One audited guard blocks prompt-injection self-approval; tiered router holds a hard budget.',
-    tags: ['Claude tool-use', 'WebSocket', 'Home Assistant', 'Python'],
-    links: {
-      site: 'https://jarvis-landing-sooty.vercel.app/',
-      repo: 'https://github.com/AKAAKS/personal-assistant',
-    },
-  },
-  {
-    bay: 'O1',
-    name: 'OS Agent',
-    subtitle: 'Windows telemetry & anomaly triage',
-    from: 'Jan 2026',
-    to: 'Present',
-    metric: '170 tests',
-    desc: 'Python daemon triaging CPU, RAM, GPU and process anomalies via a LangGraph OODA machine.',
-    detail: 'Fail-closed approval gate, command allowlisting, protected-PID guards, Docker sandbox.',
-    tags: ['LangGraph', 'psutil', 'SQLite', 'Docker'],
-    links: {
-      site: 'https://os-agent-landing.vercel.app/',
-      repo: 'https://github.com/AKAAKS/OS_agent',
-    },
-  },
-  {
-    bay: 'P1',
-    name: 'Agentic Labeling Engine',
-    subtitle: 'LLM classification with human review',
-    from: '2026',
-    to: null,
-    desc: 'A LangGraph labeler proposes and a critic reviews; Pydantic V2 validates every record.',
-    detail: 'One BaseTool abstraction so a Streamlit UI and a Typer CLI run identical code paths.',
-    tags: ['LangGraph', 'Pydantic V2', 'Streamlit', 'Typer'],
-    links: {},
-  },
-  {
-    bay: 'S1',
-    name: 'Cardio BP',
-    subtitle: 'Cuffless blood pressure estimation',
-    from: '2026',
-    to: 'Present',
-    note: 'In progress · unpublished',
-    desc: 'Estimates systolic and diastolic pressure from PPG pulse-shape and timing features.',
-    detail: 'An agentic layer ties the signal-processing and regression stages together.',
-    tags: ['PPG / biosignals', 'Signal processing', 'Agentic AI', 'Python'],
-    links: {},
-  },
-]
-
-/* ---------------------------------------------------------------------- skills
- * Groups are the ones the resumes use. Every entry names where it was actually
- * used — no self-assigned levels, because nothing backs a number like that. */
+// Skill groups → each skill has a 0–100 "power level" for the HUD meter.
 export const skills = [
   {
-    bay: 'P1',
-    group: 'AI & agent tooling',
+    group: 'Languages',
     items: [
-      { name: 'Claude & OpenAI APIs', where: 'JARVIS, OS Agent' },
-      { name: 'Tool-use loops', where: '~41 tools in JARVIS' },
-      { name: 'LangGraph', where: 'OS Agent, Agentic Labeling Engine' },
-      { name: 'Claude Code', where: 'daily driver — agent harness, MCP servers' },
-      { name: 'PyTorch, scikit-learn', where: 'Cardio BP regression models' },
+      { name: 'Python', level: 95 },
+      { name: 'JavaScript / TypeScript', level: 88 },
+      { name: 'Java', level: 80 },
+      { name: 'C / C++', level: 70 },
+      { name: 'Bash Scripting', level: 65 }
     ],
   },
   {
-    bay: 'S1',
-    group: 'Integrations & automation',
+    group: 'AI / ML',
     items: [
-      { name: 'REST APIs, webhooks', where: 'B. Braun engine, JARVIS' },
-      { name: 'OAuth2 + token refresh', where: 'Spotify in JARVIS' },
-      { name: 'WebSocket services', where: 'the JARVIS daemon' },
-      { name: 'Docker', where: 'OS Agent sandbox, Home Assistant' },
-      { name: 'SQL / SQLite', where: 'OS Agent decision history' },
+      { name: 'LLM agents & tool-use', level: 92 },
+      { name: 'PyTorch / scikit-learn', level: 80 },
+      { name: 'TensorFlow / Keras', level: 78 },
+      { name: 'Open CV', level: 75 },
+      { name: 'LangGraph', level: 70 }      
     ],
   },
   {
-    bay: 'O1',
-    group: 'Languages, web & tools',
+    group: 'Platforms',
     items: [
-      { name: 'Python', where: 'JARVIS, OS Agent, research tooling' },
-      { name: 'TypeScript / JavaScript', where: 'B. Braun engine, this site' },
-      { name: 'React, Next.js, Vite', where: 'B. Braun engine, this site' },
-      { name: 'C / C++', where: 'Arduino and ESP-32 firmware at Meritus.AI' },
-      { name: 'Java', where: 'taught it for two years as a Learning Assistant' },
-      { name: 'OpenCV, Pandas, NumPy', where: 'the AquaTag labeling pipeline' },
+      { name: 'Git / GitHub', level: 90 },
+      { name: 'React / Vite', level: 85 },
+      { name: 'ChromaDB', level: 80 },
+      { name: 'Docker / Home Assistant', level: 75 },
+      { name: 'REST API', level: 70 }
     ],
   },
 ]
 
-/* -------------------------------------------------------------------- contact */
+/* Projects, split into CURRENT (in progress) and COMPLETED.
+ * Each project: { code, name, summary, tags, status?, links? }
+ * Omit `links` (or leave {}) for a project with nothing to link yet. */
+export const projects = {
+  current: [
+    {
+      code: 'PRJ-01',
+      name: 'Cardio BP: Cuffless Blood Pressure',
+      summary:
+        'Estimating blood pressure from PPG and related physiological signals, without a cuff. It cleans the raw waveforms, pulls out pulse-shape and timing features (like pulse transit time), and runs them through ML regression models to predict the systolic and diastolic numbers, with an agentic layer tying the stages together. Not published yet; the paper is in progress.',
+      tags: ['PPG / biosignals', 'Signal processing', 'Agentic AI', 'Python'],
+      status: 'In progress · unpublished',
+      links: {},
+    },
+  ],
+  completed: [
+    {
+      code: 'PRJ-02',
+      name: 'J.A.R.V.I.S. Personal Assistant',
+      summary:
+        'A voice and text assistant built on Claude’s tool-use loop. It turns a plain request into the right tool calls across Home Assistant (lights, climate, scenes), Spotify, the TV, and the PC. The streaming voice supports barge-in, so you can cut in mid-sentence, and you can dial its tone up or down.',
+      tags: ['Claude tool-use', 'Voice / TTS', 'Home Assistant', 'Python'],
+      metric: { value: 576, suffix: '', label: 'tests green' },
+      links: {
+        site: 'https://jarvis-landing-sooty.vercel.app/',
+        repo: 'https://github.com/AKAAKS/personal-assistant',
+      },
+    },
+    {
+      code: 'PRJ-03',
+      name: 'OS Agent',
+      summary:
+        'A Windows background daemon that uses an LLM to watch the machine and suggest or apply optimizations. A telemetry kernel collects and normalizes process, service, and resource data into model context; the agent returns concrete, reviewable actions. 163 tests passing.',
+      tags: ['Windows daemon', 'LLM', 'Telemetry', 'Python'],
+      metric: { value: 163, suffix: '', label: 'tests passing' },
+      links: {
+        site: 'https://os-agent-landing.vercel.app/',
+        repo: 'https://github.com/AKAAKS/OS_agent',
+      },
+    },
+    {
+      code: 'PRJ-04',
+      name: 'PROPS: Possible Replacements for Obsolete Parts',
+      summary:
+        'Senior-year capstone with a team of six. An AI-assisted web app that helps engineering and procurement teams find viable substitutes for obsolete or discontinued parts: search a part, get candidate replacements to evaluate. Built in Next.js and deployed on Vercel.',
+      tags: ['Next.js', 'AI search', 'Team capstone', 'Vercel'],
+      metric: { value: 100, suffix: '%', label: 'test-catalog match' },
+      // Live demo omitted on purpose: its sign-in page exposes test credentials.
+      links: { repo: 'https://github.com/AadhityaT/capstone-ai-website-app' },
+    },
+  ],
+}
+
+/* The three-domains exhibit ("one engineer, three modes").
+ * Each: { code, label, tag, blurb, points[], signal } */
+export const domains = [
+  {
+    code: '01',
+    label: 'AI',
+    tag: 'Agents & applied ML',
+    blurb:
+      'LLM tool-use agents, routing, and applied ML. I build the decision loop and the guardrails around it, down to the models underneath.',
+    points: ['Claude / OpenAI tool-use loops', 'Tiered routing + cost control', 'PyTorch / scikit-learn'],
+    signal: 'JARVIS · OS Agent · Cardio BP',
+  },
+  {
+    code: '02',
+    label: 'Automation',
+    tag: 'Systems that run themselves',
+    blurb:
+      'Daemons and pipelines that watch, decide, and act, with fail-closed safety gates so they can be trusted with real authority over a machine.',
+    points: ['OODA / background daemons', 'Fail-closed approval gates', 'Windows internals · Docker'],
+    signal: 'OS Agent · JARVIS · data pipelines',
+  },
+  {
+    code: '03',
+    label: 'Interfaces',
+    tag: 'The surface people touch',
+    blurb:
+      'The UI on top of the models: React front-ends, HUDs, and annotation tools built for the people who actually have to use them.',
+    points: ['React / Vite', 'Design systems + motion', 'Annotation / labeling GUIs'],
+    signal: 'This portfolio · landing pages · AquaTag GUI',
+  },
+]
+
+/* Proof-point numbers for the count-up stat band. All real; see Project_Summaries/.
+ * `decimals` is optional (for the F1 score). */
+export const proof = [
+  { value: 163, suffix: '', label: 'Tests · OS Agent' },
+  { value: 576, suffix: '', label: 'Tests · JARVIS' },
+  { value: 100, suffix: '%', label: 'Catalog match · PROPS' },
+  { value: 0.78, suffix: '', decimals: 2, label: 'F1 · fraud model' },
+  { value: 2, suffix: '', label: 'Papers · 2026' },
+]
+
+// Research & publications. Add an optional `blurb` for a one-line description.
+export const research = {
+  intro: 'Papers I’ve co-authored.',
+  papers: [
+    {
+      title:
+        'OmniSch: A Multimodal PCB Schematic Benchmark for Structured Diagram Visual Reasoning',
+      venue: 'arXiv preprint (cs.CV)',
+      year: '2026',
+      blurb:
+        'A benchmark for how well multimodal models can read PCB schematics: parsing the symbols, nets, and connectivity, then reasoning over the whole diagram.',
+      link: 'https://arxiv.org/abs/2604.00270',
+    },
+    {
+      title:
+        'AquaTag: An Open-Source Wearable Platform Enabling Flexible Sensor Placement for Aquatic Sensing',
+      venue: 'Proc. ACM IMWUT',
+      year: '2026',
+      blurb:
+        'An open-source wearable platform for aquatic sensing, built so sensors can be placed flexibly on the body for in-water activity and physiological monitoring.',
+      link: 'https://dl.acm.org/doi/10.1145/3831639',
+    },
+  ],
+}
+
 export const contact = {
-  blurb: 'Open to roles in AI, automation and applied ML.',
+  blurb: 'Got a project or a role in mind? Send me a message.',
   email: 'akshitkartikcareers@gmail.com',
   socials: [
     { label: 'GitHub', handle: 'github.com/AKAAKS', url: 'https://github.com/AKAAKS' },
@@ -233,54 +202,67 @@ export const contact = {
   ],
 }
 
-/* ------------------------------------------------------------------- timeline
- * The truss: the career spine, oldest to newest, port to starboard.
- * `kind`   role | project | publication | education
- * `key`    true for the plotted emphasis (publications and the degree)
- * `href`   the module holding the detail, so a node is a link not an ornament */
-export const timeline = [
+// Nav links / quick-jump targets in the helmet HUD (label → section id)
+export const nav = [
+  { label: 'HOME', id: 'home' },
+  { label: 'PROFILE', id: 'about' },
+  { label: 'LOADOUT', id: 'loadout' },
+  { label: 'PROJECTS', id: 'projects' },
+  { label: 'RESEARCH', id: 'research' },
+  { label: 'CONTACT', id: 'contact' },
+]
+
+/* HUD target metadata per section. `callsign` is what the helmet frame shows as it
+ * acquires each target; `code` is the targeting index. Order = scroll order. */
+export const targets = [
+  { id: 'home', code: '00', callsign: 'SUBJECT' },
+  { id: 'about', code: '01', callsign: 'PROFILE' },
+  { id: 'loadout', code: '02', callsign: 'LOADOUT' },
+  { id: 'projects', code: '03', callsign: 'MISSION LOG' },
+  { id: 'research', code: '04', callsign: 'RECORDS' },
+  { id: 'contact', code: '05', callsign: 'COMMS' },
+]
+
+/* LOADOUT: pairs each capability (domain) with a few real skill meters pulled from
+ * `skills` above (by name). Editorial grouping for display only — all levels are real. */
+export const loadout = [
   {
-    seg: 'S0', kind: 'role', date: 'Jan 2024',
-    title: 'Learning Assistant', detail: 'Penn State · to Dec 2025', href: '#experience',
+    code: '01',
+    label: 'AI',
+    tag: 'Agents & applied ML',
+    blurb: domains[0].blurb,
+    meters: [
+      { name: 'LLM agents & tool-use', level: 92 },
+      { name: 'PyTorch / scikit-learn', level: 80 },
+      { name: 'Python', level: 95 },
+      { name: 'LangGraph', level: 70 },
+    ],
+    signal: domains[0].signal,
   },
   {
-    seg: 'S1', kind: 'role', date: 'Jun 2024',
-    title: 'R&D Intern, Robotics', detail: 'Meritus.AI · Chennai', href: '#experience',
+    code: '02',
+    label: 'Automation',
+    tag: 'Systems that run themselves',
+    blurb: domains[1].blurb,
+    meters: [
+      { name: 'Docker / Home Assistant', level: 75 },
+      { name: 'Bash Scripting', level: 65 },
+      { name: 'REST API', level: 70 },
+      { name: 'Git / GitHub', level: 90 },
+    ],
+    signal: domains[1].signal,
   },
   {
-    seg: 'S2', kind: 'role', date: 'Jan 2025',
-    title: 'Undergraduate Researcher', detail: 'Penn State · to May 2026', href: '#experience',
-  },
-  {
-    seg: 'S3', kind: 'project', date: 'Aug 2025',
-    title: 'Parts Procurement Engine', detail: 'B. Braun · to Dec 2025', href: '#projects',
-  },
-  {
-    seg: 'S4', kind: 'project', date: 'Jan 2026',
-    title: 'OS Agent', detail: 'Ongoing', href: '#projects',
-  },
-  {
-    seg: 'S5', kind: 'project', date: 'Mar 2026',
-    title: 'J.A.R.V.I.S.', detail: 'Ongoing', href: '#projects',
-  },
-  {
-    seg: 'P1', kind: 'publication', date: '2026', key: true,
-    title: 'AquaTag', detail: 'Proc. ACM IMWUT', href: '#publications',
-  },
-  {
-    seg: 'P2', kind: 'education', date: 'May 2026', key: true,
-    title: 'BS Computer Science', detail: 'Penn State · GPA 3.56', href: '#experience',
-  },
-  {
-    seg: 'P3', kind: 'project', date: '2026',
-    title: 'Agentic Labeling Engine', detail: 'LangGraph + human review', href: '#projects',
-  },
-  {
-    seg: 'P4', kind: 'publication', date: '2026', key: true,
-    title: 'OmniSch', detail: 'arXiv preprint', href: '#publications',
-  },
-  {
-    seg: 'P5', kind: 'project', date: 'Now',
-    title: 'Cardio BP', detail: 'In progress', href: '#projects',
+    code: '03',
+    label: 'Interfaces',
+    tag: 'The surface people touch',
+    blurb: domains[2].blurb,
+    meters: [
+      { name: 'React / Vite', level: 85 },
+      { name: 'JavaScript / TypeScript', level: 88 },
+      { name: 'ChromaDB', level: 80 },
+      { name: 'Open CV', level: 75 },
+    ],
+    signal: domains[2].signal,
   },
 ]
