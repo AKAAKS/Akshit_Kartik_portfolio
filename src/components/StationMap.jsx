@@ -31,6 +31,7 @@ export default function StationMap() {
     let raf = 0
     let navH = 72
     let geom = []
+    let chips = []
 
     const remeasure = () => {
       navH = parseInt(
@@ -39,8 +40,39 @@ export default function StationMap() {
       ) || 72
       geom = modules.map((m) => {
         const el = document.getElementById(m.id)
-        return el ? { top: el.offsetTop, h: el.offsetHeight || 1 } : null
+        if (!el) return null
+        /* Document coordinates, not offsetTop.
+         *
+         * offsetTop is measured from the offsetParent, and <main> is
+         * positioned, so every module came back 96px short of where it
+         * actually is while this compares against window.scrollY. The error
+         * was uniform, so it did not look obviously wrong - it just switched
+         * each module slightly early. A rect plus scrollY is the real
+         * document position whatever the offsetParent turns out to be. */
+        const r = el.getBoundingClientRect()
+        return { top: Math.round(r.top + window.scrollY), h: el.offsetHeight || 1 }
       })
+
+      /* Where the chips REALLY are.
+       *
+       * The marker used to be placed at an even fraction of the chain,
+       * (idx + frac) / N, which assumes every chip is the same width. On a
+       * desktop they are flex: 1 1 auto and stretch to roughly equal, so it
+       * passed. Mobile sets flex: 0 0 auto and chips size to their text -
+       * "Intro" is 54px and "Publications" is 94px - so the even fraction
+       * drifted away from the chip it was supposed to be under, by about a
+       * chip's width through the middle of the run.
+       *
+       * offsetLeft is safe here, unlike above: these are measured against
+       * .station-chain, which is positioned and is also what the marker is
+       * positioned in, so both sides of the sum share an origin. */
+      const map = mapRef.current
+      chips = map
+        ? [...map.querySelectorAll('.station-mod')].map((c) => ({
+          x: c.offsetLeft,
+          w: c.offsetWidth,
+        }))
+        : []
     }
 
     const measure = () => {
@@ -56,7 +88,8 @@ export default function StationMap() {
 
       setActive((p) => (p === idx ? p : idx))
       const el = markerRef.current
-      if (el) el.style.left = `${((idx + frac) / modules.length) * 100}%`
+      const c = chips[idx]
+      if (el && c) el.style.left = `${c.x + c.w * frac}px`
     }
 
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure) }
