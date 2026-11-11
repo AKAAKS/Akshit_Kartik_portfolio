@@ -4,6 +4,7 @@ import StationMap from './components/StationMap.jsx'
 import Hatch from './components/Hatch.jsx'
 import { TubeCap } from './components/Tube.jsx'
 import Nose from './components/Nose.jsx'
+import Landing from './components/Landing.jsx'
 import Intro from './components/Intro.jsx'
 import Centrifuge from './components/Centrifuge.jsx'
 import Publications from './components/Publications.jsx'
@@ -38,6 +39,8 @@ export default function App() {
       <StationMap />
 
       <main>
+        {/* SPIKE: the approach. See Landing.jsx. */}
+        <Landing />
         <Nose />
 
         {modules.map((mod, i) => {

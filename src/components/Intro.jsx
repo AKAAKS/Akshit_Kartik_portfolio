@@ -1,20 +1,17 @@
 import { profile, contact } from '../data/content.js'
 import { Placard } from './Module.jsx'
 
-/* Node 1. Carries the h1, so its placard holds the name instead of the module
- * title; the module name still appears on the placard's top line. */
+/* Node 1.
+ *
+ * SPIKE: the h1 used to live here, which made this placard a special case -
+ * every other module's placard carries its module title. With the name up on
+ * the landing, this one behaves like all the others and the intro leads with
+ * the tagline and the readout, which is what it should have been doing. */
 export default function Intro({ mod }) {
   return (
     <section id={mod.id} className="module" aria-labelledby={`${mod.id}-h`}>
       <div className="tube module-inner">
-        <div className="placard">
-          <p className="placard-top">
-            <span className="pl-desig">{mod.desig}</span>
-            <span className="pl-elem">{mod.element}</span>
-            <span className="pl-note">{mod.name}</span>
-          </p>
-          <h1 id={`${mod.id}-h`} className="intro-name">{profile.name}</h1>
-        </div>
+        <Placard mod={mod} />
         <div className="module-body">
           <p className="intro-role">{profile.title}</p>
           <p className="intro-tagline">{profile.tagline}</p>
