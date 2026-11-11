@@ -607,6 +607,7 @@ main { position: relative; z-index: 1; }
 }
 
 .landing-name {
+  position: relative;
   margin: 0;
   font-family: var(--f-head);
   font-weight: 600;
@@ -619,12 +620,25 @@ main { position: relative; z-index: 1; }
   color: var(--ink);
 }
 
+/* On a plate, because it is sitting out in the star field.
+ *
+ * The name is big and black enough to hold its own against whatever is
+ * behind it. This line is small, mono and dim, and on a phone it had stars
+ * passing straight through the letterforms. Everything else on this craft
+ * that has to stay readable over art is bolted to a plate - the hatch
+ * placards, the aft label - so this gets the same one rather than a
+ * special case. */
 .landing-role {
-  margin: 16px 0 0;
+  display: inline-block;
+  margin: 18px 0 0;
+  background: var(--card);
+  border: 1px solid var(--rule-hard);
+  padding: 5px 12px;
   font-family: var(--f-mono);
   font-size: var(--t2);
   letter-spacing: 0.09em;
   color: var(--ink-dim);
+  white-space: nowrap;
 }
 
 /* A mark, not an instruction: no bouncing chevron and no "scroll" label. A
@@ -668,6 +682,13 @@ html:not([data-landed]) .station {
   .landing { height: 52vh; min-height: 260px; max-height: 420px; }
   .landing-role { font-size: var(--t1); }
   .landing-cue { height: 28px; bottom: 18px; }
+}
+
+/* The plate holds one line down to about 400px and then runs out of room:
+ * at 320 it was 315px wide inside a 320px screen, 2px off each edge. Let it
+ * take two lines rather than crowd the frame. */
+@media (max-width: 400px) {
+  .landing-role { white-space: normal; max-width: 78vw; }
 }
 
 /* Degree, location and availability, in the data voice rather than the prose
