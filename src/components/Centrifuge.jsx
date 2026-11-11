@@ -312,6 +312,11 @@ export default function Centrifuge({ mod }) {
           <span className="ring-index" aria-hidden="true" />
         </div>
 
+        {/* The spindle again, above the hub only, painted over the ring so
+          * the far half of the wheel cannot show through the pole. See
+          * .spindle-fore. */}
+        <span className="spindle-fore" aria-hidden="true" />
+
         <button
           type="button"
           className="ring-step ring-step--prev"

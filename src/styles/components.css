@@ -494,6 +494,22 @@ main { position: relative; z-index: 1; }
 }
 .dock-wing--r { left: calc(50% + var(--page) / 2 - 46px); }
 .dock-wing--l { right: calc(50% + var(--page) / 2 - 46px); }
+/* The wing is drawn skewed, and an <svg> clips to its viewBox.
+ *
+ * SolarArray tilts its contents with skewY(-5), which lifts the far end of
+ * the wing by tan(5deg) x its length - 66px over a 760px wing. The viewBox
+ * is the wing's untilted box, so the tilted tip hung outside it and the top
+ * corner was sliced square. Measured identical on all four: 42.2px off the
+ * top, 16.0px off the bottom, nothing off either side. It read as the tip
+ * being cut off at the top on one side and the bottom on the other, because
+ * the mirrored pair tilt opposite ways.
+ *
+ * Letting it paint outside is right rather than padding the viewBox: these
+ * wings already reach past every box they are in, by design - they run off
+ * the sides of the screen - so a box that bounds the ink was never the
+ * contract here. Nothing can be disturbed by the overflow: the wings sit in
+ * the empty gutters and take no pointer events. */
+.array { overflow: visible; }
 .array--flip { transform: scaleX(-1); }
 
 /* The truss carrying each wing out to the gutter. It spans from the adapter's
@@ -1047,41 +1063,70 @@ html:not([data-landed]) .station {
  * The highlight line down the middle is what makes it read as round rather
  * than as a flat band. */
 .rail-seg {
+  /* Supersampled, for the same reason the gondolas are - see --gk above.
+   *
+   * These segments sit at translateZ(--ring-r), so the ones at the front of
+   * the wheel are magnified by 2400 / (2400 - 434) = 1.22x. A 3D-transformed
+   * layer is rasterised at its LAYOUT size and the transform applied to that
+   * bitmap, so a 1px rail edge was drawn as one pixel and then stretched to
+   * 1.22 - which no pixel grid can represent, so it resampled into a soft,
+   * stepped line. Every other line on the page is drawn straight to the
+   * screen, which is why these two were the ones that looked ragged.
+   *
+   * Built --rk times larger and scaled back down inside the transform: same
+   * geometry, but the texture carries --rk times the texels and is now
+   * DOWNsampled rather than up. Every length here has to carry the factor
+   * for that to hold, the border widths included. scale() goes LAST in the
+   * transform so it applies before the rotation and the push outward. */
+  --rk: 3;
+  --rw: calc(var(--ring-r) * 0.1308 + 1.5px);
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(var(--ring-r) * 0.1308 + 1.5px);
-  height: 10px;
-  margin-left: calc((var(--ring-r) * 0.1308 + 1.5px) / -2);
+  width: calc(var(--rw) * var(--rk));
+  height: calc(10px * var(--rk));
+  margin-left: calc(var(--rw) * var(--rk) / -2);
   background: var(--paper);
-  border-top: 1px solid var(--draw);
-  border-bottom: 1px solid var(--draw);
+  border-top: calc(1px * var(--rk)) solid var(--draw);
+  border-bottom: calc(1px * var(--rk)) solid var(--draw);
   box-sizing: border-box;
   cursor: grab;
-  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
+  transform:
+    rotateY(calc(1deg * var(--a)))
+    translateZ(var(--ring-r))
+    scale(calc(1 / var(--rk)));
 }
 .rail-seg::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  top: 2px;
-  height: 1px;
+  top: calc(2px * var(--rk));
+  height: calc(1px * var(--rk));
   background: var(--draw-far);
 }
-.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 5px); }
-.rail-seg--bot { margin-top: calc(var(--rail-y) - 5px); }
+/* The margin centres the segment on the rail height, so it has to follow the
+ * scaled height: half of 10px x --rk, not a flat 5px. */
+.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 5px * var(--rk)); }
+.rail-seg--bot { margin-top: calc(var(--rail-y) - 5px * var(--rk)); }
 .ring-stage.spinning .rail-seg { cursor: grabbing; }
 
+/* Supersampled on the same grounds as .rail-seg: a 1px post pushed out to
+ * the rim and magnified 1.22x is the same resampled line. */
 .stanchion {
+  --rk: 3;
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1px;
-  height: calc(var(--rail-y) * 2);
-  margin-top: calc(var(--rail-y) * -1);
+  width: calc(1px * var(--rk));
+  height: calc(var(--rail-y) * 2 * var(--rk));
+  margin-left: calc(-0.5px * var(--rk));
+  margin-top: calc(var(--rail-y) * -1 * var(--rk));
   background: var(--rule-hard);
-  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
+  transform:
+    rotateY(calc(1deg * var(--a)))
+    translateZ(var(--ring-r))
+    scale(calc(1 / var(--rk)));
 }
 
 /* spokes. A bar lying along +X, pushed out to mid-radius and turned to point
@@ -1822,6 +1867,51 @@ html:not([data-landed]) .station {
 
 /* The ring sits on the spindle, not behind it. */
 .module--eva .ring-stage { z-index: 1; }
+
+/* ...except above the hub, where the spindle has to sit on the RING.
+ *
+ * One flat pole cannot be both in front of the ring's far half and behind
+ * its near half, and z-index only picks one. It was picking "behind", so the
+ * far rim and the gondolas at the back of the wheel were drawn straight over
+ * the pole and you could see the back of the centrifuge through it. A pole
+ * you can see through is not a pole.
+ *
+ * So the pole is drawn twice. The one behind stays; this is a second copy of
+ * the same cylinder covering only the stretch ABOVE the hub, painted over
+ * the ring. That stretch is where the far half lives - the far rim projects
+ * about 101px above centre at this tilt, the gondolas behind it a little
+ * higher still - and the near half is nowhere near it, so hiding everything
+ * there is exactly right and costs nothing at the front.
+ *
+ * It stops at the top of .shaft, 66px above centre, and the shaft carries on
+ * from there. The shaft needs no help: it is inside the 3D scene, so the
+ * browser sorts the back of the ring behind it properly. */
+.spindle-fore {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 72px;
+  margin-left: -36px;
+  /* 58, not the shaft's nominal 66. The shaft lives in the tilted 3D scene,
+   * so its PROJECTED top lands about 1.5px lower than its layout offset -
+   * enough to leave a hairline of ring showing between the two halves of the
+   * pole. Overlapping the shaft by a few pixels costs nothing, because both
+   * are the same cylinder in the same ink. */
+  height: calc(50% - 58px);
+  z-index: 2;
+  pointer-events: none;
+  background-color: var(--card);
+  background-image: linear-gradient(
+    to right,
+    rgba(15, 17, 19, 0.12) 0%,
+    rgba(15, 17, 19, 0.03) 22%,
+    rgba(15, 17, 19, 0) 50%,
+    rgba(15, 17, 19, 0.03) 78%,
+    rgba(15, 17, 19, 0.12) 100%
+  );
+  border-left: 1px solid var(--draw);
+  border-right: 1px solid var(--draw);
+}
 
 /* The spindle passes behind the heading and the lead, so the words need
  * something to sit on. A fade was tried first and read as a block wiping
