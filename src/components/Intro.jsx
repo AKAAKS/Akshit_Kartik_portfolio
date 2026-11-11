@@ -18,6 +18,15 @@ export default function Intro({ mod }) {
         <div className="module-body">
           <p className="intro-role">{profile.title}</p>
           <p className="intro-tagline">{profile.tagline}</p>
+          {/* Status before links. A reader's first two questions about a
+            * portfolio are "is this person available" and "where are they",
+            * and both used to be unanswerable without reading the whole
+            * page and doing date arithmetic. */}
+          <p className="intro-status">
+            <span>{profile.status}</span>
+            <span className="is-sep" aria-hidden="true" />
+            <span>{profile.location}</span>
+          </p>
           <div className="actions">
             <a className="ref" href={profile.resumeUrl} target="_blank" rel="noreferrer">
               Resume (PDF)

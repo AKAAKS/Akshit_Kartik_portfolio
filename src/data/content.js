@@ -15,8 +15,15 @@
 
 export const profile = {
   name: 'Akshit Kartik',
-  title: 'AI & automation engineer · applied ML researcher',
+  title: 'AI systems engineer · published researcher',
   tagline: 'I build AI agents and the tooling that keeps them honest.',
+  /* Both of these were missing entirely, and their absence was the biggest
+   * gap on the site: a reader could not tell that the degree is finished,
+   * that the roles ending in 2025 and 2026 ended on purpose, or where in the
+   * world this person is. Silence on work location tends to be read as the
+   * answer the reader fears. */
+  location: 'University Park, PA · open to relocate',
+  status: 'BS Computer Science, Penn State · May 2026',
   resumeUrl: '/resume.pdf',
 }
 
@@ -162,10 +169,28 @@ export const projects = [
     subtitle: 'LLM classification with human review',
     from: '2026',
     to: null,
+    // TODO(akshit): add the repo link here and a month for `from`. This is
+    // the only project on the page with nothing to click, which makes its
+    // claims unverifiable next to four cards that are.
     desc: 'A LangGraph labeler proposes and a critic reviews; Pydantic V2 validates every record.',
     detail: 'One BaseTool abstraction so a Streamlit UI and a Typer CLI run identical code paths.',
     tags: ['LangGraph', 'Pydantic V2', 'Streamlit', 'Typer'],
     links: {},
+  },
+  {
+    bay: 'O2',
+    name: 'Macro Chef',
+    subtitle: 'Macro-aware meal planning, shipped inside JARVIS',
+    from: 'Oct 2026',
+    to: 'Present',
+    metric: 'One engine, two faces',
+    desc: 'A nutrition engine behind food lookup, pantry tracking, logging and meal-prep planning.',
+    detail: 'Built as a shared core so the assistant and a planned web client run the same code.',
+    note: 'Ships as a JARVIS tool-pack · standalone web client not yet built',
+    tags: ['Python', 'USDA / OpenFoodFacts', 'SQLite', 'Tool design'],
+    // Deliberately points at the JARVIS repo: the engine lives there, and a
+    // link to an empty spec repo would be worse than no link at all.
+    links: { repo: 'https://github.com/AKAAKS/personal-assistant' },
   },
   {
     bay: 'S1',
@@ -178,6 +203,21 @@ export const projects = [
     detail: 'An agentic layer ties the signal-processing and regression stages together.',
     tags: ['PPG / biosignals', 'Signal processing', 'Agentic AI', 'Python'],
     links: {},
+  },
+  {
+    /* The site you are reading. Listed because it is a real piece of work and
+     * because the reader is already looking at it - the one project that
+     * needs no screenshot and no demo link to be judged. */
+    bay: 'S2',
+    name: 'This site',
+    subtitle: 'Drawn spacecraft portfolio',
+    from: 'Oct 2026',
+    to: 'Present',
+    metric: 'No stock art',
+    desc: 'A spacecraft seen side-on, drawn as SVG line art: hull, docking adapters, engine.',
+    detail: 'Career timeline rides a CSS-3D centrifuge; every mark is hand-built, nothing is a library.',
+    tags: ['Vite', 'React', 'SVG', 'CSS 3D'],
+    links: { repo: 'https://github.com/AKAAKS/Akshit_Kartik_portfolio' },
   },
 ]
 
@@ -223,7 +263,7 @@ export const skills = [
 
 /* -------------------------------------------------------------------- contact */
 export const contact = {
-  blurb: 'Open to roles in AI, automation and applied ML.',
+  blurb: 'Graduated May 2026. Open to full-time roles in AI systems, agents and automation — University Park, PA, and open to relocating.',
   email: 'akshitkartikcareers@gmail.com',
   socials: [
     { label: 'GitHub', handle: 'github.com/AKAAKS', url: 'https://github.com/AKAAKS' },

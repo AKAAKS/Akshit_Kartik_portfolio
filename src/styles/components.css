@@ -582,6 +582,35 @@ main { position: relative; z-index: 1; }
   max-width: 46ch;
 }
 
+/* Availability and location, in the data voice rather than the prose voice.
+ * It is a readout about the person, the same kind of thing the placards and
+ * bay codes carry about the craft - so it sets in mono and sits quieter than
+ * the tagline above it, and does not compete with the name. */
+.intro-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+.intro-status .is-sep {
+  width: 15px;
+  height: 1px;
+  background: var(--rule-hard);
+}
+/* The rule reads as a join between two readouts on one line. Stacked, it
+ * would be a stray dash, so it goes. */
+@media (max-width: 480px) {
+  .intro-status { display: block; }
+  .intro-status .is-sep { display: none; }
+  .intro-status span { display: block; }
+  .intro-status span + span { margin-top: 3px; }
+}
+
 /* ============================================== a rack, in a numbered bay
  * Bay codes are real ISS rack locations: the letter is the module wall the
  * rack is bolted to (deck, overhead, port, starboard), as in LAB1O2. */
