@@ -283,23 +283,28 @@ main { position: relative; z-index: 1; }
   min-width: 0;
   padding: 6px 10px;
   border: 1px solid var(--rule-hard);
-  border-radius: 7px / 50%;      /* the one radius: a cylinder, side-on */
+  /* A cylinder seen side-on - but 38% vertically, not 50%.
+   *
+   * At 50% the vertical radius is half the height, which means the whole
+   * side of the chip is ONE ellipse arc and the only point that reaches the
+   * box edge is the exact mid-point. There is no straight edge anywhere for
+   * a connector to land on, so the connector's two lines - 3.5px either
+   * side of that mid-point - finished fractionally inside the outline.
+   *
+   * At 38% the two corner arcs each take 38% of the height and leave 24% of
+   * it straight through the middle: about 11px on a 46px chip, centred
+   * exactly where the connector's 7px sits. The lines now meet a vertical
+   * edge square on, so there is nothing to overlap at any pixel ratio, and
+   * the end is still round enough to read as a cylinder rather than a box. */
+  border-radius: 7px / 38%;
 
   /* Opaque, and above the connectors.
    *
-   * The radius is what makes this necessary. With a vertical radius of half
-   * the height, the whole side of the chip is one ellipse arc, and the arc
-   * only reaches the box edge at the exact mid-point. The connector's two
-   * lines sit 3.5px either side of that mid-point and run to the box, so
-   * they ended fractionally INSIDE the chip's outline - invisible at 1.25x
-   * where it is a quarter of a device pixel, plainly visible on a phone at
-   * 3x where it has whole pixels to land on. Always into the chip on the
-   * LEFT, because that one is painted before the connector and the one on
-   * the right after it.
-   *
-   * The colour is the nav plate's own, so nothing changes to look at: the
-   * chips were transparent over exactly this. It is now a surface that
-   * stops a line instead of a hole that lets one through. */
+   * Belt and braces, not the fix - the radius above is what actually stops
+   * the connectors intruding. This stays because a chip that is a surface
+   * rather than a hole cannot be bored into by a half-pixel of rounding at
+   * any future size or ratio. The colour is the nav plate's own, so there
+   * is nothing to see: the chips were transparent over exactly this. */
   position: relative;
   z-index: 1;
   background-color: var(--plate);
