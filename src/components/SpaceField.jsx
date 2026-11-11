@@ -156,9 +156,10 @@ function buildTall(h) {
    * body landing on top of another is the one arrangement that looks like a
    * mistake. Spread so something passes roughly every screen and a half, and
    * at two sizes so the two limbs do not read as the same object twice. */
-  /* High enough to sit in the approach frame rather than just below it.
-   * SPIKE-adjacent: with the landing in place, 0.07 put the limb a screen
-   * under the fold, so the first thing a phone showed was bare stars. */
+  /* High enough to sit in the approach frame rather than just below it. At
+   * 0.07 the limb fell a screen under the fold, so the first thing a phone
+   * showed was bare stars - and since the approach is also what the og:image
+   * captures, that was the thumbnail too. */
   mid.push({ t: 'giant', px: -150, y: h * 0.022, r: 104 })
   mid.push({ t: 'ringed', x: 84, y: h * 0.29, r: 30 })
   mid.push({ t: 'giant', px: -104, y: h * 0.58, r: 74 })

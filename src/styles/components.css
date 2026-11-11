@@ -623,14 +623,17 @@ main { position: relative; z-index: 1; }
   max-width: 46ch;
 }
 
-/* ================================================================ SPIKE
- *  the approach
+/* ============================================================= the approach
  *
  *  Open space with the nose of the ship coming up from the bottom edge.
  *  Shorter than a viewport on purpose - see Landing.jsx for why. Nothing
  *  here paints a background: the star field is already behind the whole
  *  page, and this section's only job is to leave a gap in the craft so you
  *  can see it.
+ *
+ *  This frame is also the og:image. scripts/make-og.mjs photographs it at
+ *  1200x630, so a change to the sizes below changes what a shared link
+ *  looks like, and the card has to be regenerated with `npm run og`.
  * ===================================================================== */
 .landing {
   position: relative;

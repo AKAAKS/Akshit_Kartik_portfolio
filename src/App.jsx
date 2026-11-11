@@ -39,7 +39,7 @@ export default function App() {
       <StationMap />
 
       <main>
-        {/* SPIKE: the approach. See Landing.jsx. */}
+        {/* The approach, then the craft. See Landing.jsx. */}
         <Landing />
         <Nose />
 

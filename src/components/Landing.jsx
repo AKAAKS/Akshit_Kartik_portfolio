@@ -1,14 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { profile } from '../data/content.js'
 
-/* ============================================================== SPIKE
- * Throwaway. Built to be looked at and judged, not kept as-is.
+/* The approach.
  *
- * The approach. Before this, you arrived already docked: the craft is the
- * whole conceit of the page and a visitor never saw it, because the first
- * thing under the nav was the inside of Node 1. This is the establishing
- * shot that was missing — open space, a planet, the name, and the nose of
- * the ship coming up from the bottom of the frame.
+ * Before this, you arrived already docked: the craft is the whole conceit of
+ * the page and a visitor never saw it, because the first thing under the nav
+ * was the inside of Node 1. This is the establishing shot that was missing —
+ * open space, a planet, the name, and the nose of the ship coming up from the
+ * bottom of the frame.
  *
  * Deliberately SHORTER than a viewport. A full-height hero is the usual way
  * this goes wrong: a reader with thirty seconds spends the first five on a
@@ -19,6 +18,13 @@ import { profile } from '../data/content.js'
  *
  * Nothing is intercepted. No scroll-jacking, no click to enter, no snap —
  * it is a section of the page and the page scrolls normally through it.
+ *
+ * This frame does a second job: it is the og:image. No crop of the page body
+ * ever made a usable thumbnail, because a hull with rack text on it reads as
+ * a glitch at 500px wide, and this is the one view of the site that survives
+ * being shrunk. scripts/make-og.mjs photographs it at 1200x630. So the
+ * proportions here are load-bearing twice over, and changing them means
+ * regenerating the card with `npm run og`.
  */
 export default function Landing() {
   const endRef = useRef(null)

@@ -3,10 +3,11 @@ import { Placard } from './Module.jsx'
 
 /* Node 1.
  *
- * SPIKE: the h1 used to live here, which made this placard a special case -
- * every other module's placard carries its module title. With the name up on
- * the landing, this one behaves like all the others and the intro leads with
- * the tagline and the readout, which is what it should have been doing. */
+ * The h1 lives on the landing, not here. It used to be here, which made this
+ * one placard a special case while every other module's placard carried its
+ * module title. Now this one behaves like all the others, and the intro
+ * leads with the tagline and the readout - which is what it should have been
+ * doing before the name was ever in it. */
 export default function Intro({ mod }) {
   return (
     <section id={mod.id} className="module" aria-labelledby={`${mod.id}-h`}>
