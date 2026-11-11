@@ -12,7 +12,6 @@ export default function Experience({ mod }) {
         </p>
         <ul className="points">
           <li>{education.minor}</li>
-          <li>{education.gpa}</li>
         </ul>
       </Rack>
 

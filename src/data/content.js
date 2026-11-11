@@ -109,7 +109,6 @@ export const education = {
   place: 'University Park, PA',
   degree: 'BS Computer Science',
   minor: 'Minor in Cybersecurity Computational Foundations',
-  gpa: 'GPA 3.56',
   date: 'May 2026',
 }
 
@@ -123,9 +122,13 @@ export const projects = [
     subtitle: 'B. Braun Medical Inc.',
     from: 'Aug 2025',
     to: 'Dec 2025',
-    metric: '100% test-catalog match',
+    /* The figure counts something specific, so it says so. On its own
+     * "100% test-catalog match" was unreadable - 100% of what, against
+     * what? B. Braun supplied a catalog of obsolete parts to test against,
+     * and the tool found a replacement for every one of them. */
+    metric: '100% of the test catalog',
     desc: 'Production Next.js 15 / React 19 / TypeScript app for a medical-device manufacturer.',
-    detail: 'Replaced a weeks-to-months sourcing workflow; per-part search cut to 1–2 minutes.',
+    detail: 'Found a replacement for every obsolete part they sent; days and weeks became minutes.',
     note: 'Senior capstone · team of six',
     tags: ['Next.js 15', 'React 19', 'TypeScript', 'NextAuth', 'OpenAI API'],
     // Live demo omitted on purpose: its sign-in page exposes test credentials.
@@ -272,6 +275,13 @@ export const contact = {
       handle: 'linkedin.com/in/akshit-kartik',
       url: 'https://www.linkedin.com/in/akshit-kartik-4b2a1825a',
     },
+    /* The page claims two papers; this is the link that lets someone verify
+     * both without taking its word for it. */
+    {
+      label: 'ORCID',
+      handle: '0009-0001-4353-9503',
+      url: 'https://orcid.org/0009-0001-4353-9503',
+    },
   ],
 }
 
@@ -317,7 +327,7 @@ export const timeline = [
   },
   {
     seg: 'P2', kind: 'education', date: 'May 2026', key: true,
-    title: 'BS Computer Science', detail: 'Penn State · GPA 3.56', href: '#experience',
+    title: 'BS Computer Science', detail: 'Penn State · University Park', href: '#experience',
   },
   {
     seg: 'P3', kind: 'publication', date: 'Sept 2026', key: true,
