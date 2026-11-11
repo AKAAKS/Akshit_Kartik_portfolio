@@ -1226,6 +1226,11 @@ main { position: relative; z-index: 1; }
    * one width down the whole page instead of the bar being its own object
    * at its own measure. */
   .station-scroll { width: calc(100% - var(--ship-gap) * 2); }
+  /* Keep a drag that runs off the end of the chain inside the chain. Without
+   * this it chains to the document, which is the other way the whole screen
+   * slides sideways - and the nav is at the top, exactly where a thumb
+   * starts a swipe. */
+  .station-scroll { overscroll-behavior-x: contain; }
   /* The chain stops sharing the width out and takes its natural size, so the
    * scroller has something to scroll. The SLOT has to be released too: it
    * carries flex: 1 1 auto and min-width: 0 for the desktop layout, and while
@@ -1598,9 +1603,17 @@ main { position: relative; z-index: 1; }
   content: '';
   position: absolute;
   /* Inset less than the hull margin so the placard line, which runs the
-   * full text measure, sits inside the plate rather than on its border. */
-  left: calc(var(--hull) - 30px);
-  right: calc(var(--hull) - 30px);
+   * full text measure, sits inside the plate rather than on its border.
+   *
+   * max(), because --hull is 72px on a desktop and 14px on a phone, so the
+   * bare subtraction went to -16px there and hung the plate 16px past the
+   * module on each side - 1px past the viewport. That 1px was the whole
+   * reason the page could be dragged sideways on a phone: any horizontal
+   * scrollability at all, however small, switches on horizontal panning and
+   * rubber-banding, and then a finger can pull the screen far past it. The
+   * plate still oversails the text, by as much as the margin allows. */
+  left: max(2px, var(--hull) - 30px);
+  right: max(2px, var(--hull) - 30px);
   top: 6px;
   bottom: 6px;
   z-index: -1;

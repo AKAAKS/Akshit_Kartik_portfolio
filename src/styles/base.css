@@ -25,6 +25,24 @@ html {
   scroll-behavior: smooth;
 }
 
+/* The page scrolls one way only.
+ *
+ * A backstop, not the fix - the plate that was actually overflowing is
+ * clamped at its source in components.css. It is here because the failure is
+ * so cheap to cause and so bad to live with: one element a fraction of a
+ * pixel too wide makes the whole page draggable sideways on a phone, and the
+ * rubber-band means a finger pulls it far further than that fraction.
+ *
+ * `clip`, deliberately, NOT `hidden`. Both stop the panning, but `hidden`
+ * turns this into a scroll container, which breaks `position: sticky` on
+ * every descendant - and the nav bar is sticky. `clip` only clips.
+ *
+ * overscroll-behavior is left alone on purpose: setting it to none here
+ * would also kill the browser's own swipe-back gesture, which belongs to the
+ * reader and not to this page. The one place it IS set is the nav chain,
+ * which has its own horizontal scroller and should keep its drag to itself. */
+html, body { overflow-x: clip; }
+
 /* ---- headings. Inter, one weight, tight tracking. ---- */
 h1, h2, h3, h4 {
   font-family: var(--f-head);
