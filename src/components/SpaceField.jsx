@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 /* What is behind the craft.
  *
@@ -103,6 +103,66 @@ function buildBands(narrow) {
   /* A transfer arc with range ticks: plotted geometry rather than a body, so
    * it stays schematic and stays in the accent. */
   near.push({ t: 'traj', y: BAND * 0.44 })
+
+  return { far, mid, near }
+}
+
+/* One continuous field, the height of the whole page.
+ *
+ * This is the phone version, and it exists because of how 1:1 scrolling has
+ * to be built. A parallax field only ever needs one band: it is stacked and
+ * wrapped, so BAND px of pattern covers an unbounded scroll. A field that
+ * moves WITH the page cannot wrap - every pixel of the document is on screen
+ * at some point - so it has to be as tall as the document.
+ *
+ * Repeating the 1000px band to get there was the obvious move and it looks
+ * wrong: eight copies down the page means the same gas giant passing eight
+ * times at even intervals, which reads as tiling rather than as sky. So the
+ * field is generated once at the real height instead, at the same density per
+ * 1000px, with the bodies placed individually.
+ *
+ * Same seed, so it is still identical on every reload. */
+function buildTall(h) {
+  const r = rng(20260211)
+  const far = []
+  const mid = []
+  const near = []
+
+  const n = Math.round(124 * (h / BAND))
+  for (let i = 0; i < n; i += 1) {
+    const x = r() * 100
+    const y = r() * h
+    const m = r()
+    if (m > 0.955) mid.push({ t: 'tick', x, y, s: 5 })
+    else if (m > 0.9) mid.push({ t: 'tick', x, y, s: 3.6 })
+    else if (m > 0.78) mid.push({ t: 'ring', x, y, s: 2.8 })
+    else if (m > 0.66) far.push({ t: 'ring', x, y, s: 1.9 })
+    else if (m > 0.4) far.push({ t: 'dot', x, y, s: 1.4 })
+    else far.push({ t: 'dot', x, y, s: 0.9 })
+  }
+
+  for (let i = 0; i < Math.round(5 * (h / BAND)); i += 1) {
+    const x = r() * 100
+    const y = r() * h
+    far.push({ t: 'dot', x, y, s: 1.3 })
+    far.push({ t: 'dot', x: x + 0.5 + r() * 0.7, y: y + 3 + r() * 4, s: 1 })
+  }
+
+  for (let i = 0; i < Math.round(2 * (h / BAND)); i += 1) {
+    near.push({ t: 'rock', x: 6 + r() * 88, y: r() * h })
+  }
+
+  /* Placed by hand rather than scattered, because there are only four and a
+   * body landing on top of another is the one arrangement that looks like a
+   * mistake. Spread so something passes roughly every screen and a half, and
+   * at two sizes so the two limbs do not read as the same object twice. */
+  mid.push({ t: 'giant', px: -150, y: h * 0.07, r: 104 })
+  mid.push({ t: 'ringed', x: 84, y: h * 0.29, r: 30 })
+  mid.push({ t: 'giant', px: -104, y: h * 0.58, r: 74 })
+  mid.push({ t: 'ringed', x: 18, y: h * 0.83, r: 23 })
+
+  near.push({ t: 'traj', y: h * 0.38 })
+  near.push({ t: 'traj', y: h * 0.91 })
 
   return { far, mid, near }
 }
@@ -340,18 +400,62 @@ export default function SpaceField() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
+  /* How tall the page is, so the phone field can be built to fit it.
+   *
+   * Measured off <main> and not off documentElement.scrollHeight, which would
+   * be circular: the field is absolutely positioned, so once it is tall it
+   * contributes its own height back to the document and each measurement
+   * would make the next one larger. <main> is the content and is unaffected
+   * by it.
+   *
+   * Two heights, because they want opposite rounding. The field is GENERATED
+   * at a height quantised up, so a one-pixel reflow does not reshuffle the
+   * entire sky and the marks always reach the bottom of the page. The BOX is
+   * the exact content height: rounding that up put 106px of empty scroll
+   * below the engine, since an absolutely positioned layer taller than the
+   * content extends the document. The svg overflows the box and .spacefield
+   * clips it, so nothing is lost and nothing is added. */
+  const [pageH, setPageH] = useState(0)
+  const [genH, setGenH] = useState(0)
+  useEffect(() => {
+    if (!narrow) return undefined
+    const el = document.querySelector('main')
+    if (!el) return undefined
+    const read = () => {
+      const h = el.offsetTop + el.offsetHeight
+      setPageH(h)
+      setGenH((p) => (Math.abs(p - h) < 240 ? p : Math.ceil(h / 240) * 240))
+    }
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    window.addEventListener('resize', read, { passive: true })
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', read)
+    }
+  }, [narrow])
+
+  const tall = useMemo(
+    () => (narrow && genH ? buildTall(genH) : null),
+    [narrow, genH],
+  )
+
   /* The parallax is a desktop effect, deliberately.
    *
    * On a phone the page scrolls on the compositor thread while this runs on
-   * the main one, so the field is positioned from a scroll event that fires
+   * the main one, so the field would be positioned from a scroll event firing
    * on a different clock from the frames it is trying to match. During a
-   * momentum flick it lags and snaps - and it does that however fast the
-   * main thread is, because it is a synchronisation problem and not a
-   * throughput one. There is no amount of optimising that fixes it; the only
-   * fix is to stop driving position from scroll. So on a phone the field
-   * holds still and the craft moves past it, which costs nothing and cannot
-   * stutter. Differential drift was never going to be legible on a 390px
-   * screen anyway. */
+   * momentum flick that lags and snaps however fast the main thread is - a
+   * synchronisation problem, not a throughput one, so optimising cannot fix
+   * it. Only one rate escapes it: 1:1. A background that moves exactly with
+   * the page does not need to be told where to go on each frame, because
+   * that is already what the page does, so on a phone the field is simply
+   * part of the document (position:absolute, see the stylesheet) and the
+   * compositor scrolls it with everything else. No scroll handler, no
+   * transform, and nothing that can fall out of step.
+   *
+   * Differential drift was never going to be legible at 390px anyway. */
   useEffect(() => {
     if (narrow) {
       refs.current.forEach((el) => { if (el) el.style.transform = '' })
@@ -381,20 +485,24 @@ export default function SpaceField() {
     }
   }, [narrow])
 
-  const bands = narrow ? BANDS_NARROW : BANDS_WIDE
+  const bands = tall || (narrow ? BANDS_NARROW : BANDS_WIDE)
 
   return (
-    <div className="spacefield" aria-hidden="true">
+    <div
+      className="spacefield"
+      aria-hidden="true"
+      style={tall ? { height: `${pageH}px` } : undefined}
+    >
       {LAYERS.map((layer, li) => (
         <svg
           key={layer.key}
           className={`sf-svg sf-svg--${layer.key}`}
           ref={(el) => { refs.current[li] = el }}
           width="100%"
-          height={BAND * (narrow ? 1 : COPIES)}
+          height={tall ? genH : BAND * COPIES}
           focusable="false"
         >
-          {Array.from({ length: narrow ? 1 : COPIES }).map((_, i) => (
+          {Array.from({ length: tall ? 1 : COPIES }).map((_, i) => (
             <Marks key={i} list={bands[layer.key]} offset={i * BAND} />
           ))}
         </svg>

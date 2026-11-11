@@ -30,6 +30,27 @@
 /* The three drift layers stack in the same fixed box. */
 .spacefield > .sf-svg { position: absolute; top: 0; left: 0; right: 0; }
 
+/* On a phone the field scrolls with the page instead of drifting against it,
+ * so it stops being a fixed backdrop and becomes part of the document. That
+ * is the whole mechanism: the compositor already moves the page, and an
+ * absolutely positioned layer at the top of it moves too, for free and
+ * exactly in step. Nothing promotes it and no script touches it.
+ *
+ * `top: 0` with an explicit height resolves against the initial containing
+ * block, so this needs no positioned ancestor - and `bottom` has to go, or
+ * the inset: 0 above would hold it to one viewport. The height comes from
+ * the component, which has measured the page.
+ *
+ * 860px, matching NARROW_Q in SpaceField.jsx. The two must agree: the
+ * component builds a page-tall field below that width, and a page-tall field
+ * inside a fixed, viewport-high, overflow-hidden box would simply be cropped
+ * and sit still.
+ *
+ * NOTE: this is also why the breakpoint is not the usual 760px. */
+@media (max-width: 860px) {
+  .spacefield { position: absolute; top: 0; bottom: auto; }
+}
+
 /* Stars. On the craft's own drawing inks rather than --ink-dim at half
  * opacity, which sat so far back it read as paper grain. */
 .sf-dot { fill: var(--draw-mid); opacity: 0.85; }
@@ -1211,13 +1232,6 @@ main { position: relative; z-index: 1; }
    * that holds it squeezes the module below its own label however the module
    * is set, which is what put every name on top of its neighbour. */
   .station-slot { flex: 0 0 auto; min-width: auto; }
-
-  /* Its own compositor layer. A position:fixed backdrop that the compositor
-   * has not been told to keep separate gets re-rastered against the scrolling
-   * page, which is the other half of why the star field shuddered on a phone
-   * (and is a long-standing iOS Safari failing on its own). Promoting it
-   * costs one layer and makes scrolling a pure compositor job. */
-  .spacefield { transform: translateZ(0); will-change: transform; }
 
   /* The marker is positioned from a scroll handler, so it arrives in steps.
    * A short linear transition lets the compositor fill in between them: it
