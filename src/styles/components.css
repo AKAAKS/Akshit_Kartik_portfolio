@@ -1529,7 +1529,7 @@ html:not([data-landed]) .station {
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .ring-stage { --gk: 1; }
-  .spindle { display: none; }
+  .spindle, .spindle-fore { display: none; }
   .tl-ring { display: none; }
   .tl-list { display: inline; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
@@ -1571,7 +1571,7 @@ html:not([data-landed]) .station {
   .ring-stage { height: auto; perspective: none; cursor: auto; user-select: auto; padding: 0 var(--gut); }
   .ring-tilt, .ring { position: static; transform: none; touch-action: auto; }
   .ring-stage { --gk: 1; }
-  .spindle { display: none; }
+  .spindle, .spindle-fore { display: none; }
   .tl-ring { display: none; }
   .tl-list { display: inline; }
   .rim, .strut, .shaft, .shaft-cap, .ring-index, .ring-callout, .ring-step,
@@ -1644,7 +1644,7 @@ html:not([data-landed]) .station {
   .ring-stage { height: auto; perspective: none; }
   .ring-tilt, .ring { position: static; transform: none; }
   .ring-stage { --gk: 1; }
-  .spindle { display: none; }
+  .spindle, .spindle-fore { display: none; }
   .tl-ring { display: none; }
   .tl-list { display: inline; }
   .gondolas { position: static; }
@@ -1948,7 +1948,7 @@ html:not([data-landed]) .station {
 }
 
 @media print {
-  .spindle { display: none; }
+  .spindle, .spindle-fore { display: none; }
 }
 
 
