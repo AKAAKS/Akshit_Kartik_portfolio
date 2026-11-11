@@ -24,6 +24,23 @@ export const profile = {
    * answer the reader fears. */
   location: 'University Park, PA · open to relocate',
   status: 'BS Computer Science, Penn State · May 2026',
+  seeking: 'Looking for full-time roles and internships',
+  /* Three facts that carry the claims made directly above them.
+   *
+   * The intro asserts "AI systems engineer, published researcher" and the
+   * evidence for it sits 1500px and 3500px down a page that is 7800px tall.
+   * A reader giving this thirty seconds would never reach either. So the
+   * one credential, the one flagship build and the one thing shipped for a
+   * real company are named at the top, pointing at their own sections.
+   *
+   * Described rather than named, deliberately: "J.A.R.V.I.S." means nothing
+   * to someone who has not read the page yet, and "41-tool agent daemon"
+   * means something immediately. */
+  proof: [
+    { label: 'ACM IMWUT 2026', href: '#publications' },
+    { label: '41-tool agent daemon', href: '#projects' },
+    { label: 'Shipped for B. Braun', href: '#projects' },
+  ],
   resumeUrl: '/resume.pdf',
 }
 
@@ -252,7 +269,7 @@ export const skills = [
 
 /* -------------------------------------------------------------------- contact */
 export const contact = {
-  blurb: 'Graduated May 2026. Open to full-time roles in AI systems, agents and automation — University Park, PA, and open to relocating.',
+  blurb: 'Graduated May 2026. Looking for full-time roles and internships in AI systems, agents and automation — University Park, PA, and open to relocating.',
   email: 'akshitkartikcareers@gmail.com',
   socials: [
     { label: 'GitHub', handle: 'github.com/AKAAKS', url: 'https://github.com/AKAAKS' },

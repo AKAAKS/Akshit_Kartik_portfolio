@@ -582,33 +582,57 @@ main { position: relative; z-index: 1; }
   max-width: 46ch;
 }
 
-/* Availability and location, in the data voice rather than the prose voice.
- * It is a readout about the person, the same kind of thing the placards and
- * bay codes carry about the craft - so it sets in mono and sits quieter than
- * the tagline above it, and does not compete with the name. */
+/* Degree, location and availability, in the data voice rather than the prose
+ * voice. These are readouts about the person, the same kind of thing the
+ * placards and bay codes carry about the craft - so they set in mono and sit
+ * quieter than the tagline above them, and do not compete with the name.
+ *
+ * Stacked at every width, and joined by nothing.
+ *
+ * They were laid out inline with a short rule between them, which was fine
+ * for two readouts and broke on the third: at no width do all three fit, so
+ * the row wrapped and left the rule dangling at the end of the line with
+ * nothing after it. Hiding a separator only when it lands last on a line is
+ * not something CSS can express, so the separators are gone instead. Three
+ * short lines also read better than one 900px one. */
 .intro-status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 9px;
   margin-top: 16px;
   font-family: var(--f-mono);
   font-size: var(--t1);
   letter-spacing: 0.04em;
+  line-height: 1.75;
   color: var(--ink-dim);
 }
-.intro-status .is-sep {
-  width: 15px;
-  height: 1px;
-  background: var(--rule-hard);
+.intro-status span { display: block; }
+
+/* The proof row: the evidence for the two lines above it.
+ *
+ * Set as links in the body voice rather than the data voice, because unlike
+ * the status readout these are meant to be clicked - a dim mono row reads as
+ * a caption and gets skipped. The label stays in the data voice so the row
+ * announces what it is without a sentence. */
+.intro-proof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px 16px;
+  margin-top: 13px;
 }
-/* The rule reads as a join between two readouts on one line. Stacked, it
- * would be a stray dash, so it goes. */
-@media (max-width: 480px) {
-  .intro-status { display: block; }
-  .intro-status .is-sep { display: none; }
-  .intro-status span { display: block; }
-  .intro-status span + span { margin-top: 3px; }
+.intro-proof .ip-label {
+  font-family: var(--f-mono);
+  font-size: var(--t1);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.intro-proof .ref { font-size: var(--t2); }
+
+/* On a phone the three links cannot share a line with the label, and the
+ * label clinging to the first one left a hole across the rest of that row.
+ * Giving it the full width lets the links wrap as their own block. */
+@media (max-width: 760px) {
+  .intro-proof { gap: 8px 14px; }
+  .intro-proof .ip-label { flex: 0 0 100%; }
 }
 
 /* ============================================== a rack, in a numbered bay

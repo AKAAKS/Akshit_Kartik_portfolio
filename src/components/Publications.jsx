@@ -4,7 +4,7 @@ import { Module, Rack } from './Module.jsx'
 /* Lab B. First content module after the timeline: publications lead projects. */
 export default function Publications({ mod }) {
   return (
-    <Module mod={mod} lead="Peer-reviewed and preprint work, both 2026.">
+    <Module mod={mod} lead="Peer-reviewed and preprint work.">
       {publications.map((p) => (
         <Rack bay={p.bay} key={p.bay}>
           <h3 className="entry-title">{p.title}</h3>

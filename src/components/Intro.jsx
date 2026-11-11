@@ -24,8 +24,16 @@ export default function Intro({ mod }) {
             * page and doing date arithmetic. */}
           <p className="intro-status">
             <span>{profile.status}</span>
-            <span className="is-sep" aria-hidden="true" />
             <span>{profile.location}</span>
+            <span>{profile.seeking}</span>
+          </p>
+          {/* The evidence for the two claims above, before the reader has
+            * scrolled far enough to find any of it. */}
+          <p className="intro-proof">
+            <span className="ip-label">Selected</span>
+            {profile.proof.map((x) => (
+              <a className="ref" key={x.label} href={x.href}>{x.label}</a>
+            ))}
           </p>
           <div className="actions">
             <a className="ref" href={profile.resumeUrl} target="_blank" rel="noreferrer">
