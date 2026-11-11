@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Engine from './Engine.jsx'
 
-/* ============================================================== SPIKE
- * Throwaway. Built to be looked at on a phone and judged, not kept as-is.
+/* =============================================================== liftoff
  *
  * The back-to-top the craft was always owed: there is an engine at the
  * bottom of the page, so firing it is how you get back to the nose.

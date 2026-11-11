@@ -358,25 +358,18 @@ main { position: relative; z-index: 1; }
   aspect-ratio: 1000 / 339.4;
 }
 
-/* Bled 1px past its box, top and bottom.
- *
- * The layout gap at every one of these junctions measures exactly 0.000 -
- * the module's paper and this fill genuinely abut. The hairline is a
- * rasterising artifact: devicePixelRatio is routinely fractional (1.25 on
- * this machine, 3 on a phone), the junctions land on fractional device
- * pixels, and two independently antialiased paper edges meeting there each
- * cover part of that pixel, so the star field behind shows through the
- * remainder. Nothing can make two abutting edges add up to full coverage;
- * they have to overlap instead. 1px over a 360px box is 0.3% of stretch,
- * which is not a visible distortion, and the seam cannot survive it. */
+/* This used to bleed 1px past its box, top and bottom, on the theory that
+ * the hairlines at these junctions were a rasterising artifact of fractional
+ * devicePixelRatio. They were not. Every one of them was a real uncovered
+ * band - 0.75px at the adapter necks, 12px on a phone once the connector's
+ * height was being overridden - and both have since been fixed at source, by
+ * the paper collars in Hatch.jsx and by deriving the connector's height from
+ * its width. The bleed never fixed anything, so it is gone. */
 .conn-hull {
   position: absolute;
-  top: -1px;
-  bottom: -1px;
-  left: 0;
-  right: 0;
+  inset: 0;
   width: 100%;
-  height: calc(100% + 2px);
+  height: 100%;
 }
 .conn-hull path { vector-effect: non-scaling-stroke; }
 
@@ -1436,8 +1429,11 @@ main { position: relative; z-index: 1; }
 .quad--r { right: -27px; top: 24px; transform: none; }
 
 /* ---- the aft end ---- */
-/* Bled up into the module above it, for the reason .conn-hull explains. */
-.aft-taper { display: block; width: 100%; height: 117px; margin-top: -1px; }
+/* 116px is the viewBox height exactly; it used to be 117 with a -1px margin
+ * to bleed up into the module, which moved the top edge only - the bottom
+ * landed in the same place either way, so the 1px the engine mount needs is
+ * untouched. That one is real and comes from .lo-stack's negative margin. */
+.aft-taper { display: block; width: 100%; height: 116px; }
 /* The cone's own fill is the hull here, so the straight-run hull background
  * and side borders must come off - otherwise a full-width block paints behind
  * the taper and the craft looks like it ends in a rectangle. */
@@ -1655,7 +1651,7 @@ main { position: relative; z-index: 1; }
   position: absolute;
   inset: 0;
   width: 100%;
-  height: calc(100% + 1px);   /* same seam, same reason: bleed into the hull */
+  height: 100%;
 }
 .nose-cone path { vector-effect: non-scaling-stroke; }
 
@@ -1733,10 +1729,10 @@ main { position: relative; z-index: 1; }
 .tz-therm { fill: color-mix(in srgb, var(--paper), var(--ti-therm) var(--tz-amt)); }
 
 
-/* =========================================================== liftoff (SPIKE)
+/* ================================================================= liftoff
  *
- * Throwaway, for judging on a phone. The craft's back-to-top: an engine at
- * the foot of the page, and firing it returns you to the nose.
+ * The craft's back-to-top: an engine at the foot of the page, and firing it
+ * returns you to the nose.
  *
  * Everything here obeys the two rules the rest of the drawing obeys. The
  * plume is drawn rather than lit - stipple, shock diamonds, a dashed
