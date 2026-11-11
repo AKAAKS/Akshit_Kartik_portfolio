@@ -340,8 +340,24 @@ export default function SpaceField() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
+  /* The parallax is a desktop effect, deliberately.
+   *
+   * On a phone the page scrolls on the compositor thread while this runs on
+   * the main one, so the field is positioned from a scroll event that fires
+   * on a different clock from the frames it is trying to match. During a
+   * momentum flick it lags and snaps - and it does that however fast the
+   * main thread is, because it is a synchronisation problem and not a
+   * throughput one. There is no amount of optimising that fixes it; the only
+   * fix is to stop driving position from scroll. So on a phone the field
+   * holds still and the craft moves past it, which costs nothing and cannot
+   * stutter. Differential drift was never going to be legible on a 390px
+   * screen anyway. */
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (narrow) {
+      refs.current.forEach((el) => { if (el) el.style.transform = '' })
+      return undefined
+    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
 
     let raf = 0
     const apply = () => {
@@ -363,7 +379,7 @@ export default function SpaceField() {
       window.removeEventListener('scroll', onScroll)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [])
+  }, [narrow])
 
   const bands = narrow ? BANDS_NARROW : BANDS_WIDE
 
@@ -375,10 +391,10 @@ export default function SpaceField() {
           className={`sf-svg sf-svg--${layer.key}`}
           ref={(el) => { refs.current[li] = el }}
           width="100%"
-          height={BAND * COPIES}
+          height={BAND * (narrow ? 1 : COPIES)}
           focusable="false"
         >
-          {Array.from({ length: COPIES }).map((_, i) => (
+          {Array.from({ length: narrow ? 1 : COPIES }).map((_, i) => (
             <Marks key={i} list={bands[layer.key]} offset={i * BAND} />
           ))}
         </svg>

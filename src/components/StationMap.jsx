@@ -11,46 +11,69 @@ import { modules } from '../data/content.js'
  * The chips are ordinary anchors — the browser does all the scrolling. */
 export default function StationMap() {
   const [active, setActive] = useState(0)
-  const [progress, setProgress] = useState(0) // 0..1 across the whole chain
   const mapRef = useRef(null)
+  const markerRef = useRef(null)
 
+  /* The marker's position is written straight to the node, and everything it
+   * needs is measured once rather than per frame.
+   *
+   * What was here before did four expensive things on every scroll frame: a
+   * getComputedStyle on the root, seven getElementById calls, seven
+   * offsetTop/offsetHeight reads - each of which forces a synchronous
+   * layout - and a React setState, re-rendering the whole chain. None of
+   * that is needed: a module's offsetTop cannot change while you scroll, it
+   * changes when the page is laid out. So it is cached at layout time and
+   * the scroll path does arithmetic and one style write.
+   *
+   * `active` stays React state because it changes seven times in a page
+   * rather than sixty times a second. */
   useEffect(() => {
     let raf = 0
+    let navH = 72
+    let geom = []
 
-    // Read the nav height from the token rather than restating it, so the
-    // sticky bar and the measuring line cannot drift apart.
-    const navH = () =>
-      parseInt(
+    const remeasure = () => {
+      navH = parseInt(
         getComputedStyle(document.documentElement).getPropertyValue('--nav-h'),
         10,
       ) || 72
+      geom = modules.map((m) => {
+        const el = document.getElementById(m.id)
+        return el ? { top: el.offsetTop, h: el.offsetHeight || 1 } : null
+      })
+    }
 
     const measure = () => {
       raf = 0
-      const els = modules.map((m) => document.getElementById(m.id))
-      const line = window.scrollY + navH() + 1
+      const line = window.scrollY + navH + 1
 
       let idx = 0
-      for (let i = 0; i < els.length; i += 1) {
-        if (els[i] && els[i].offsetTop <= line) idx = i
+      for (let i = 0; i < geom.length; i += 1) {
+        if (geom[i] && geom[i].top <= line) idx = i
       }
-      const el = els[idx]
-      let frac = 0
-      if (el) {
-        const h = el.offsetHeight || 1
-        frac = Math.min(1, Math.max(0, (line - el.offsetTop) / h))
-      }
+      const g = geom[idx]
+      const frac = g ? Math.min(1, Math.max(0, (line - g.top) / g.h)) : 0
+
       setActive((p) => (p === idx ? p : idx))
-      setProgress((idx + frac) / modules.length)
+      const el = markerRef.current
+      if (el) el.style.left = `${((idx + frac) / modules.length) * 100}%`
     }
 
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure) }
+    const onResize = () => { remeasure(); onScroll() }
+
+    remeasure()
     measure()
+    /* Web fonts land after first paint and reflow everything under them, so
+     * the offsets taken before that are wrong by a few pixels per module. */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(onResize).catch(() => {})
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
+    window.addEventListener('resize', onResize, { passive: true })
     return () => {
       window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('resize', onResize)
       if (raf) cancelAnimationFrame(raf)
     }
   }, [])
@@ -97,11 +120,7 @@ export default function StationMap() {
               </a>
             </div>
           ))}
-          <span
-            className="station-marker"
-            style={{ left: `${progress * 100}%` }}
-            aria-hidden="true"
-          />
+          <span className="station-marker" ref={markerRef} aria-hidden="true" />
         </div>
       </div>
     </nav>

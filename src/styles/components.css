@@ -1211,6 +1211,18 @@ main { position: relative; z-index: 1; }
    * that holds it squeezes the module below its own label however the module
    * is set, which is what put every name on top of its neighbour. */
   .station-slot { flex: 0 0 auto; min-width: auto; }
+
+  /* Its own compositor layer. A position:fixed backdrop that the compositor
+   * has not been told to keep separate gets re-rastered against the scrolling
+   * page, which is the other half of why the star field shuddered on a phone
+   * (and is a long-standing iOS Safari failing on its own). Promoting it
+   * costs one layer and makes scrolling a pure compositor job. */
+  .spacefield { transform: translateZ(0); will-change: transform; }
+
+  /* The marker is positioned from a scroll handler, so it arrives in steps.
+   * A short linear transition lets the compositor fill in between them: it
+   * follows a few frames behind instead of stuttering. */
+  .station-marker { transition: left 160ms linear; }
   .station-mod { flex: 0 0 auto; }
 }
 
