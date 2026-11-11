@@ -669,17 +669,45 @@ main { position: relative; z-index: 1; }
  * that has to stay readable over art is bolted to a plate - the hatch
  * placards, the aft label - so this gets the same one rather than a
  * special case. */
+/* The role sits on a bolted panel, the same one the nav wears.
+ *
+ * It started as a plate purely so the line would stop fighting the stars
+ * behind it. That solved the reading and left it looking like a text box
+ * dropped on the drawing, because it was the one rectangle on the page that
+ * was not built like the rest of the craft. The nav already had the answer:
+ * .station-scroll is a panel bolted to its plate, and every value below is
+ * taken from it rather than chosen again here - the same four bolts at the
+ * same 9px inset, the same 2px hard offset for depth, the same surface a few
+ * percent up from what it sits on.
+ *
+ * Depth is drawn, not lit: a hard offset in the ink, no blur and no spread,
+ * because a soft shadow is a photograph of a panel and this page is a
+ * drawing of one.
+ *
+ * The padding is the one thing that is not copied. The nav's panel is tall
+ * and gutter-padded, so bolts at 9px fall in dead space; this one is a
+ * single line, so it needs enough padding to keep the text clear of the
+ * bolt heads rather than reading as text with four dots on it. */
 .landing-role {
   display: inline-block;
   margin: 18px 0 0;
-  background: var(--card);
-  border: 1px solid var(--rule-hard);
-  padding: 5px 12px;
+  padding: 9px 24px;
   font-family: var(--f-mono);
   font-size: var(--t2);
   letter-spacing: 0.09em;
   color: var(--ink-dim);
   white-space: nowrap;
+
+  background-color: color-mix(in srgb, var(--card), var(--ti-glass) 4%);
+  border: 1px solid var(--rule-hard);
+  box-shadow: 2px 2px 0 0 var(--rule-hard);
+  /* the four bolts holding the panel down */
+  background-image:
+    radial-gradient(circle 2px at 9px 9px, var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 9px) 9px, var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at 9px calc(100% - 9px), var(--draw-mid) 96%, transparent 100%),
+    radial-gradient(circle 2px at calc(100% - 9px) calc(100% - 9px), var(--draw-mid) 96%, transparent 100%);
+  background-repeat: no-repeat;
 }
 
 /* A mark, not an instruction: no bouncing chevron and no "scroll" label. A
