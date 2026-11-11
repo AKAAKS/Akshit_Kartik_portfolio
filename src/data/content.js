@@ -167,20 +167,6 @@ export const projects = [
     },
   },
   {
-    bay: 'P1',
-    name: 'Agentic Labeling Engine',
-    subtitle: 'LLM classification with human review',
-    from: '2026',
-    to: null,
-    // TODO(akshit): add the repo link here and a month for `from`. This is
-    // the only project on the page with nothing to click, which makes its
-    // claims unverifiable next to four cards that are.
-    desc: 'A LangGraph labeler proposes and a critic reviews; Pydantic V2 validates every record.',
-    detail: 'One BaseTool abstraction so a Streamlit UI and a Typer CLI run identical code paths.',
-    tags: ['LangGraph', 'Pydantic V2', 'Streamlit', 'Typer'],
-    links: {},
-  },
-  {
     bay: 'O2',
     name: 'Macro Chef',
     subtitle: 'Macro-aware meal planning, shipped inside JARVIS',
@@ -234,7 +220,7 @@ export const skills = [
     items: [
       { name: 'Claude & OpenAI APIs', where: 'JARVIS, OS Agent' },
       { name: 'Tool-use loops', where: '~41 tools in JARVIS' },
-      { name: 'LangGraph', where: 'OS Agent, Agentic Labeling Engine' },
+      { name: 'LangGraph', where: 'OS Agent' },
       { name: 'Claude Code', where: 'daily driver — agent harness, MCP servers' },
       { name: 'PyTorch, scikit-learn', where: 'Cardio BP regression models' },
     ],
@@ -334,11 +320,7 @@ export const timeline = [
     title: 'AquaTag', detail: 'Proc. ACM IMWUT', href: '#publications',
   },
   {
-    seg: 'P4', kind: 'project', date: '2026',
-    title: 'Agentic Labeling Engine', detail: 'LangGraph + human review', href: '#projects',
-  },
-  {
-    seg: 'P5', kind: 'project', date: 'Present',
+    seg: 'P4', kind: 'project', date: 'Present',
     title: 'Cardio BP', detail: 'In progress', href: '#projects',
   },
 ]
