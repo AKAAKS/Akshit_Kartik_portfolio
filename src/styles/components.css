@@ -1063,66 +1063,51 @@ html:not([data-landed]) .station {
  * The highlight line down the middle is what makes it read as round rather
  * than as a flat band. */
 .rail-seg {
-  /* These are the FILL and the grab target now, not the drawing.
+  /* The rail is a shaded pipe, not an outlined one. No 1px lines anywhere.
    *
-   * They used to carry the rail's two 1px edges and its highlight, and that
-   * is what made the rail the one ragged line on the page. A rail built from
-   * 48 tiles is a 48-sided polygon, not a circle, so its edge steps in y at
-   * every seam - and each tile is rasterised into its own layer and resampled
-   * independently, which softens each step differently. Zoomed in, those
-   * steps are spread over enough pixels to read as a curve. Zoomed out they
-   * pack into a handful of pixels and the line breaks up, which is exactly
-   * the way round the problem was reported.
+   * Three attempts got here. The original drew the rail's two edges as 1px
+   * borders on these tiles, and that was the one ragged line on the page: 48
+   * tiles per rail is a 48-sided polygon, its edge steps in y at every seam,
+   * and each tile is rasterised and resampled on its own so every step is
+   * softened differently. Zoomed in the steps spread far enough to read as a
+   * curve; zoomed out they pack into a few pixels and the line breaks up.
    *
-   * No amount of supersampling fixes a polygon. So the ink moved to
-   * .rail-ring below - two real ellipses per rail, one element each, drawn
-   * once - and these keep only the paper fill, which is what hides the far
-   * gondolas behind the rail. A fill can be as faceted as it likes: its
-   * silhouette is paper on paper, and the crisp ellipse is drawn over it.
+   * Moving the ink onto flat ellipses fixed the polygon and broke two other
+   * things. A flat ring's border is seen nearly edge-on at the front and
+   * back - 1px x sin(16deg) is a third of a pixel - so the outline went
+   * faint. And because the ring sits at the same radius and height as these
+   * opaque tiles, it intersects all 96 of them and gets sliced into dashes.
+   * A continuous ellipse stops being continuous the moment it passes through
+   * the fill.
    *
-   * The supersampling that was here is gone with the ink it existed for. A
-   * flat fill has no detail to lose. */
+   * So the edges are not drawn at all. The band carries a cross-axis
+   * gradient instead - dark at the top and bottom, bright through the middle
+   * - which is the same way the hull and the spindle say "cylinder", and it
+   * is the one description of a round surface with no hard edge in it. A
+   * gradient cannot alias, cannot be foreshortened into nothing, and cannot
+   * be sliced by the geometry it is painted on, because it IS the geometry.
+   *
+   * 16px rather than 10. The rail has to carry its own weight now that no
+   * outline is holding it. */
   position: absolute;
   left: 50%;
   top: 50%;
   width: calc(var(--ring-r) * 0.1308 + 1.5px);
-  height: 10px;
+  height: 16px;
   margin-left: calc((var(--ring-r) * 0.1308 + 1.5px) / -2);
-  background: var(--paper);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ink) 46%, var(--paper)) 0%,
+    color-mix(in srgb, var(--ink) 7%, var(--paper)) 38%,
+    color-mix(in srgb, var(--ink) 7%, var(--paper)) 52%,
+    color-mix(in srgb, var(--ink) 46%, var(--paper)) 100%
+  );
   box-sizing: border-box;
   cursor: grab;
   transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
 }
-.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 5px); }
-.rail-seg--bot { margin-top: calc(var(--rail-y) - 5px); }
-
-/* The rail's ink: one ellipse per edge, lying flat at the right height.
- *
- * A handrail seen from a tilted camera IS two concentric ellipses offset
- * vertically by the pipe's thickness, with the highlight between them - so
- * drawing it that way is not an approximation, it is the real silhouette,
- * and it costs six elements instead of ninety-six. Every offset is derived
- * from --rail-y and the 10px band, so the ink cannot drift away from the
- * fill it sits on. */
-.rail-ring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: calc(var(--ring-r) * 2);
-  height: calc(var(--ring-r) * 2);
-  border-radius: 50%;
-  border: 1px solid var(--draw);
-  pointer-events: none;
-  transform: translate(-50%, calc(-50% + var(--y))) rotateX(90deg);
-}
-.rail-ring--hi { border-color: var(--draw-far); }
-
-.rr-t1 { --y: calc(var(--rail-y) * -1 - 5px); }
-.rr-t2 { --y: calc(var(--rail-y) * -1 - 3px); }
-.rr-t3 { --y: calc(var(--rail-y) * -1 + 5px); }
-.rr-b1 { --y: calc(var(--rail-y) - 5px); }
-.rr-b2 { --y: calc(var(--rail-y) - 3px); }
-.rr-b3 { --y: calc(var(--rail-y) + 5px); }
+.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 8px); }
+.rail-seg--bot { margin-top: calc(var(--rail-y) - 8px); }
 
 .ring-stage.spinning .rail-seg { cursor: grabbing; }
 
