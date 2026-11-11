@@ -321,7 +321,20 @@ main { position: relative; z-index: 1; }
   position: relative;
   max-width: var(--page);
   margin: 0 auto;
-  height: 360px;
+  /* Derived, not chosen.
+   *
+   * The flare is stretched to this box (preserveAspectRatio="none"), so its
+   * neck lands at 48/360 of whatever height this is. The adapter inside is
+   * scaled UNIFORMLY off the width, so its top is at centre - dockH/2 and
+   * does not move when the height changes. The two only meet at one height
+   * for a given width, and solving that gives H = 0.3394 x W at every size.
+   *
+   * 360px happened to be that height for a 1060px measure and nothing else.
+   * Every narrower window was already wrong - 60px out at a 900px window -
+   * and the 150px this was overridden to on phones put the neck 12px clear
+   * of the adapter, which is the gap that kept showing through on mobile
+   * after it had been fixed on the desktop. */
+  aspect-ratio: 1000 / 339.4;
 }
 
 /* Bled 1px past its box, top and bottom.
@@ -1199,7 +1212,6 @@ main { position: relative; z-index: 1; }
    * is set, which is what put every name on top of its neighbour. */
   .station-slot { flex: 0 0 auto; min-width: auto; }
   .station-mod { flex: 0 0 auto; }
-  .connector { height: 150px; }
 }
 
 @media (max-width: 560px) {
