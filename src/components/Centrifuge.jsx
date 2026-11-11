@@ -225,10 +225,7 @@ export default function Centrifuge({ mod }) {
             Roles, publications and projects in order, January 2024 to now.{' '}
             <span className="tl-ring">
               Drag the handrail above or below the gondolas to spin the ring —
-              the gondolas themselves are links, so clicking one opens its
-              detail rather than turning the wheel. Rotation is clamped at both
-              ends instead of wrapping, so the oldest entry and the newest are
-              each a hard stop and the run always reads in order.
+              the gondolas themselves are links.
             </span>
             <span className="tl-list">
               Each entry below links to its detail, oldest first.
