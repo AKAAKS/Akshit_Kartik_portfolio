@@ -186,8 +186,12 @@ main { position: relative; z-index: 1; }
   align-items: center;
   /* Two surfaces, not one. This is the METAL: a plate bolted to the hull,
    * barely off paper. At a full --sunk it read as a grey band across the top
-   * of the page; the two only need to differ enough to be two. */
-  background-color: color-mix(in srgb, var(--paper) 55%, var(--sunk));
+   * of the page; the two only need to differ enough to be two.
+   *
+   * Named, because the chips have to paint the same colour opaquely to
+   * occlude the connectors - see .station-mod. */
+  --plate: color-mix(in srgb, var(--paper) 55%, var(--sunk));
+  background-color: var(--plate);
   border-bottom: 1px solid var(--rule-hard);
 }
 
@@ -259,7 +263,14 @@ main { position: relative; z-index: 1; }
 
 .station-slot { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; }
 
-/* the hatch connector between two cylinders */
+/* The hatch connector between two cylinders.
+ *
+ * It runs the full 9px between the two chips' boxes, which is right: the
+ * lines have to reach the hull on each side or the craft comes apart. What
+ * it must NOT do is carry on past the hull, and it was doing exactly that
+ * into the chip on its left - see .station-mod below for why. The chips
+ * occlude it now rather than the joint being shortened, because shortening
+ * it would open a gap at the one place the drawing cannot have one. */
 .station-joint {
   flex: 0 0 9px;
   height: 7px;
@@ -273,13 +284,38 @@ main { position: relative; z-index: 1; }
   padding: 6px 10px;
   border: 1px solid var(--rule-hard);
   border-radius: 7px / 50%;      /* the one radius: a cylinder, side-on */
+
+  /* Opaque, and above the connectors.
+   *
+   * The radius is what makes this necessary. With a vertical radius of half
+   * the height, the whole side of the chip is one ellipse arc, and the arc
+   * only reaches the box edge at the exact mid-point. The connector's two
+   * lines sit 3.5px either side of that mid-point and run to the box, so
+   * they ended fractionally INSIDE the chip's outline - invisible at 1.25x
+   * where it is a quarter of a device pixel, plainly visible on a phone at
+   * 3x where it has whole pixels to land on. Always into the chip on the
+   * LEFT, because that one is painted before the connector and the one on
+   * the right after it.
+   *
+   * The colour is the nav plate's own, so nothing changes to look at: the
+   * chips were transparent over exactly this. It is now a surface that
+   * stops a line instead of a hole that lets one through. */
+  position: relative;
+  z-index: 1;
+  background-color: var(--plate);
   text-decoration: none;
   color: inherit;
   white-space: nowrap;
   text-align: center;
 }
-.station-mod:hover { background: var(--fill); }
-.station-mod[data-active='true'] { background: var(--fill); border-color: var(--ink); }
+/* --fill is rgba(…, 0.025), and a translucent fill would reopen the hole for
+ * whichever chip is current. Same value, composited onto the plate instead
+ * of laid over it. */
+.station-mod:hover,
+.station-mod[data-active='true'] {
+  background-color: color-mix(in srgb, rgb(15, 17, 19) 2.5%, var(--plate));
+}
+.station-mod[data-active='true'] { border-color: var(--ink); }
 
 .station-mod .sm-desig {
   display: block;
