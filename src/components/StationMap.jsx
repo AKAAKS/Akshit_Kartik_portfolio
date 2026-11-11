@@ -102,9 +102,31 @@ export default function StationMap() {
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(onResize).catch(() => {})
     }
+
+    /* The page keeps growing after all of those have fired.
+     *
+     * Measured: a module's document position moved 58px between two runs
+     * minutes apart, with no resize and fonts long since settled - the
+     * drawings resolve, aspect-ratio boxes get their heights, the star field
+     * regenerates against the new page height. Every cached top is stale
+     * from that moment, and the marker sticks on the previous module near
+     * the boundary, which is the same symptom as the even-fraction bug and
+     * was hiding underneath it.
+     *
+     * Nothing else notices, because none of it is a resize. Watching <main>
+     * for a size change is what actually says "the page moved". Remeasuring
+     * does not change layout, so this cannot feed itself. */
+    let ro = null
+    const mainEl = document.querySelector('main')
+    if (mainEl && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(onResize)
+      ro.observe(mainEl)
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize, { passive: true })
     return () => {
+      if (ro) ro.disconnect()
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
       if (raf) cancelAnimationFrame(raf)
