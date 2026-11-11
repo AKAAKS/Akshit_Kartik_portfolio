@@ -16,7 +16,7 @@
 export const profile = {
   name: 'Akshit Kartik',
   title: 'AI & automation engineer · applied ML researcher',
-  tagline: 'I build AI agents, developer tooling, and the interfaces that sit on top of them.',
+  tagline: 'I build AI agents and the tooling that keeps them honest.',
   resumeUrl: '/resume.pdf',
 }
 
@@ -37,18 +37,18 @@ export const modules = [
 export const publications = [
   {
     bay: 'O1',
-    title: 'AquaTag: a wearable platform for flexible sensor placement in aquatic sensing',
-    venue: 'Proc. ACM IMWUT',
-    year: '2026',
-    authors: 'Co-author',
+    title: 'AquaTag: An Open-Source Wearable Platform Enabling Flexible Sensor Placement for Aquatic Sensing',
+    venue: 'Proc. ACM IMWUT 10(3)',
+    year: 'Sept 2026',
+    authors: 'Z. Li, R. Liu, et al. (incl. A. Kartik)',
     desc: 'Built the IMU-to-video sync tool and the labeling pipeline behind the dataset.',
     ref: { label: 'doi:10.1145/3831639', url: 'https://dl.acm.org/doi/10.1145/3831639' },
   },
   {
     bay: 'O2',
-    title: 'OmniSch: a multimodal PCB schematic benchmark for diagram reasoning',
+    title: 'OmniSch: A Multimodal PCB Schematic Benchmark for Structured Diagram Visual Reasoning',
     venue: 'arXiv preprint cs.CV',
-    year: '2026',
+    year: 'Mar 2026',
     authors: 'T. Lu, K. Lin, et al. (incl. A. Kartik)',
     desc: 'Tests whether multimodal models can read schematic symbols, nets and connectivity.',
     ref: { label: 'arXiv:2604.00270', url: 'https://arxiv.org/abs/2604.00270' },
@@ -90,8 +90,8 @@ export const experience = [
     from: 'Jan 2024',
     to: 'Dec 2025',
     points: [
-      'Lead weekly recitation for 40+ students in a large-scale Java course.',
-      'Review 100+ programming assignments per cycle for correctness and design.',
+      'Led weekly recitation for 40+ students in a large-scale Java course.',
+      'Reviewed 100+ programming assignments per cycle for correctness and design.',
     ],
   },
 ]
@@ -130,9 +130,10 @@ export const projects = [
     subtitle: 'Agentic voice & text assistant',
     from: 'Mar 2026',
     to: 'Present',
-    metric: '1092 tests',
-    desc: 'Claude tool-use loop exposing ~41 tools behind an always-on WebSocket daemon.',
+    metric: '41 tools',
+    desc: 'Always-on daemon running a Claude tool-use loop over home, media and PC control.',
     detail: 'One audited guard blocks prompt-injection self-approval; tiered router holds a hard budget.',
+    note: '1092 tests',
     tags: ['Claude tool-use', 'WebSocket', 'Home Assistant', 'Python'],
     links: {
       site: 'https://jarvis-landing-sooty.vercel.app/',
@@ -145,9 +146,10 @@ export const projects = [
     subtitle: 'Windows telemetry & anomaly triage',
     from: 'Jan 2026',
     to: 'Present',
-    metric: '170 tests',
+    metric: 'Fail-closed by default',
     desc: 'Python daemon triaging CPU, RAM, GPU and process anomalies via a LangGraph OODA machine.',
-    detail: 'Fail-closed approval gate, command allowlisting, protected-PID guards, Docker sandbox.',
+    detail: 'Command allowlisting, protected-PID guards, and a Docker sandbox for anything it runs.',
+    note: '170 tests',
     tags: ['LangGraph', 'psutil', 'SQLite', 'Docker'],
     links: {
       site: 'https://os-agent-landing.vercel.app/',
@@ -235,6 +237,12 @@ export const contact = {
 
 /* ------------------------------------------------------------------- timeline
  * The truss: the career spine, oldest to newest, port to starboard.
+ *
+ * The order is checked against the sources, not assumed. Both papers were
+ * filed here under a bare '2026' and sorted by guess, and both guesses were
+ * wrong: AquaTag is dated 30 Sept 2026 by its DOI, so it lands AFTER the
+ * degree rather than before it, and OmniSch went to arXiv on 31 Mar 2026,
+ * so it lands before. Dates carry months for that reason.
  * `kind`   role | project | publication | education
  * `key`    true for the plotted emphasis (publications and the degree)
  * `href`   the module holding the detail, so a node is a link not an ornament */
@@ -260,27 +268,27 @@ export const timeline = [
     title: 'OS Agent', detail: 'Ongoing', href: '#projects',
   },
   {
-    seg: 'S5', kind: 'project', date: 'Mar 2026',
-    title: 'J.A.R.V.I.S.', detail: 'Ongoing', href: '#projects',
+    seg: 'S5', kind: 'publication', date: 'Mar 2026', key: true,
+    title: 'OmniSch', detail: 'arXiv preprint', href: '#publications',
   },
   {
-    seg: 'P1', kind: 'publication', date: '2026', key: true,
-    title: 'AquaTag', detail: 'Proc. ACM IMWUT', href: '#publications',
+    seg: 'P1', kind: 'project', date: 'Mar 2026',
+    title: 'J.A.R.V.I.S.', detail: 'Ongoing', href: '#projects',
   },
   {
     seg: 'P2', kind: 'education', date: 'May 2026', key: true,
     title: 'BS Computer Science', detail: 'Penn State · GPA 3.56', href: '#experience',
   },
   {
-    seg: 'P3', kind: 'project', date: '2026',
+    seg: 'P3', kind: 'publication', date: 'Sept 2026', key: true,
+    title: 'AquaTag', detail: 'Proc. ACM IMWUT', href: '#publications',
+  },
+  {
+    seg: 'P4', kind: 'project', date: '2026',
     title: 'Agentic Labeling Engine', detail: 'LangGraph + human review', href: '#projects',
   },
   {
-    seg: 'P4', kind: 'publication', date: '2026', key: true,
-    title: 'OmniSch', detail: 'arXiv preprint', href: '#publications',
-  },
-  {
-    seg: 'P5', kind: 'project', date: 'Now',
+    seg: 'P5', kind: 'project', date: 'Present',
     title: 'Cardio BP', detail: 'In progress', href: '#projects',
   },
 ]
