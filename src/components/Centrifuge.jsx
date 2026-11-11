@@ -259,6 +259,16 @@ export default function Centrifuge({ mod }) {
               <div className="rail-seg rail-seg--bot" key={`rb-${a}`} style={{ '--a': a }} />
             ))}
 
+            {/* The rails' ink: one ellipse per edge, plus a highlight each.
+              * See .rail-ring - the segments above are only fill now. */}
+            {['t1', 't2', 't3', 'b1', 'b2', 'b3'].map((k) => (
+              <span
+                className={`rail-ring rr-${k}${k.endsWith('2') ? ' rail-ring--hi' : ''}`}
+                key={`rr-${k}`}
+                aria-hidden="true"
+              />
+            ))}
+
             {/* posts tying the two rails together, one per gondola bay */}
             {timeline.map((n, i) => (
               <div className="stanchion" key={`p-${n.seg}`} style={{ '--a': i * STEP }} />

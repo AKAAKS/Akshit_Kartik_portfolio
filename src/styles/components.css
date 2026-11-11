@@ -1063,52 +1063,67 @@ html:not([data-landed]) .station {
  * The highlight line down the middle is what makes it read as round rather
  * than as a flat band. */
 .rail-seg {
-  /* Supersampled, for the same reason the gondolas are - see --gk above.
+  /* These are the FILL and the grab target now, not the drawing.
    *
-   * These segments sit at translateZ(--ring-r), so the ones at the front of
-   * the wheel are magnified by 2400 / (2400 - 434) = 1.22x. A 3D-transformed
-   * layer is rasterised at its LAYOUT size and the transform applied to that
-   * bitmap, so a 1px rail edge was drawn as one pixel and then stretched to
-   * 1.22 - which no pixel grid can represent, so it resampled into a soft,
-   * stepped line. Every other line on the page is drawn straight to the
-   * screen, which is why these two were the ones that looked ragged.
+   * They used to carry the rail's two 1px edges and its highlight, and that
+   * is what made the rail the one ragged line on the page. A rail built from
+   * 48 tiles is a 48-sided polygon, not a circle, so its edge steps in y at
+   * every seam - and each tile is rasterised into its own layer and resampled
+   * independently, which softens each step differently. Zoomed in, those
+   * steps are spread over enough pixels to read as a curve. Zoomed out they
+   * pack into a handful of pixels and the line breaks up, which is exactly
+   * the way round the problem was reported.
    *
-   * Built --rk times larger and scaled back down inside the transform: same
-   * geometry, but the texture carries --rk times the texels and is now
-   * DOWNsampled rather than up. Every length here has to carry the factor
-   * for that to hold, the border widths included. scale() goes LAST in the
-   * transform so it applies before the rotation and the push outward. */
-  --rk: 3;
-  --rw: calc(var(--ring-r) * 0.1308 + 1.5px);
+   * No amount of supersampling fixes a polygon. So the ink moved to
+   * .rail-ring below - two real ellipses per rail, one element each, drawn
+   * once - and these keep only the paper fill, which is what hides the far
+   * gondolas behind the rail. A fill can be as faceted as it likes: its
+   * silhouette is paper on paper, and the crisp ellipse is drawn over it.
+   *
+   * The supersampling that was here is gone with the ink it existed for. A
+   * flat fill has no detail to lose. */
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(var(--rw) * var(--rk));
-  height: calc(10px * var(--rk));
-  margin-left: calc(var(--rw) * var(--rk) / -2);
+  width: calc(var(--ring-r) * 0.1308 + 1.5px);
+  height: 10px;
+  margin-left: calc((var(--ring-r) * 0.1308 + 1.5px) / -2);
   background: var(--paper);
-  border-top: calc(1px * var(--rk)) solid var(--draw);
-  border-bottom: calc(1px * var(--rk)) solid var(--draw);
   box-sizing: border-box;
   cursor: grab;
-  transform:
-    rotateY(calc(1deg * var(--a)))
-    translateZ(var(--ring-r))
-    scale(calc(1 / var(--rk)));
+  transform: rotateY(calc(1deg * var(--a))) translateZ(var(--ring-r));
 }
-.rail-seg::after {
-  content: '';
+.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 5px); }
+.rail-seg--bot { margin-top: calc(var(--rail-y) - 5px); }
+
+/* The rail's ink: one ellipse per edge, lying flat at the right height.
+ *
+ * A handrail seen from a tilted camera IS two concentric ellipses offset
+ * vertically by the pipe's thickness, with the highlight between them - so
+ * drawing it that way is not an approximation, it is the real silhouette,
+ * and it costs six elements instead of ninety-six. Every offset is derived
+ * from --rail-y and the 10px band, so the ink cannot drift away from the
+ * fill it sits on. */
+.rail-ring {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(2px * var(--rk));
-  height: calc(1px * var(--rk));
-  background: var(--draw-far);
+  left: 50%;
+  top: 50%;
+  width: calc(var(--ring-r) * 2);
+  height: calc(var(--ring-r) * 2);
+  border-radius: 50%;
+  border: 1px solid var(--draw);
+  pointer-events: none;
+  transform: translate(-50%, calc(-50% + var(--y))) rotateX(90deg);
 }
-/* The margin centres the segment on the rail height, so it has to follow the
- * scaled height: half of 10px x --rk, not a flat 5px. */
-.rail-seg--top { margin-top: calc(var(--rail-y) * -1 - 5px * var(--rk)); }
-.rail-seg--bot { margin-top: calc(var(--rail-y) - 5px * var(--rk)); }
+.rail-ring--hi { border-color: var(--draw-far); }
+
+.rr-t1 { --y: calc(var(--rail-y) * -1 - 5px); }
+.rr-t2 { --y: calc(var(--rail-y) * -1 - 3px); }
+.rr-t3 { --y: calc(var(--rail-y) * -1 + 5px); }
+.rr-b1 { --y: calc(var(--rail-y) - 5px); }
+.rr-b2 { --y: calc(var(--rail-y) - 3px); }
+.rr-b3 { --y: calc(var(--rail-y) + 5px); }
+
 .ring-stage.spinning .rail-seg { cursor: grabbing; }
 
 /* Supersampled on the same grounds as .rail-seg: a 1px post pushed out to
