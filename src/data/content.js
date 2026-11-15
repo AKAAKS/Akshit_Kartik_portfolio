@@ -160,7 +160,7 @@ export const projects = [
     metric: '41 tools',
     desc: 'Always-on daemon running a Claude tool-use loop over home, media and PC control.',
     detail: 'One audited guard blocks prompt-injection self-approval; tiered router holds a hard budget.',
-    note: '1092 tests',
+    note: '1479 tests',
     tags: ['Claude tool-use', 'WebSocket', 'Home Assistant', 'Python'],
     links: {
       site: 'https://jarvis-landing-sooty.vercel.app/',
